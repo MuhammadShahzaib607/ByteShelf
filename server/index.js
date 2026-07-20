@@ -1,4 +1,6 @@
 import express from "express"
+import http from "http"
+import { initializeSocket } from "./socket/index.js"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
 import { sendRes } from "./utils/responseHandler.js"
@@ -12,6 +14,8 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 dotenv.config()
 const app = express()
+const server = http.createServer(app)
+initializeSocket(server)
 
 app.use(express.json())
 app.use("/api/v1/user", authRoute);
@@ -42,7 +46,7 @@ app.get("/health-check", (req, res)=> {
 
 if (process.env.NODE_ENV !== 'production') {
     const port = process.env.PORT || 8000;
-    app.listen(port, () => {
+    server.listen(port, () => {
         console.log(`Server is running on port ${port}`);
     });
 };
