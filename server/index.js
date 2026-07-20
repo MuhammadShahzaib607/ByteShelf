@@ -5,6 +5,8 @@ import { sendRes } from "./utils/responseHandler.js"
 import authRoute from "./routes/auth.js"
 import warehouseRoute from "./routes/warehouse.js"
 import shelfRoute from "./routes/shelf.js"
+import bookingRoute from "./routes/booking.js"
+import notificationRoute from "./routes/notification.js"
 import dns from 'dns';
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -15,6 +17,8 @@ app.use(express.json())
 app.use("/api/v1/user", authRoute);
 app.use("/api/v1/warehouse", warehouseRoute);
 app.use("/api/v1/shelf", shelfRoute);
+app.use("/api/v1/booking", bookingRoute);
+app.use("/api/v1/notification", notificationRoute);
 
 const connectDB = async ()=> {
     try {
