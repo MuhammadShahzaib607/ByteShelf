@@ -5,8 +5,8 @@ import {
   getInboundPlanDetails,
   getWarehouseInboundPlans,
 } from "../controllers/inboundPlan.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
-import { verifyWarehouseOwner } from "../middlewares/verifyWarehouseOwner.js";
+import { verifyToken } from "../utils/middlewares/verifyToken.js";
+import { verifyWarehouseOwner } from "../utils/middlewares/verifyWarehouseOwner.js";
 
 const router = express.Router();
 

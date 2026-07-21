@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import InboundPlan from "../models/InboundPlan.js";
 import Carton from "../models/Carton.js";
 import Booking from "../models/Booking.js";
+import Notification from "../models/Notification.js";
+import Warehouse from "../models/Warehouse.js";
 import { sendRes } from "../utils/responseHandler.js";
 
 export const createInboundPlan = async (req, res) => {
@@ -49,8 +51,18 @@ export const createInboundPlan = async (req, res) => {
 
     await Carton.insertMany(cartons);
 
+    const warehouse = await Warehouse.findById(booking.warehouse);
+
+    await Notification.create({
+      recipient: warehouse.owner,
+      sender: req.user.id,
+      message: `New inbound added for your warehouse booking: ${totalCartons} carton(s) in batch "${batchName}"`,
+      link: `/inbound-plans/${inboundPlan._id}`,
+    });
+
     return sendRes(res, 201, true, "Inbound plan created successfully", inboundPlan);
   } catch (error) {
+    console.log(error.message)
     return sendRes(res, 500, false, "Something went wrong");
   }
 };

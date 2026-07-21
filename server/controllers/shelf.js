@@ -89,3 +89,15 @@ export const deleteShelves = async (req, res) => {
     return sendRes(res, 500, false, "Something went wrong");
   }
 };
+
+export const getAvailableShelves = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+
+    const shelves = await Shelf.find({ warehouse: warehouseId, status: "available" }).sort({ createdAt: 1 });
+
+    return sendRes(res, 200, true, "Available shelves fetched successfully", shelves);
+  } catch (error) {
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};

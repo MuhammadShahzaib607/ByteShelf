@@ -9,6 +9,8 @@ import warehouseRoute from "./routes/warehouse.js"
 import shelfRoute from "./routes/shelf.js"
 import bookingRoute from "./routes/booking.js"
 import notificationRoute from "./routes/notification.js"
+import inboundRoute from "./routes/inboundPlan.js"
+import cartonRoute from "./routes/carton.js"
 import dns from 'dns';
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -23,6 +25,8 @@ app.use("/api/v1/warehouse", warehouseRoute);
 app.use("/api/v1/shelf", shelfRoute);
 app.use("/api/v1/booking", bookingRoute);
 app.use("/api/v1/notification", notificationRoute);
+app.use("/api/v1/inbound", inboundRoute);
+app.use("/api/v1/carton", cartonRoute);
 
 const connectDB = async ()=> {
     try {
