@@ -69,8 +69,18 @@ export const createInboundPlan = async (req, res) => {
 
 export const getMyInboundPlans = async (req, res) => {
   try {
+    const { bookingId } = req.query;
+
+    const matchQuery = {
+      merchant: new mongoose.Types.ObjectId(req.user.id),
+    };
+
+    if (bookingId) {
+      matchQuery.booking = new mongoose.Types.ObjectId(bookingId);
+    }
+
     const plans = await InboundPlan.aggregate([
-      { $match: { merchant: new mongoose.Types.ObjectId(req.user.id) } },
+      { $match: matchQuery },
       { $sort: { createdAt: -1 } },
       {
         $lookup: {

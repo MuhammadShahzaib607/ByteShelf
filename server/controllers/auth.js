@@ -209,3 +209,27 @@ export const getProfile = async (req, res) => {
     return sendRes(res, 500, false, "Something went wrong");
   }
 };
+
+export const editProfile = async (req, res) => {
+  try {
+    const { role, phone } = req.body;
+
+    if (!role && !phone) {
+      return sendRes(res, 400, false, "At least one field is required to update");
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return sendRes(res, 404, false, "User not found");
+    }
+
+    if (role) user.role = role;
+    if (phone) user.phone = phone;
+
+    await user.save();
+
+    return sendRes(res, 200, true, "Profile updated successfully", user);
+  } catch (error) {
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};

@@ -1,6 +1,6 @@
 import express from "express";
 import { startConversation, getMessages, getMyConversations, markMessagesAsRead } from "../controllers/conversation.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { verifyToken } from "../utils/middlewares/verifyToken.js";
 
 const router = express.Router();
 

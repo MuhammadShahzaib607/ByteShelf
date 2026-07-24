@@ -1,26 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --slate-50: #F8FAFC;
+  --cobalt: #0284C7;
+  --steel-gray: #1E293B;
+  --white: #FFFFFF;
+  --slate-900: #0F172A;
+  --amber: #F59E0B;
+  --error-red: #DC2626;
+  --slate-200: #E2E8F0;
+  --slate-700: #334155;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-slate-50: var(--slate-50);
+  --color-cobalt: var(--cobalt);
+  --color-steel-gray: var(--steel-gray);
+  --color-cream: var(--white);
+  --color-slate-900: var(--slate-900);
+  --color-amber: var(--amber);
+  --color-error: var(--error-red);
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  background-color: var(--white);
+  color: var(--slate-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cobalt);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-700);
+}
+
+/* Framer Motion ready - prevent FOUC */
+.framer-hidden {
+  opacity: 0;
+}
+
+/* Numeric Typography — clean tabular figures for all pricing & metrics */
+@layer utilities {
+  .numeric {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -moz-font-feature-settings: "tnum" 1;
+    font-feature-settings: "tnum" 1;
+  }
 }
