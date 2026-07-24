@@ -327,6 +327,21 @@ const handleChatWithOwner = useCallback(async () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pt-28 pb-20 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
+        {/* Error Banner */}
+        <AnimatePresence>
+          {bookingError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3"
+            >
+              <AlertCircle size={18} className="text-red-500 shrink-0" />
+              <p className="text-sm text-red-700 font-body">{bookingError}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Cancel Success Toast */}
         <AnimatePresence>
           {cancelSuccess && (

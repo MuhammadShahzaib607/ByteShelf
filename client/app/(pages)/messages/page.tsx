@@ -223,7 +223,7 @@ function MessagesContent() {
   // ─── Auto-scroll to bottom when messages change ───────────────────────────
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
   }, []);
 

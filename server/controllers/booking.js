@@ -127,7 +127,11 @@ export const getMerchantBookingDetails = async (req, res) => {
 
     const booking = await Booking.findOne({ _id: bookingId, merchant: req.user.id })
       .populate("shelves", "shelfNumber")
-      .populate("warehouse", "name location latitude longitude");
+      .populate({
+        path: "warehouse",
+        select: "name location latitude longitude owner",
+        populate: { path: "owner", select: "_id name" },
+      });
 
     if (!booking) {
       return sendRes(res, 404, false, "Booking not found");
