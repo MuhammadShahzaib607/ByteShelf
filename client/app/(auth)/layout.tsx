@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Donut, Loader2 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 
 export default function AuthLayout({
@@ -12,7 +12,7 @@ export default function AuthLayout({
 }) {
   const router = useRouter();
   const { accessToken, isCheckingAuth } = useAppSelector((state) => state.auth);
-
+  
   useEffect(() => {
     if (isCheckingAuth) return;
     if (accessToken) {
