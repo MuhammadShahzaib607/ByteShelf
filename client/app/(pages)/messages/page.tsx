@@ -318,7 +318,25 @@ function MessagesContent() {
     fetchMessages(activeConvId, 1);
     markAsRead(activeConvId);
     setShowSidebar(false);
+
+    // Emit socket event for real-time read receipts when opening a conversation
+    const socket = getSocket();
+    if (socket?.connected) {
+      socket.emit("message_read", { conversationId: activeConvId });
+    }
   }, [activeConvId, fetchMessages, markAsRead]);
+
+  // ─── Join all conversation rooms for real-time sidebar updates ───────────
+  useEffect(() => {
+    if (!accessToken || conversations.length === 0) return;
+
+    const socket = getSocket();
+    if (!socket?.connected) return;
+
+    conversations.forEach((conv) => {
+      socket.emit("join_conversation", conv._id);
+    });
+  }, [accessToken, conversations]);
 
   // ─── Socket setup for active conversation ─────────────────────────────────
   useEffect(() => {
@@ -330,14 +348,25 @@ function MessagesContent() {
     socket.emit("join_conversation", activeConvId);
 
     const handleReceiveMessage = (message: MessageData) => {
-      // Update sidebar: update lastMessage + move conversation to top
+      // Update sidebar: update lastMessage, increment unreadCount for background, reorder
       setConversations((prev) => {
         const idx = prev.findIndex((c) => c._id === message.conversation);
         if (idx === -1) return prev;
 
+        const isActive = message.conversation === activeConvId;
+
         const updated = prev.map((c) =>
           c._id === message.conversation
-            ? { ...c, lastMessage: message.text, lastMessageAt: message.createdAt }
+            ? {
+                ...c,
+                lastMessage: message.text,
+                lastMessageAt: message.createdAt,
+                // Increment unreadCount for background messages from other users
+                unreadCount:
+                  isActive || message.sender === userId
+                    ? c.unreadCount
+                    : (c.unreadCount || 0) + 1,
+              }
             : c
         );
 

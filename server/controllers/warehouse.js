@@ -104,9 +104,12 @@ export const getAllWarehouses = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    // Exclude warehouses owned by the current user (hide own warehouses)
+    const filter = { owner: { $ne: req.user.id } };
+
     const [warehouses, total] = await Promise.all([
-      Warehouse.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
-      Warehouse.countDocuments(),
+      Warehouse.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Warehouse.countDocuments(filter),
     ]);
 
     return sendRes(res, 200, true, "Warehouses fetched successfully", {

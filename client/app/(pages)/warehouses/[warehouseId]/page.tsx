@@ -17,6 +17,9 @@ import {
   Plus,
   ArrowRight,
   Package,
+  User,
+  Clock,
+  XCircle,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
@@ -47,6 +50,19 @@ interface ShelfData {
   shelfNumber: number;
   pricePerMonth: number;
   status: "available" | "booked";
+}
+
+interface WarehouseBooking {
+  _id: string;
+  merchant: { _id: string; name: string; phone: string; email: string };
+  shelves: Array<{ _id: string; shelfNumber: string }>;
+  startDate: string;
+  endDate: string;
+  status: "confirmed" | "cancelled" | "completed";
+  paymentStatus: "pending" | "paid";
+  totalAmount: number;
+  pricePerShelf: number;
+  createdAt: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -89,6 +105,11 @@ export default function WarehouseDetailPage() {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  // ─── Warehouse bookings state (for owners) ──────────────────────────────
+  const [warehouseBookings, setWarehouseBookings] = useState<WarehouseBooking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState(false);
 
   // ─── Shelf filter state ───────────────────────────────────────────────────
   const [shelfFilter, setShelfFilter] = useState<"all" | "available" | "booked">("all");
@@ -223,6 +244,31 @@ export default function WarehouseDetailPage() {
 
   const w = detail?.warehouse;
 
+  // Check if this warehouse belongs to the current user
+  const isOwnWarehouse = user?.id && w?.owner && user.id === w.owner;
+
+  // ─── Fetch warehouse bookings (owner only) ───────────────────────────────
+  useEffect(() => {
+    if (!accessToken || !warehouseId || !isOwnWarehouse) return;
+    let cancelled = false;
+    const fetchBookings = async () => {
+      try {
+        setBookingsLoading(true);
+        setBookingsError(false);
+        const res = await api.get(`/booking/warehouse/${warehouseId}`);
+        if (!cancelled) {
+          setWarehouseBookings(res.data.data?.bookings || []);
+        }
+      } catch {
+        if (!cancelled) setBookingsError(true);
+      } finally {
+        if (!cancelled) setBookingsLoading(false);
+      }
+    };
+    fetchBookings();
+    return () => { cancelled = true; };
+  }, [accessToken, warehouseId, isOwnWarehouse]);
+
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -301,6 +347,12 @@ export default function WarehouseDetailPage() {
                 </div>
               </div>
               <div className="text-right">
+                {isOwnWarehouse && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-body font-medium mb-2">
+                    <Warehouse size={12} />
+                    You are the owner of this warehouse
+                  </span>
+                )}
                 <p className="font-heading text-2xl font-bold text-[#0284C7] numeric">
                   Rs. {w.pricePerShelf.toLocaleString("en-PK")}
                 </p>
@@ -345,6 +397,168 @@ export default function WarehouseDetailPage() {
             </p>
           </div>
         </motion.div>
+
+        {/* Self-owner banner for warehouse owners viewing their own warehouse */}
+        {isOwnWarehouse && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#E2E8F0] mb-8"
+          >
+            <div className="text-center py-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
+                <Warehouse size={28} className="text-amber-600" />
+              </div>
+              <h2 className="font-heading text-lg font-semibold text-[#1E293B] mb-1">
+                You own this warehouse
+              </h2>
+              <p className="text-sm text-[#0F172A]/50 font-body max-w-md mx-auto">
+                This is your own warehouse. You can manage shelves and view bookings from your dashboard instead of booking it.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ═══ ACTIVE BOOKINGS (Owner Only) ═══ */}
+        {isOwnWarehouse && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.18 }}
+            className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#E2E8F0] mb-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center">
+                <CalendarDays size={20} className="text-[#0284C7]" />
+              </div>
+              <div>
+                <h2 className="font-heading text-xl font-semibold text-[#1E293B]">
+                  Active Bookings
+                </h2>
+                <p className="text-xs text-[#0F172A]/50 font-body">
+                  {warehouseBookings.length} booking{warehouseBookings.length !== 1 ? "s" : ""} for this warehouse
+                </p>
+              </div>
+            </div>
+
+            {bookingsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 size={24} className="animate-spin text-[#0284C7]" />
+              </div>
+            ) : bookingsError ? (
+              <div className="text-center py-8">
+                <AlertCircle size={24} className="mx-auto text-red-400 mb-2" />
+                <p className="text-sm text-red-500 font-body">Failed to load bookings.</p>
+              </div>
+            ) : warehouseBookings.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-3">
+                  <CalendarDays size={22} className="text-[#0284C7]/40" />
+                </div>
+                <p className="text-sm text-[#0F172A]/50 font-body">
+                  No bookings yet for this warehouse.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {warehouseBookings.map((booking) => (
+                  <div
+                    key={booking._id}
+                    className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#E2E8F0] hover:border-[#0284C7]/20 transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0">
+                          <User size={14} className="text-white" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
+                            {booking.merchant?.name || "Unknown Merchant"}
+                          </p>
+                          {booking.merchant?.phone && (
+                            <p className="text-[11px] text-[#0F172A]/40 font-body">
+                              {booking.merchant.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Status badge */}
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-body font-medium ${
+                          booking.status === "confirmed"
+                            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                            : booking.status === "completed"
+                            ? "bg-slate-50 border-slate-200 text-slate-600"
+                            : "bg-red-50 border-red-200 text-red-700"
+                        }`}>
+                          {booking.status === "confirmed" ? (
+                            <CheckCircle size={10} />
+                          ) : booking.status === "completed" ? (
+                            <CheckCircle size={10} />
+                          ) : (
+                            <XCircle size={10} />
+                          )}
+                          {booking.status === "confirmed"
+                            ? "Active"
+                            : booking.status === "completed"
+                            ? "Completed"
+                            : "Cancelled"}
+                        </span>
+                        {/* Payment badge */}
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-body font-medium ${
+                          booking.paymentStatus === "paid"
+                            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                            : "bg-amber-50 border-amber-200 text-amber-700"
+                        }`}>
+                          {booking.paymentStatus === "paid" ? (
+                            <CheckCircle size={10} />
+                          ) : (
+                            <Clock size={10} />
+                          )}
+                          {booking.paymentStatus === "paid" ? "Paid" : "Pending"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Booking details */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      <div>
+                        <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body mb-0.5">Start</p>
+                        <p className="text-sm font-medium text-[#1E293B] font-body">
+                          {new Date(booking.startDate).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body mb-0.5">End</p>
+                        <p className="text-sm font-medium text-[#1E293B] font-body">
+                          {new Date(booking.endDate).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body mb-0.5">Shelves</p>
+                        <div className="flex flex-wrap gap-1">
+                          {booking.shelves?.map((s) => (
+                            <span key={s._id} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] text-[11px] font-medium text-[#1E293B] font-body">
+                              <Layers size={10} className="text-[#0284C7]" />
+                              {s.shelfNumber}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body mb-0.5">Amount</p>
+                        <p className="text-sm font-semibold text-[#1E293B] font-body numeric">
+                          Rs. {(booking.totalAmount || 0).toLocaleString("en-PK")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {/* Shelf Section */}
         <motion.div

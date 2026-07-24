@@ -379,12 +379,12 @@ export default function Home() {
                 Explore Shelves
                 <ArrowRight size={18} />
               </button>
-              <Link
-                href="/signup"
+              {/* <Link
+                href="/warehouses/add"
                 className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#1E293B] text-[#1E293B] rounded-full font-body font-medium text-base hover:bg-[#1E293B]/5 transition-all duration-300 active:scale-[0.97]"
               >
                 List Your Space
-              </Link>
+              </Link> */}
             </motion.div>
           </div>
         </section>
@@ -786,7 +786,7 @@ export default function Home() {
                     className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#1E293B] text-white rounded-full font-body font-medium text-base hover:bg-[#0284C7] transition-all duration-300 shadow-md shadow-slate-900/10 hover:shadow-lg"
                   >
                     <LayoutDashboard size={18} />
-                    Go to Dashboard
+                    Explore Warehouses
                     <ArrowRight size={18} />
                   </Link>
                 ) : (
