@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, MessageCircle, ChevronLeft, Send, CheckCheck } from "lucide-react";
+import { Loader2, MessageCircle, ChevronLeft, Send, CheckCheck, ChevronDown } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 import { getSocket, disconnectSocket } from "@/lib/socket";
@@ -209,6 +209,9 @@ function MessagesContent() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
 
+  // ─── Scroll-to-bottom state ─────────────────────────────────────────────
+  const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
+
   // ─── Mobile sidebar toggle ────────────────────────────────────────────────
   const [showSidebar, setShowSidebar] = useState(!initialConvId);
 
@@ -223,8 +226,21 @@ function MessagesContent() {
   // ─── Auto-scroll to bottom when messages change ───────────────────────────
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
-      // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     }, 50);
+  }, []);
+
+  // ─── Handle scroll events on the message container ───────────────────────
+  const handleScroll = useCallback(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const { scrollTop, clientHeight, scrollHeight } = container;
+    setShowScrollBottomBtn(scrollTop + clientHeight < scrollHeight - 150);
   }, []);
 
   useEffect(() => {
@@ -314,14 +330,52 @@ function MessagesContent() {
     socket.emit("join_conversation", activeConvId);
 
     const handleReceiveMessage = (message: MessageData) => {
+      // Update sidebar: update lastMessage + move conversation to top
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c._id === message.conversation);
+        if (idx === -1) return prev;
+
+        const updated = prev.map((c) =>
+          c._id === message.conversation
+            ? { ...c, lastMessage: message.text, lastMessageAt: message.createdAt }
+            : c
+        );
+
+        // Move the updated conversation to the top of the sidebar
+        if (idx > 0) {
+          const [item] = updated.splice(idx, 1);
+          updated.unshift(item);
+        }
+        return [...updated];
+      });
+
+      // If this message is for the active conversation, append it to messages
       if (message.conversation === activeConvId) {
-        setMessages((prev) => [...prev, message]);
-        // Also update the conversation's lastMessage in sidebar
+        setMessages((prev) => {
+          // Avoid duplicate keys
+          if (prev.some((m) => m._id === message._id)) return prev;
+          return [...prev, message];
+        });
+
+        // Auto-emit read receipt back to the sender (only if we are the receiver)
+        if (message.sender !== userId) {
+          socket.emit("message_read", { conversationId: activeConvId });
+        }
+      }
+    };
+
+    const handleMessagesRead = (data: { conversationId: string; readBy: string }) => {
+      // If we're viewing this conversation, update sent messages to show as read
+      if (data.conversationId === activeConvId) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.sender === userId && !m.isRead ? { ...m, isRead: true } : m
+          )
+        );
+        // Also update unread count in sidebar
         setConversations((prev) =>
           prev.map((c) =>
-            c._id === activeConvId
-              ? { ...c, lastMessage: message.text, lastMessageAt: message.createdAt }
-              : c
+            c._id === activeConvId ? { ...c, unreadCount: 0 } : c
           )
         );
       }
@@ -332,13 +386,15 @@ function MessagesContent() {
     };
 
     socket.on("receive_message", handleReceiveMessage);
+    socket.on("messages_read", handleMessagesRead);
     socket.on("error_message", handleError);
 
     return () => {
       socket.off("receive_message", handleReceiveMessage);
+      socket.off("messages_read", handleMessagesRead);
       socket.off("error_message", handleError);
     };
-  }, [activeConvId, accessToken]);
+  }, [activeConvId, accessToken, userId]);
 
   // ─── Cleanup socket on unmount ────────────────────────────────────────────
   useEffect(() => {
@@ -461,7 +517,7 @@ function MessagesContent() {
           <div
             className={`${
               !showSidebar && activeConvId ? "flex" : "hidden"
-            } sm:flex flex-col flex-1 bg-white`}
+            } sm:flex flex-col flex-1 bg-white relative`}
           >
             {!activeConvId ? (
               /* Empty State */
@@ -507,6 +563,7 @@ function MessagesContent() {
                 {/* Messages Area */}
                 <div
                   ref={chatContainerRef}
+                  onScroll={handleScroll}
                   className="flex-1 overflow-y-auto px-5 py-4 bg-white"
                 >
                   {/* Load More */}
@@ -594,6 +651,16 @@ function MessagesContent() {
                   {/* Scroll anchor */}
                   <div ref={messagesEndRef} />
                 </div>
+
+                {/* Scroll to bottom floating button */}
+                {showScrollBottomBtn && (
+                  <button
+                    onClick={scrollToBottom}
+                    className="absolute bottom-20 right-6 w-10 h-10 rounded-full bg-white border border-[#E2E8F0] shadow-lg flex items-center justify-center text-[#0F172A]/60 hover:text-[#0284C7] hover:border-[#0284C7]/30 hover:shadow-xl transition-all duration-200 z-10"
+                  >
+                    <ChevronDown size={18} />
+                  </button>
+                )}
 
                 {/* Message Input */}
                 <div className="px-5 py-4 border-t border-[#E2E8F0] shrink-0">

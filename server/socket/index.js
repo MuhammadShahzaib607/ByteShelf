@@ -44,9 +44,32 @@ export const initializeSocket = (server) => {
           lastMessageAt: new Date(),
         });
 
+        // Broadcast to ALL participants in the room (receiver + sender)
         io.to(conversationId).emit("receive_message", message);
       } catch (error) {
         socket.emit("error_message", "Something went wrong");
+      }
+    });
+
+    socket.on("message_read", async ({ conversationId }) => {
+      try {
+        // Mark all unread messages sent by other participants as read
+        await Message.updateMany(
+          {
+            conversation: conversationId,
+            sender: { $ne: socket.userId },
+            isRead: false,
+          },
+          { $set: { isRead: true } }
+        );
+
+        // Notify the conversation room that messages were read
+        io.to(conversationId).emit("messages_read", {
+          conversationId,
+          readBy: socket.userId,
+        });
+      } catch (error) {
+        socket.emit("error_message", "Failed to mark messages as read");
       }
     });
   });
