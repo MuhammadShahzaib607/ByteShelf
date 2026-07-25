@@ -18,9 +18,29 @@ import {
   CalendarDays,
   Info,
   Mail,
+  Bell,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout as logoutAction } from "@/redux/slices/authSlice";
+import { fetchNotifications } from "@/redux/slices/notificationSlice";
+
+// ─── Notification Bell ───────────────────────────────────────────────────────────
+
+function NotificationBell({ unreadCount }: { unreadCount: number }) {
+  return (
+    <Link
+      href="/notifications"
+      className="relative flex items-center justify-center w-9 h-9 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15 hover:bg-[#F8FAFC] transition-colors"
+    >
+      <Bell size={17} className="text-[#0F172A]/60" />
+      {unreadCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white text-[9px] font-bold text-white font-body shadow-sm">
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 // ─── Desktop Nav Link ───────────────────────────────────────────────────────────
 
@@ -174,6 +194,19 @@ const Navbar: React.FC = () => {
   const isLoggedIn = !!accessToken;
   const role = user?.role || "";
 
+  // ─── Notification state ────────────────────────────────────────────────
+  const { unread } = useAppSelector((state) => state.notifications);
+
+  // Fetch notifications on mount and periodically when logged in
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    dispatch(fetchNotifications());
+    const interval = setInterval(() => {
+      dispatch(fetchNotifications());
+    }, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval);
+  }, [isLoggedIn, dispatch]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -286,11 +319,14 @@ const Navbar: React.FC = () => {
         {/* Desktop Auth CTAs - Hide Sign In/Join Free when logged in */}
         <div className="hidden md:flex items-center gap-3">
           {isLoggedIn ? (
-            <UserDropdown
-              userName={user?.name || "User"}
-              userRole={role}
-              onLogout={handleLogout}
-            />
+            <>
+              <NotificationBell unreadCount={unread} />
+              <UserDropdown
+                userName={user?.name || "User"}
+                userRole={role}
+                onLogout={handleLogout}
+              />
+            </>
           ) : (
             <>
               <Link
@@ -359,6 +395,22 @@ const Navbar: React.FC = () => {
                       </div>
                     </div>
                   )}
+
+                  <Link
+                    href="/notifications"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                  >
+                    <div className="relative">
+                      <Bell size={16} />
+                      {unread > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-[8px] font-bold text-white font-body">
+                          {unread > 99 ? "99+" : unread}
+                        </span>
+                      )}
+                    </div>
+                    Notifications
+                  </Link>
 
                   {authLinks.map((link) => (
                     <Link

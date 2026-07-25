@@ -22,10 +22,12 @@ import {
   XCircle,
   X,
   Phone,
+  ExternalLink,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 import ImageCarousel from "@/components/ui/ImageCarousel";
+import Link from "next/link";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -831,12 +833,13 @@ export default function WarehouseDetailPage() {
                         ) : (
                           <div className="space-y-3">
                             {bookingInbounds.map((inbound) => (
-                              <div
+                              <Link
                                 key={inbound._id}
-                                className="p-4 rounded-xl bg-white border border-[#E2E8F0] flex items-center justify-between gap-3"
+                                href={`/inbounds/${inbound._id}`}
+                                className="p-4 rounded-xl bg-white border border-[#E2E8F0] flex items-center justify-between gap-3 hover:border-[#1E293B] hover:shadow-sm cursor-pointer transition-all duration-200 group"
                               >
                                 <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
+                                  <p className="text-sm font-semibold text-[#1E293B] font-body truncate group-hover:text-[#0284C7] transition-colors duration-200">
                                     {inbound.batchName}
                                   </p>
                                   <div className="flex items-center gap-3 mt-1 text-[11px] text-[#0F172A]/50 font-body">
@@ -845,23 +848,26 @@ export default function WarehouseDetailPage() {
                                     <span>Expected: {new Date(inbound.expectedDate).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}</span>
                                   </div>
                                 </div>
-                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-body font-medium shrink-0 ${
-                                  inbound.status === "completed"
-                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                    : inbound.status === "arrived"
-                                    ? "bg-blue-50 border-blue-200 text-blue-700"
-                                    : "bg-amber-50 border-amber-200 text-amber-700"
-                                }`}>
-                                  {inbound.status === "completed" ? (
-                                    <CheckCircle size={9} />
-                                  ) : inbound.status === "arrived" ? (
-                                    <CheckCircle size={9} />
-                                  ) : (
-                                    <Clock size={9} />
-                                  )}
-                                  {inbound.status === "in-transit" ? "In Transit" : inbound.status === "arrived" ? "Arrived" : "Completed"}
-                                </span>
-                              </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-body font-medium ${
+                                    inbound.status === "completed"
+                                      ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                      : inbound.status === "arrived"
+                                      ? "bg-blue-50 border-blue-200 text-blue-700"
+                                      : "bg-amber-50 border-amber-200 text-amber-700"
+                                  }`}>
+                                    {inbound.status === "completed" ? (
+                                      <CheckCircle size={9} />
+                                    ) : inbound.status === "arrived" ? (
+                                      <CheckCircle size={9} />
+                                    ) : (
+                                      <Clock size={9} />
+                                    )}
+                                    {inbound.status === "in-transit" ? "In Transit" : inbound.status === "arrived" ? "Arrived" : "Completed"}
+                                  </span>
+                                  <ExternalLink size={13} className="text-[#0F172A]/20 group-hover:text-[#0284C7] transition-colors duration-200" />
+                                </div>
+                              </Link>
                             ))}
                           </div>
                         )}
