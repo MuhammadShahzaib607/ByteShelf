@@ -95,7 +95,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-body font-medium ${c.bg} ${c.text}`}
+      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${c.bg} ${c.text}`}
     >
       {c.icon}
       {c.label}
@@ -220,7 +220,7 @@ export default function MyBookingsPage() {
             </p>
             <button
               onClick={() => router.push("/explore")}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
             >
               <Warehouse size={16} />
               Explore Warehouses
@@ -248,7 +248,7 @@ export default function MyBookingsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.06 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border border-[#0284C7]/10 flex flex-col cursor-pointer"
+                  className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col cursor-pointer"
                   onClick={() => router.push(`/my-bookings/${booking._id}`)}
                 >
                   <div className="p-5 flex flex-col flex-1">

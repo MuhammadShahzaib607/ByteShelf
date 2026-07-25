@@ -116,7 +116,7 @@ function StatusBadge({
   const c = config[status] || config.pending;
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-body font-medium ${c.bg} ${c.text}`}>
+    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${c.bg} ${c.text}`}>
       {c.icon}
       {c.label}
     </span>
@@ -310,7 +310,7 @@ const handleChatWithOwner = useCallback(async () => {
           <p className="text-sm text-[#0F172A]/50 font-body mb-6">This booking may have been removed or you don&apos;t have access.</p>
           <button
             onClick={() => router.push("/my-bookings")}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
           >
             <ArrowLeft size={16} />
             Back to My Bookings
@@ -499,7 +499,7 @@ const handleChatWithOwner = useCallback(async () => {
             {!isCancelledStatus && (
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E293B] text-white rounded-full text-xs font-body font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded-full text-xs font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
               >
                 <Plus size={14} />
                 New Plan

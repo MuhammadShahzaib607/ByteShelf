@@ -9,6 +9,8 @@ interface User {
   email: string | null;
   role: string | null;
   name: string | null;
+  verificationStatus?: string | null;
+  isVerified?: boolean;
 }
 
 interface AuthState {
@@ -26,6 +28,10 @@ interface SignupPayload {
   email: string;
   password: string;
   role: string;
+  nicFront?: string;
+  nicBack?: string;
+  livePhoto?: string;
+  liveVideo?: string;
 }
 
 interface LoginPayload {
@@ -258,6 +264,8 @@ const authSlice = createSlice({
           email: profile.email || null,
           role: profile.role || null,
           name: profile.name || null,
+          verificationStatus: profile.verificationStatus || null,
+          isVerified: profile.isVerified || false,
         };
       });
   },

@@ -267,7 +267,7 @@ const Navbar: React.FC = () => {
   if (isCheckingAuth) {
     return (
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 pt-4">
-        <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-white/80 backdrop-blur-md border border-[#0284C7]/10 shadow-sm shadow-slate-900/10">
+        <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full glass shadow-md shadow-slate-900/5">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-[#1E293B] flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -291,8 +291,8 @@ const Navbar: React.FC = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full transition-all duration-300 ${
           scrolled
-            ? "bg-white/90 backdrop-blur-xl border border-[#0284C7]/10 shadow-lg shadow-slate-900/10"
-            : "bg-white/80 backdrop-blur-md border border-[#0284C7]/10 shadow-sm shadow-slate-900/10"
+            ? "glass shadow-lg shadow-slate-900/10"
+            : "glass shadow-md shadow-slate-900/5"
         }`}
       >
         {/* Logo */}
@@ -350,7 +350,7 @@ const Navbar: React.FC = () => {
               </Link>
               <Link
                 href="/signup"
-                className="px-5 py-2 text-sm font-body font-medium bg-[#1E293B] text-white rounded-full hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10 hover:shadow-md"
+                className="px-5 py-2 text-sm font-body font-medium bg-slate-900 text-white rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
               >
                 Join Free
               </Link>
@@ -376,7 +376,7 @@ const Navbar: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-4 right-4 mt-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-[#0284C7]/10 shadow-lg shadow-slate-900/10 overflow-hidden md:hidden"
+            className="absolute top-full left-4 right-4 mt-3 rounded-2xl glass shadow-xl shadow-slate-900/10 overflow-hidden md:hidden"
           >
             <div className="p-3 space-y-1">
               {isLoggedIn ? (

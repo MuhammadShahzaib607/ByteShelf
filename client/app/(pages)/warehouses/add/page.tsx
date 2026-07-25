@@ -43,11 +43,18 @@ function ImagePreview({
   isUploading?: boolean;
 }) {
   return (
-    <div className="relative group w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden border border-[#0284C7]/15 bg-[#F8FAFC]/40 shrink-0">
+    <div className="relative group w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-slate-900/5 shrink-0">
+      {/* Blurred Background Layer */}
+      <img
+        src={src}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-60 scale-110"
+      />
+      {/* Sharp Foreground Layer */}
       <img
         src={src}
         alt="Preview"
-        className="w-full h-full object-cover"
+        className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
       />
       {isUploading && (
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -376,7 +383,7 @@ export default function AddWarehousePage() {
               <button
                 type="submit"
                 disabled={isSubmitting || uploadingImage}
-                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#1E293B] text-white rounded-full font-body font-medium text-sm hover:bg-[#0284C7] transition-all duration-300 shadow-md shadow-slate-900/10 hover:shadow-lg active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-sm hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {uploadingImage ? (
                   <>

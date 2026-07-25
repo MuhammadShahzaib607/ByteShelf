@@ -468,7 +468,7 @@ export default function WarehouseDetailPage() {
           </p>
           <button
             onClick={() => router.push("/explore")}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
           >
             <ChevronLeft size={16} />
             Back to Explore
@@ -493,15 +493,19 @@ export default function WarehouseDetailPage() {
           Back
         </motion.button>
 
-        {/* Hero Banner */}
+        {/* Hero Banner — with dual-layer blur on the carousel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#E2E8F0] mb-8"
+          className="bg-white rounded-3xl overflow-hidden shadow-lg border border-[#E2E8F0] mb-8"
         >
-          <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-64 sm:h-72" />
-          <div className="p-6 sm:p-8">
+          <div className="relative overflow-hidden">
+            <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-64 sm:h-72" />
+            {/* Gradient overlay at bottom for text readability */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/60 to-transparent pointer-events-none z-20" />
+          </div>
+          <div className="p-6 sm:p-8 bg-gradient-to-b from-white to-[#F8FAFC]/30">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#1E293B]">
@@ -528,14 +532,14 @@ export default function WarehouseDetailPage() {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid — glassmorphic cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
           className="grid grid-cols-3 gap-4 mb-8"
         >
-          <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+          <div className="p-5 rounded-2xl bg-[#F8FAFC]/80 backdrop-blur-sm border border-[#E2E8F0] text-center hover:bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
             <Package size={20} className="mx-auto text-[#0284C7]" />
             <p className="mt-2 font-heading text-xl font-bold text-[#1E293B] numeric">
               {w.totalShelves}
@@ -544,7 +548,7 @@ export default function WarehouseDetailPage() {
               Total Shelves
             </p>
           </div>
-          <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+          <div className="p-5 rounded-2xl bg-[#F8FAFC]/80 backdrop-blur-sm border border-[#E2E8F0] text-center hover:bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
             <Layers size={20} className="mx-auto text-[#0284C7]" />
             <p className="mt-2 font-heading text-xl font-bold text-[#1E293B] numeric">
               {detail?.available ?? "—"}
@@ -553,7 +557,7 @@ export default function WarehouseDetailPage() {
               Available
             </p>
           </div>
-          <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+          <div className="p-5 rounded-2xl bg-[#F8FAFC]/80 backdrop-blur-sm border border-[#E2E8F0] text-center hover:bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
             <DollarSign size={20} className="mx-auto text-[#0284C7]" />
             <p className="mt-2 font-heading text-xl font-bold text-[#1E293B] numeric">
               Rs. {w.pricePerShelf.toLocaleString("en-PK")}
@@ -570,7 +574,7 @@ export default function WarehouseDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#E2E8F0] mb-8"
+            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 rounded-3xl p-6 sm:p-8 mb-8"
           >
             <div className="text-center py-4">
               <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
@@ -592,7 +596,7 @@ export default function WarehouseDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.18 }}
-            className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#E2E8F0] mb-8"
+            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 rounded-3xl p-6 sm:p-8 mb-8"
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -988,7 +992,7 @@ export default function WarehouseDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#E2E8F0]"
+          className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 rounded-3xl p-6 sm:p-8"
         >
           {/* Section Header */}
           <div className="flex items-center justify-between mb-6">
@@ -1015,7 +1019,7 @@ export default function WarehouseDetailPage() {
             {isOwnWarehouse && (
               <button
                 onClick={() => setShowAddShelves(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E293B] text-white rounded-full text-xs font-body font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded-full text-xs font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
               >
                 <Plus size={14} />
                 Add Shelves
@@ -1058,7 +1062,7 @@ export default function WarehouseDetailPage() {
                 <button
                   onClick={handleAddShelves}
                   disabled={isAddingShelves}
-                  className="px-5 py-2 bg-[#1E293B] text-white rounded-full text-sm font-body font-medium hover:bg-[#0284C7] transition-all duration-300 disabled:opacity-50"
+                  className="px-5 py-2 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-50"
                 >
                   {isAddingShelves ? (
                     <><Loader2 size={14} className="animate-spin mr-1" />Adding...</>

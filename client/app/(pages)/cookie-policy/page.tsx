@@ -132,7 +132,7 @@ export default function CookiePolicyPage() {
               <div className="mt-6 flex items-center gap-3">
                 <button
                   onClick={handleSave}
-                  className="px-6 py-2.5 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10"
+                  className="px-6 py-2.5 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                 >
                   Save Preferences
                 </button>

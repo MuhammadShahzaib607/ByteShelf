@@ -9,7 +9,7 @@ const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, nicFront, nicBack, livePhoto, liveVideo } = req.body;
  
     if (!name || !email || !password || !role) {
       return sendRes(res, 400, false, "All fields are required");
@@ -19,6 +19,11 @@ export const signup = async (req, res) => {
        return sendRes(res, 404, false, "Password should be 8 characters long");
     }
  
+    // KYC documents are required for non-admin signups
+    if (role !== "admin" && (!nicFront || !nicBack || !livePhoto || !liveVideo)) {
+      return sendRes(res, 400, false, "KYC documents (NIC Front, NIC Back, Live Photo, Live Video) are required");
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser && existingUser.isVerified) {
       return sendRes(res, 409, false, "Email already registered");
@@ -28,6 +33,22 @@ export const signup = async (req, res) => {
     const otp = generateOtp();
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
  
+    const userData = {
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      otp,
+      otpExpiry,
+      verificationStatus: "pending",
+      isVerified: false,
+    };
+
+    // Attach KYC documents if provided
+    if (role !== "admin" && nicFront && nicBack && livePhoto && liveVideo) {
+      userData.kycDocuments = { nicFront, nicBack, livePhoto, liveVideo };
+    }
+
     let user;
     if (existingUser && !existingUser.isVerified) {
       existingUser.name = name;
@@ -35,16 +56,13 @@ export const signup = async (req, res) => {
       existingUser.role = role;
       existingUser.otp = otp;
       existingUser.otpExpiry = otpExpiry;
+      existingUser.verificationStatus = "pending";
+      if (userData.kycDocuments) {
+        existingUser.kycDocuments = userData.kycDocuments;
+      }
       user = await existingUser.save();
     } else {
-      user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role,
-        otp,
-        otpExpiry,
-      });
+      user = await User.create(userData);
     }
  
     await sendEmail(email, "Verify your ByteShelf account", otpEmailTemplate(otp));

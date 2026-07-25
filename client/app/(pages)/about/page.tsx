@@ -165,7 +165,7 @@ export default function AboutPage() {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#1E293B] text-white rounded-full font-body font-medium text-base hover:bg-[#0284C7] transition-all duration-300 shadow-md shadow-slate-900/10 hover:shadow-lg"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-base hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
               >
                 Create Free Account
                 <ChevronRight size={18} />

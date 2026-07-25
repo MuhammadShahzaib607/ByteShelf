@@ -176,7 +176,7 @@ export default function ExplorePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or location..."
-            className="w-full pl-11 pr-4 py-3.5 bg-white border border-[#0284C7]/20 rounded-2xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/10 transition-all text-sm font-body shadow-sm shadow-slate-900/10"
+            className="w-full pl-11 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-[#0284C7]/20 rounded-2xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/10 focus:bg-white transition-all text-sm font-body shadow-sm shadow-slate-900/10"
           />
         </motion.div>
 
@@ -267,9 +267,9 @@ export default function ExplorePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border border-[#0284C7]/10 flex flex-col"
+                className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col"
               >
-                {/* Image Carousel (shared component) */}
+                {/* Image Carousel (shared component) with dual-layer blur */}
                 <ImageCarousel
                   images={w.images || []}
                   alt={w.name}
@@ -277,7 +277,7 @@ export default function ExplorePage() {
                 />
 
                 {/* Content */}
-                <div className="p-5 flex flex-col flex-1">
+                <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-white to-[#F8FAFC]/30">
                   <h3 className="font-heading text-lg font-semibold text-[#1E293B]">
                     {w.name}
                   </h3>
@@ -303,7 +303,7 @@ export default function ExplorePage() {
 
                   <button
                     onClick={() => router.push(`/warehouses/${w._id}`)}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1E293B] text-white text-sm font-body font-medium rounded-full hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10 hover:shadow-md"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-body font-medium rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                   >
                     <Eye size={15} />
                     View Details & Shelves

@@ -175,7 +175,7 @@ export default function InboundDetailPage() {
           </p>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
           >
             <ArrowLeft size={16} />
             Go Back
@@ -226,7 +226,7 @@ export default function InboundDetailPage() {
               </div>
             </div>
             <span
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-body font-medium border shrink-0 ${statusBadgeClasses(plan.status)}`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border shrink-0 ${statusBadgeClasses(plan.status)}`}
             >
               {statusIcon(plan.status)}
               {plan.status === "in-transit"
@@ -375,7 +375,7 @@ export default function InboundDetailPage() {
                     </div>
                     <div>
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-body font-medium border ${statusBadgeClasses(carton.status)}`}
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${statusBadgeClasses(carton.status)}`}
                       >
                         {statusIcon(carton.status)}
                         {carton.status === "in-transit"

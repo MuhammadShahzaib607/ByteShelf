@@ -194,7 +194,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
               {/* Continue button */}
               <button
                 onClick={() => setStep("confirm")}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm active:scale-[0.98]"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
               >
                 Continue
                 <ArrowRight size={16} />
@@ -270,7 +270,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                   <button
                     onClick={handleConfirm}
                     disabled={isSubmitting}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm disabled:opacity-60 active:scale-[0.98]"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60"
                   >
                     {isSubmitting ? (
                       <>

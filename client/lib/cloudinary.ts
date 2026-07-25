@@ -16,7 +16,7 @@ export interface UploadResult {
   public_id: string;
 }
 
-// ─── Upload a single file to Cloudinary ─────────────────────────────────────────
+// ─── Upload a single image to Cloudinary ───────────────────────────────────────
 
 export async function uploadToCloudinary(
   file: File
@@ -46,6 +46,36 @@ export async function uploadToCloudinary(
     const errBody = await res.json().catch(() => ({}));
     throw new Error(
       (errBody as any).error?.message || "Cloudinary upload failed."
+    );
+  }
+
+  const data = await res.json();
+  return {
+    url: data.url,
+    secure_url: data.secure_url,
+    public_id: data.public_id,
+  };
+}
+
+// ─── Upload a video to Cloudinary (uses /video/upload endpoint) ────────────────
+
+export async function uploadVideoToCloudinary(
+  file: File | Blob
+): Promise<UploadResult> {
+  const formData = new FormData();
+  const filename = file instanceof File ? file.name : "kyc-video.webm";
+  formData.append("file", file, filename);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
+    { method: "POST", body: formData }
+  );
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(
+      (errBody as any).error?.message || "Cloudinary video upload failed."
     );
   }
 

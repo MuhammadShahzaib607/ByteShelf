@@ -153,7 +153,7 @@ function WarehouseCard({ warehouse }: { warehouse: WarehouseData }) {
 
         <Link
           href={`/warehouse/${warehouse._id}`}
-          className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1E293B] text-white text-sm font-body font-medium rounded-full hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10 hover:shadow-md"
+          className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-body font-medium rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
         >
           View Details & Book
           <ArrowRight size={15} />
@@ -330,15 +330,15 @@ export default function Home() {
           </div>
 
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            {/* Badge */}
+            {/* Badge — enhanced glass chip */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1E293B]/5 border border-[#1E293B]/10 text-[#1E293B]/70 text-sm font-body mb-8"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm font-body mb-8 shadow-sm"
             >
-              <CheckCircle size={14} />
-              Trusted by 500+ warehouse owners
+              <CheckCircle size={14} className="text-[#0284C7]" />
+              <span className="text-[#1E293B]/70">Trusted by 500+ warehouse owners</span>
             </motion.div>
 
             {/* Headline */}
@@ -374,14 +374,14 @@ export default function Home() {
             >
               <button
                 onClick={() => scrollTo(SECTION_IDS.warehouses)}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#1E293B] text-white rounded-full font-body font-medium text-base hover:bg-[#0284C7] transition-all duration-300 shadow-md shadow-slate-900/10 hover:shadow-lg active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-base hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
               >
                 Explore Shelves
                 <ArrowRight size={18} />
               </button>
               {/* <Link
                 href="/warehouses/add"
-                className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#1E293B] text-[#1E293B] rounded-full font-body font-medium text-base hover:bg-[#1E293B]/5 transition-all duration-300 active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-slate-300 text-slate-700 rounded-full font-body font-medium text-base hover:bg-slate-50 active:scale-95 transition-all duration-200"
               >
                 List Your Space
               </Link> */}
@@ -404,10 +404,10 @@ export default function Home() {
                   key={i}
                   variants={fadeUp}
                   custom={i}
-                  className="group bg-white rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border border-[#0284C7]/10"
+                  className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl p-6 sm:p-8"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-[#F8FAFC] flex items-center justify-center mb-5 group-hover:bg-[#1E293B]/5 transition-colors">
-                    <prop.icon size={22} className="text-[#0284C7]" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F8FAFC] to-white flex items-center justify-center mb-5 group-hover:bg-[#1E293B]/5 transition-colors shadow-sm shadow-slate-900/5">
+                    <prop.icon size={22} className="text-[#0284C7] group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-3">
                     {prop.title}
@@ -431,6 +431,10 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="text-center mb-12"
             >
+              <div className="section-badge inline-flex mx-auto mb-4">
+                <Warehouse size={12} />
+                Verified Warehouses
+              </div>
               <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B]">
                 Featured Micro-Warehouses
               </h2>
@@ -466,7 +470,7 @@ export default function Home() {
                 </p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                 >
                   Get Started Free
                   <ArrowRight size={16} />
@@ -507,7 +511,7 @@ export default function Home() {
                 </p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                 >
                   List Your Warehouse
                   <ArrowRight size={16} />
@@ -527,6 +531,10 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="text-center mb-12"
             >
+              <div className="section-badge inline-flex mx-auto mb-4">
+                <Layers size={12} />
+                Smart Micro-Storage
+              </div>
               <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B]">
                 How It Works
               </h2>
@@ -684,9 +692,13 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="bg-[#1E293B] rounded-3xl p-8 sm:p-12 md:p-16 shadow-xl shadow-slate-900/20"
+              className="bg-gradient-to-br from-[#1E293B] to-slate-800 rounded-3xl p-8 sm:p-12 md:p-16 shadow-2xl shadow-slate-900/30 border border-white/5"
             >
               <div className="text-center mb-10">
+                <div className="section-badge inline-flex mx-auto mb-4 text-white/60 bg-white/5 border-white/10">
+                  <TrendingUp size={12} />
+                  Platform Metrics
+                </div>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white">
                   ByteShelf by the Numbers
                 </h2>
@@ -705,9 +717,9 @@ export default function Home() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.4 }}
-                      className="text-center"
+                      className="text-center group"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mx-auto mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-all duration-300">
                         <IconComponent size={22} className="text-[#F8FAFC]" />
                       </div>
                       <div className="font-heading text-2xl sm:text-3xl font-bold text-white">
@@ -734,6 +746,10 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="text-center mb-12"
             >
+              <div className="section-badge inline-flex mx-auto mb-4">
+                <MessageCircle size={12} />
+                Got Questions?
+              </div>
               <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B]">
                 Frequently Asked Questions
               </h2>
@@ -770,8 +786,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="bg-gradient-to-br from-[#F8FAFC] to-white rounded-3xl p-8 sm:p-12 text-center shadow-sm border border-[#0284C7]/10"
+              className="bg-gradient-to-br from-[#F8FAFC] via-white to-[#F8FAFC] rounded-3xl p-8 sm:p-12 text-center shadow-lg border border-[#0284C7]/15"
             >
+              <div className="section-badge inline-flex mx-auto mb-4 border-[#0284C7]/15 text-[#0284C7]">
+                <LayoutDashboard size={12} />
+                Get Started Today
+              </div>
               <h2 className="font-heading text-2xl sm:text-3xl font-bold text-[#1E293B]">
                 Ready to streamline your storage?
               </h2>
@@ -783,7 +803,7 @@ export default function Home() {
                 {isLoggedIn ? (
                   <Link
                     href="/explore"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#1E293B] text-white rounded-full font-body font-medium text-base hover:bg-[#0284C7] transition-all duration-300 shadow-md shadow-slate-900/10 hover:shadow-lg"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-base hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                   >
                     <LayoutDashboard size={18} />
                     Explore Warehouses
@@ -793,14 +813,14 @@ export default function Home() {
                   <>
                     <Link
                       href="/signup"
-                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#1E293B] text-white rounded-full font-body font-medium text-base hover:bg-[#0284C7] transition-all duration-300 shadow-md shadow-slate-900/10 hover:shadow-lg"
+                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-base hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                     >
                       Create Free Account
                       <ArrowRight size={18} />
                     </Link>
                     <Link
                       href="/login"
-                      className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#0284C7]/30 text-[#0284C7] rounded-full font-body font-medium text-base hover:bg-[#0284C7]/5 transition-all duration-300"
+                      className="inline-flex items-center gap-2 px-8 py-3.5 border border-slate-200 text-slate-700 rounded-full font-body font-medium text-base hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all duration-200"
                     >
                       Sign In
                     </Link>

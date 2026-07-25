@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+const kycDocumentsSchema = new mongoose.Schema({
+  nicFront: { type: String, required: true },
+  nicBack: { type: String, required: true },
+  livePhoto: { type: String, required: true },
+  liveVideo: { type: String, required: true },
+}, { _id: false });
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -24,12 +31,29 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["merchant", "warehouseOwner", "worker"],
+      enum: ["merchant", "warehouseOwner", "worker", "admin"],
       required: true,
     },
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    rejectionReason: {
+      type: String,
+      default: "",
+    },
+    kycDocuments: {
+      type: kycDocumentsSchema,
+      required: false,
     },
     otp: {
       type: String,

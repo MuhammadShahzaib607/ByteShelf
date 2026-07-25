@@ -165,7 +165,7 @@ export default function MyWarehousesPage() {
           </div>
           <Link
             href="/warehouses/add"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
           >
             <Plus size={16} />
             Add Warehouse
@@ -241,7 +241,7 @@ export default function MyWarehousesPage() {
             </p>
             <Link
               href="/warehouses/add"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
             >
               <Plus size={16} />
               Add Your First Warehouse
@@ -269,11 +269,11 @@ export default function MyWarehousesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border border-[#0284C7]/10 flex flex-col"
+                className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col"
               >
                 <WarehouseImage images={w.images} name={w.name} />
 
-                <div className="p-5 flex flex-col flex-1">
+                <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-white to-[#F8FAFC]/30">
                   <h3 className="font-heading text-lg font-semibold text-[#1E293B]">
                     {w.name}
                   </h3>
@@ -308,7 +308,7 @@ export default function MyWarehousesPage() {
                     </button>
                     <Link
                       href={`/warehouses/${w._id}/edit`}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1E293B] text-white rounded-full text-xs font-body font-medium hover:bg-[#0284C7] transition-all duration-300"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-900 text-white rounded-full text-xs font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                     >
                       <Edit3 size={14} />
                       Edit
