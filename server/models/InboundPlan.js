@@ -26,6 +26,10 @@ const inboundPlanSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    receivedCount: {
+      type: Number,
+      default: 0,
+    },
     expectedDate: {
       type: Date,
       required: true,

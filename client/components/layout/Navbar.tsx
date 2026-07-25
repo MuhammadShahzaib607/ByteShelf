@@ -19,6 +19,7 @@ import {
   Info,
   Mail,
   Bell,
+  Scan,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout as logoutAction } from "@/redux/slices/authSlice";
@@ -254,6 +255,14 @@ const Navbar: React.FC = () => {
     );
   }
 
+  // Worker-only links
+  const workerLinks: { href: string; label: string }[] = [];
+  if (role === "worker") {
+    workerLinks.push(
+      { href: "/worker/scan", label: "Scan Cartons" }
+    );
+  }
+
   // ─── Show nothing while checking auth (prevent flash) ────────────────────
   if (isCheckingAuth) {
     return (
@@ -306,6 +315,9 @@ const Navbar: React.FC = () => {
             ))}
             {roleLinks.map((link) => (
               <NavLink key={`role-${link.href}`} href={link.href} label={link.label} />
+            ))}
+            {workerLinks.map((link) => (
+              <NavLink key={`worker-${link.href}`} href={link.href} label={link.label} />
             ))}
           </div>
         ) : (
@@ -452,6 +464,17 @@ const Navbar: React.FC = () => {
                     >
                       <CalendarDays size={16} />
                       My Bookings
+                    </Link>
+                  )}
+
+                  {role === "worker" && (
+                    <Link
+                      href="/worker/scan"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                    >
+                      <Scan size={16} />
+                      Scan Cartons
                     </Link>
                   )}
 

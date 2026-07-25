@@ -22,6 +22,9 @@ export const scanCarton = async (req, res) => {
     carton.status = "arrived";
     await carton.save();
 
+    // Increment received count on the InboundPlan
+    await InboundPlan.findByIdAndUpdate(carton.inboundPlan, { $inc: { receivedCount: 1 } });
+
     const remaining = await Carton.countDocuments({ inboundPlan: carton.inboundPlan, status: "in-transit" });
 
     if (remaining === 0) {
