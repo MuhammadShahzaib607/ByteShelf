@@ -273,7 +273,7 @@ export default function AddWarehousePage() {
             {/* Location (Address) */}
             <Input
               label="Address / Area"
-              placeholder="e.g. 123 Business Ave, Mumbai"
+              placeholder="e.g. Gulistane-e-Johar, Karachi"
               icon={MapPin}
               value={location}
               onChange={(e) => setLocation(e.target.value)}

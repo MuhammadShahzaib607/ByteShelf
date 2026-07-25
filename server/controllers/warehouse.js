@@ -88,7 +88,18 @@ export const editWarehouse = async (req, res) => {
     if (location) warehouse.location = location.trim();
     if (latitude) warehouse.latitude = latitude;
     if (longitude) warehouse.longitude = longitude;
-    if (pricePerShelf) warehouse.pricePerShelf = pricePerShelf;
+ 
+    // ─── Price update with shelf sync ──────────────────────────────────────
+    if (pricePerShelf) {
+      warehouse.pricePerShelf = pricePerShelf;
+ 
+      // Sync new price to all available shelves for this warehouse
+      // CRITICAL: Do NOT update prices for booked/occupied shelves
+      await Shelf.updateMany(
+        { warehouse: warehouseId, status: "available" },
+        { $set: { pricePerMonth: pricePerShelf } }
+      );
+    }
  
     await warehouse.save();
  

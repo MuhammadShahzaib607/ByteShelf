@@ -307,7 +307,7 @@ export default function MyWarehousesPage() {
                       View Details
                     </button>
                     <Link
-                      href={`/warehouses/edit/${w._id}`}
+                      href={`/warehouses/${w._id}/edit`}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1E293B] text-white rounded-full text-xs font-body font-medium hover:bg-[#0284C7] transition-all duration-300"
                     >
                       <Edit3 size={14} />

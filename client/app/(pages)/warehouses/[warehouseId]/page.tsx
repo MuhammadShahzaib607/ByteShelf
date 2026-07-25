@@ -153,6 +153,11 @@ export default function WarehouseDetailPage() {
   const [isAddingShelves, setIsAddingShelves] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
+  // ─── Derived values ────────────────────────────────────────────────────────
+  const isMerchantOrWorker = role === "merchant" || role === "worker";
+  const w = detail?.warehouse;
+  const isOwnWarehouse = user?.id && w?.owner && user.id === w.owner;
+
   // ─── Auth guard ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (isCheckingAuth) return;
@@ -179,15 +184,21 @@ export default function WarehouseDetailPage() {
     return () => { cancelled = true; };
   }, [accessToken, warehouseId]);
 
-  // ─── Fetch available shelves ─────────────────────────────────────────────
+  // ─── Fetch shelves (owners see all; merchants only see available) ──────
   useEffect(() => {
     if (!accessToken || !warehouseId) return;
     let cancelled = false;
     const fetchShelvesData = async () => {
       try {
-        const res = await api.get(`/shelf/warehouse/${warehouseId}/available`);
+        // Owners fetch all shelves (including booked) for proper management;
+        // Merchants/workers only see available shelves for booking
+        const endpoint = isOwnWarehouse
+          ? `/shelf/warehouse/${warehouseId}`
+          : `/shelf/warehouse/${warehouseId}/available`;
+        const res = await api.get(endpoint);
         if (!cancelled) {
-          setShelves(res.data.data?.shelves || res.data.data || []);
+          const shelvesData = res.data.data?.shelves || res.data.data || [];
+          setShelves(shelvesData);
         }
       } catch {
         // handled
@@ -197,7 +208,7 @@ export default function WarehouseDetailPage() {
     };
     fetchShelvesData();
     return () => { cancelled = true; };
-  }, [accessToken, warehouseId]);
+  }, [accessToken, warehouseId, isOwnWarehouse]);
 
   // ─── Toggle shelf selection ───────────────────────────────────────────────
   const toggleShelf = useCallback((shelfId: string) => {
@@ -265,14 +276,6 @@ export default function WarehouseDetailPage() {
       setIsAddingShelves(false);
     }
   }, [warehouseId, addCount]);
-
-  const isMerchantOrWorker = role === "merchant" || role === "worker";
-  const isOwner = role === "warehouseOwner";
-
-  const w = detail?.warehouse;
-
-  // Check if this warehouse belongs to the current user
-  const isOwnWarehouse = user?.id && w?.owner && user.id === w.owner;
 
   // ─── Fetch warehouse bookings (owner only) ───────────────────────────────
   useEffect(() => {
@@ -958,7 +961,7 @@ export default function WarehouseDetailPage() {
                 </button>
               </div>
             )}
-            {isOwner && (
+            {isOwnWarehouse && (
               <button
                 onClick={() => setShowAddShelves(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E293B] text-white rounded-full text-xs font-body font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm"
@@ -987,8 +990,8 @@ export default function WarehouseDetailPage() {
             </div>
           )}
 
-          {/* Add Shelves (Owner) */}
-          {isOwner && showAddShelves && (
+          {/* Add Shelves (Owner only) */}
+          {isOwnWarehouse && showAddShelves && (
             <div className="mb-6 p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
               <h3 className="text-sm font-semibold text-[#1E293B] font-body mb-3">
                 Add New Shelves
@@ -1025,8 +1028,8 @@ export default function WarehouseDetailPage() {
             </div>
           )}
 
-          {/* Filter Tabs */}
-          {!shelvesLoading && shelves.length > 0 && (
+          {/* Filter Tabs (Owner only) */}
+          {isOwnWarehouse && !shelvesLoading && shelves.length > 0 && (
             <div className="flex items-center gap-1.5 mb-5">
               {["all", "available", "booked"].map((tab) => {
                 const isActive = shelfFilter === tab;
@@ -1146,13 +1149,13 @@ export default function WarehouseDetailPage() {
                 })}
               </div>
 
-              {/* Selection summary */}
-              {isMerchantOrWorker && filteredShelves.length > 0 && (
+              {/* Selection / summary */}
+              {filteredShelves.length > 0 && (
                 <div className="flex items-center justify-between mt-4 px-1 text-xs text-[#0F172A]/40 font-body">
                   <span>
                     Showing {filteredShelves.length} of {shelves.length} shelf{filteredShelves.length !== 1 ? "s" : ""}
                   </span>
-                  {selectedCount > 0 && (
+                  {isMerchantOrWorker && selectedCount > 0 && (
                     <span className="font-medium text-[#0284C7]">
                       {selectedCount} selected
                     </span>
