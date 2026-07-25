@@ -56,6 +56,22 @@ interface ShelfData {
   status: "available" | "booked";
 }
 
+interface BookedShelfData extends ShelfData {
+  currentBooking?: {
+    _id: string;
+    merchant: {
+      _id: string;
+      name: string;
+      phone?: string;
+      email?: string;
+    };
+    startDate: string;
+    endDate: string;
+    status: string;
+    paymentStatus: string;
+  };
+}
+
 interface WarehouseBooking {
   _id: string;
   merchant: { _id: string; name: string; phone: string; email: string };
@@ -139,6 +155,10 @@ export default function WarehouseDetailPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // ─── Booked shelves with tenant info (for owner's Booked tab) ────────────
+  const [bookedShelves, setBookedShelves] = useState<BookedShelfData[]>([]);
+  const [bookedShelvesLoading, setBookedShelvesLoading] = useState(false);
 
   // ─── Shelf filter state ───────────────────────────────────────────────────
   const [shelfFilter, setShelfFilter] = useState<"all" | "available" | "booked">("all");
@@ -278,6 +298,31 @@ export default function WarehouseDetailPage() {
       setIsAddingShelves(false);
     }
   }, [warehouseId, addCount]);
+
+  // ─── Fetch booked shelves with tenant info (owner's Booked tab) ──────────
+  useEffect(() => {
+    if (!accessToken || !warehouseId || !isOwnWarehouse || shelfFilter !== "booked") {
+      setBookedShelves([]);
+      setBookedShelvesLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const fetchBookedShelves = async () => {
+      setBookedShelvesLoading(true);
+      try {
+        const res = await api.get(`/shelf/${warehouseId}/booked`);
+        if (!cancelled) {
+          setBookedShelves(res.data.data || []);
+        }
+      } catch {
+        if (!cancelled) setBookedShelves([]);
+      } finally {
+        if (!cancelled) setBookedShelvesLoading(false);
+      }
+    };
+    fetchBookedShelves();
+    return () => { cancelled = true; };
+  }, [accessToken, warehouseId, isOwnWarehouse, shelfFilter]);
 
   // ─── Fetch warehouse bookings (owner only) ───────────────────────────────
   useEffect(() => {
@@ -1057,17 +1102,93 @@ export default function WarehouseDetailPage() {
           )}
 
           {/* Shelf List / Table View */}
-          {shelvesLoading ? (
+          {shelvesLoading || (isOwnWarehouse && shelfFilter === "booked" && bookedShelvesLoading) ? (
             <div className="flex justify-center py-12">
               <Loader2 size={24} className="animate-spin text-[#0284C7]" />
             </div>
-          ) : shelves.length === 0 ? (
+          ) : shelves.length === 0 && !(isOwnWarehouse && shelfFilter === "booked") ? (
             <div className="text-center py-12">
               <Layers size={32} className="mx-auto text-[#0284C7]/30 mb-3" />
               <p className="text-sm text-[#0F172A]/50 font-body">
                 No shelves available at this warehouse.
               </p>
             </div>
+          ) : isOwnWarehouse && shelfFilter === "booked" ? (
+            <>
+              {/* Booked Shelves Table Header */}
+              <div className="hidden sm:grid grid-cols-[1fr_100px_1.5fr_120px] gap-3 px-4 py-2.5 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
+                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Shelf</span>
+                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Status</span>
+                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Rate / Month</span>
+                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body text-center">Tenant</span>
+              </div>
+
+              <div className="space-y-1">
+                {bookedShelves.length === 0 ? (
+                  <div className="text-center py-10">
+                    <Layers size={24} className="mx-auto text-[#0284C7]/30 mb-2" />
+                    <p className="text-xs text-[#0F172A]/50 font-body">No booked shelves found.</p>
+                  </div>
+                ) : (
+                  bookedShelves.map((shelf) => {
+                    const booking = shelf.currentBooking;
+                    const merchant = booking?.merchant;
+
+                    return (
+                      <div
+                        key={shelf._id}
+                        className="grid grid-cols-[1fr_100px_1.5fr_120px] gap-3 items-center px-4 py-3 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]/40 transition-all duration-200"
+                      >
+                        {/* Shelf Number */}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
+                            <Layers size={14} className="text-amber-600" />
+                          </div>
+                          <span className="font-semibold text-sm text-[#1E293B] font-body truncate">
+                            Shelf #{shelf.shelfNumber}
+                          </span>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-body font-medium border bg-amber-50 border-amber-200 text-amber-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            Booked
+                          </span>
+                        </div>
+
+                        {/* Rate */}
+                        <div className="text-sm font-semibold text-[#1E293B] font-body numeric">
+                          Rs. {(shelf?.pricePerMonth ?? 0).toLocaleString("en-PK")}/mo
+                        </div>
+
+                        {/* Tenant Info */}
+                        <div className="text-center">
+                          {merchant ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0">
+                                <User size={10} className="text-white" />
+                              </div>
+                              <span className="text-xs font-medium text-[#1E293B] font-body truncate max-w-[80px] block">
+                                {merchant.name || "Unknown"}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[#0F172A]/40 font-body">—</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {bookedShelves.length > 0 && (
+                <div className="flex items-center justify-between mt-4 px-1 text-xs text-[#0F172A]/40 font-body">
+                  <span>{bookedShelves.length} booked shelf{bookedShelves.length !== 1 ? "s" : ""}</span>
+                </div>
+              )}
+            </>
           ) : (
             <>
               {/* Table Header */}

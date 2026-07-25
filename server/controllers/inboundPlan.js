@@ -105,9 +105,17 @@ export const getInboundPlanDetails = async (req, res) => {
   try {
     const { inboundPlanId } = req.params;
 
-    const plan = await InboundPlan.findOne({ _id: inboundPlanId, merchant: req.user.id });
+    const plan = await InboundPlan.findById(inboundPlanId).populate("warehouse");
     if (!plan) {
       return sendRes(res, 404, false, "Inbound plan not found");
+    }
+
+    // Allow if user is the merchant who created the plan OR the warehouse owner
+    const isMerchant = plan.merchant.toString() === req.user.id;
+    const isOwner = plan.warehouse && plan.warehouse.owner.toString() === req.user.id;
+
+    if (!isMerchant && !isOwner) {
+      return sendRes(res, 403, false, "Unauthorized to view this inbound plan");
     }
 
     const cartons = await Carton.find({ inboundPlan: inboundPlanId }).sort({ createdAt: 1 });

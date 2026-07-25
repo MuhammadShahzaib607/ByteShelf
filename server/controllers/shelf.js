@@ -90,6 +90,26 @@ export const deleteShelves = async (req, res) => {
   }
 };
 
+export const getBookedShelvesByWarehouse = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+
+    const shelves = await Shelf.find({ warehouse: warehouseId, status: "booked" })
+      .populate({
+        path: "currentBooking",
+        populate: {
+          path: "merchant",
+          select: "name email phone",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    return sendRes(res, 200, true, "Booked shelves fetched successfully", shelves);
+  } catch (error) {
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
 export const getAvailableShelves = async (req, res) => {
   try {
     const { warehouseId } = req.params;

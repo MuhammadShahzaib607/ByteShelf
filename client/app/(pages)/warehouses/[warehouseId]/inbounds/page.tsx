@@ -233,7 +233,7 @@ export default function WarehouseInboundsPage() {
                 {batches.map((batch) => (
                   <div
                     key={batch._id}
-                    onClick={() => router.push(`/my-bookings/${batch.booking}/inbound-plan/${batch._id}`)}
+                    onClick={() => router.push(`/inbounds/${batch._id}`)}
                     className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr_0.5fr] gap-2 md:gap-3 items-center px-4 py-3.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]/30 hover:border-[#0284C7]/30 transition-all duration-200 cursor-pointer"
                   >
                     {/* Batch Name */}
