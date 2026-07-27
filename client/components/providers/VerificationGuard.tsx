@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -10,9 +10,13 @@ import {
   AlertCircle,
   Loader2,
   XCircle,
+  Copy,
+  Check,
+  MessageCircle,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout } from "@/redux/slices/authSlice";
+import api from "@/lib/axios";
 
 // ─── Pending Overlay ────────────────────────────────────────────────────────────
 
@@ -20,6 +24,7 @@ function PendingOverlay({ email, userId }: { email: string | null; userId: strin
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -46,6 +51,35 @@ function PendingOverlay({ email, userId }: { email: string | null; userId: strin
     }
     router.push("/login");
   };
+
+  const handleChatWithAdmin = useCallback(async () => {
+    setChatLoading(true);
+    try {
+      // 1. Fetch first admin user
+      const adminRes = await api.get("/admin/contact");
+      const admin = adminRes.data?.data;
+      if (!admin?._id) throw new Error("No admin found");
+
+      // 2. Start a conversation with the admin
+      const convRes = await api.post("/conversation/start", {
+        participantId: admin._id,
+      });
+      const conversation = convRes.data?.data || convRes.data;
+      const conversationId = conversation?._id || conversation?.id;
+
+      if (conversationId) {
+        router.push(`/messages?conversationId=${conversationId}`);
+      } else {
+        // If no conversation ID, just go to messages
+        router.push("/messages");
+      }
+    } catch (err: any) {
+      // Fallback: navigate to messages page anyway
+      router.push("/messages");
+    } finally {
+      setChatLoading(false);
+    }
+  }, [router]);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#FAFAFA]">
@@ -87,27 +121,28 @@ function PendingOverlay({ email, userId }: { email: string | null; userId: strin
             </div>
           )}
 
-          {/* User ID with copy */}
+          {/* User ID with copy — inline layout */}
           {userId && (
             <div className="w-full">
               <div className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3">
-                <div className="min-w-0 flex-1 mr-2">
-                  <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider block font-body">
-                    User ID
+                <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+                  <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider whitespace-nowrap font-body">
+                    USER ID:
                   </span>
-                  <code className="text-xs font-mono text-[#0F172A]/70 font-medium break-all block">
+                  <code className="text-xs font-mono text-[#0F172A]/70 font-medium break-all">
                     {userId}
                   </code>
                 </div>
                 <button
                   onClick={handleCopy}
-                  className={`px-3 py-1.5 text-xs font-body font-medium rounded-lg border transition-all duration-200 shrink-0 ${
+                  title="Copy User ID"
+                  className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${
                     copied
-                      ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                      : "bg-white border-slate-200 text-[#0F172A]/60 hover:bg-slate-50 hover:text-[#0F172A] hover:shadow-sm"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-600"
+                      : "bg-white border-slate-200 text-[#0F172A]/40 hover:text-[#0F172A]/70 hover:bg-slate-100 hover:border-slate-300"
                   }`}
                 >
-                  {copied ? "Copied!" : "Copy ID"}
+                  {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
                 </button>
               </div>
               <p className="text-[11px] text-[#0F172A]/40 font-body mt-2 text-center">
@@ -117,10 +152,24 @@ function PendingOverlay({ email, userId }: { email: string | null; userId: strin
             </div>
           )}
 
+          {/* Chat with Admin */}
+          <button
+            onClick={handleChatWithAdmin}
+            disabled={chatLoading}
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#0284C7] text-white rounded-full text-sm font-body font-medium hover:bg-[#0284C7]/90 hover:shadow-lg hover:shadow-[#0284C7]/20 active:scale-95 transition-all duration-200 disabled:opacity-60"
+          >
+            {chatLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <MessageCircle size={16} />
+            )}
+            {chatLoading ? "Connecting..." : "Chat with Admin"}
+          </button>
+
           {/* Only action: Logout */}
           <button
             onClick={handleLogout}
-            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 border border-slate-200 text-slate-700 rounded-full text-sm font-body font-medium hover:bg-slate-50 active:scale-95 transition-all duration-200"
           >
             <LogOut size={16} />
             Logout
@@ -224,6 +273,7 @@ export default function VerificationGuard({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const { user, isCheckingAuth, accessToken } = useAppSelector(
     (state) => state.auth
   );
@@ -253,8 +303,13 @@ export default function VerificationGuard({
     return <>{children}</>;
   }
 
-  // ─── Pending users — show blocking overlay ──────────────────────────────
+  // ─── Pending users ──────────────────────────────────────────────────────
   if (user.verificationStatus === "pending") {
+    // Allow ONLY /messages route with a simplified layout
+    if (pathname === "/messages") {
+      return <>{children}</>;
+    }
+    // All other routes → blocking overlay
     return <PendingOverlay email={user.email} userId={user.id} />;
   }
 

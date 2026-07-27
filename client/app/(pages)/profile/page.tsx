@@ -15,6 +15,8 @@ import {
   Store,
   Warehouse,
   HardHat,
+  Copy,
+  Check,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -46,7 +48,6 @@ function CopyButton({ value }: { value: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const ta = document.createElement("textarea");
       ta.value = value;
       document.body.appendChild(ta);
@@ -61,13 +62,14 @@ function CopyButton({ value }: { value: string }) {
   return (
     <button
       onClick={handleCopy}
-      className={`px-3 py-1.5 text-xs font-body font-medium rounded-lg border transition-all duration-200 shrink-0 ${
+      title="Copy User ID"
+      className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${
         copied
-          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-          : "bg-white border-slate-200 text-[#0F172A]/60 hover:bg-slate-50 hover:text-[#0F172A] hover:shadow-sm"
+          ? "bg-emerald-50 border-emerald-200 text-emerald-600"
+          : "bg-white border-slate-200 text-[#0F172A]/40 hover:text-[#0F172A]/70 hover:bg-slate-100 hover:border-slate-300"
       }`}
     >
-      {copied ? "Copied!" : "Copy ID"}
+      {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
     </button>
   );
 }
@@ -330,9 +332,9 @@ export default function ProfilePage() {
               transition={{ duration: 0.4, delay: 0.15 }}
               className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3 md:p-4 -mt-2 mb-8"
             >
-              <div>
-                <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider block font-body">
-                  User ID
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider whitespace-nowrap font-body">
+                  USER ID:
                 </span>
                 <code className="text-xs md:text-sm font-mono text-[#0F172A]/70 font-medium break-all">
                   {user._id || user.id || "—"}

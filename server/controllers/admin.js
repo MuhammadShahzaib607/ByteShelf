@@ -1,6 +1,20 @@
 import User from "../models/User.js";
 import { sendRes } from "../utils/responseHandler.js";
 
+// ─── GET /api/v1/admin/contact ──────────────────────────────────────────────────
+// Returns the first admin user's _id so pending users can start a conversation
+export const getAdminContact = async (req, res) => {
+  try {
+    const admin = await User.findOne({ isAdmin: true }).select("_id name email");
+    if (!admin) {
+      return sendRes(res, 404, false, "No admin user found");
+    }
+    return sendRes(res, 200, true, "Admin found", { _id: admin._id, name: admin.name, email: admin.email });
+  } catch (error) {
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
 // ─── GET /api/v1/admin/verifications ───────────────────────────────────────────
 // Query params: status=all|pending|approved|rejected (default: pending), search=query
 export const getVerifications = async (req, res) => {
