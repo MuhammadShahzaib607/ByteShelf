@@ -6,7 +6,7 @@ export const verifyAdmin = (req, res, next) => {
     return sendRes(res, 401, false, "Authentication required");
   }
 
-  if (req.user.role !== "admin") {
+  if (!req.user?.isAdmin && req.user?.role !== "admin") {
     return sendRes(res, 403, false, "Admin access required");
   }
 

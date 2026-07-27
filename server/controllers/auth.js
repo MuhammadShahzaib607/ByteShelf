@@ -170,11 +170,11 @@ export const login = async (req, res) => {
       return sendRes(res, 401, false, "Invalid credentials");
     }
 
-    const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_ACCESS_SECRET, {
+    const accessToken = jwt.sign({ id: user._id, role: user.role, isAdmin: user.isAdmin }, process.env.JWT_ACCESS_SECRET, {
       expiresIn: "15m",
     });
 
-    const refreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_REFRESH_SECRET, {
+    const refreshToken = jwt.sign({ id: user._id, role: user.role, isAdmin: user.isAdmin }, process.env.JWT_REFRESH_SECRET, {
       expiresIn: "7d",
     });
 
@@ -204,7 +204,11 @@ export const refreshToken = async (req, res) => {
       return sendRes(res, 401, false, "Invalid refresh token");
     }
 
-    const accessToken = jwt.sign({ id: decoded.id, role: decoded.role }, process.env.JWT_ACCESS_SECRET, {
+    // Fetch user from DB to get isAdmin (refresh token may not have it for older sessions)
+    const refreshUser = await User.findById(decoded.id).select("isAdmin");
+    const isAdmin = refreshUser ? refreshUser.isAdmin : decoded.isAdmin || false;
+
+    const accessToken = jwt.sign({ id: decoded.id, role: decoded.role, isAdmin }, process.env.JWT_ACCESS_SECRET, {
       expiresIn: "30d",
     });
 

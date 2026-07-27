@@ -11,6 +11,7 @@ interface User {
   name: string | null;
   verificationStatus?: string | null;
   isVerified?: boolean;
+  isAdmin?: boolean;
 }
 
 interface AuthState {
@@ -266,6 +267,7 @@ const authSlice = createSlice({
           name: profile.name || null,
           verificationStatus: profile.verificationStatus || null,
           isVerified: profile.isVerified || false,
+          isAdmin: profile.isAdmin || false,
         };
       });
   },

@@ -65,10 +65,20 @@ export default function AdminVerificationsPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   // ─── Auth guard ──────────────────────────────────────────────────────────
+  // Wait for Redux hydration (isCheckingAuth) AND user object to load before
+  // checking admin status — prevents redirect to /explore on refresh.
   useEffect(() => {
     if (isCheckingAuth) return;
-    if (!accessToken) router.replace("/login");
-    else if (user?.role !== "admin") router.replace("/explore");
+
+    if (!accessToken) {
+      router.replace("/login");
+      return;
+    }
+
+    // Only redirect if user is fully loaded AND is not an admin
+    if (user && !user.isAdmin && user.role !== "admin") {
+      router.replace("/explore");
+    }
   }, [accessToken, user, isCheckingAuth, router]);
 
   // ─── Fetch pending verifications ─────────────────────────────────────────
@@ -86,7 +96,9 @@ export default function AdminVerificationsPage() {
   }, []);
 
   useEffect(() => {
-    if (!accessToken || user?.role !== "admin") return;
+    // Wait for user to be fully loaded before deciding to fetch
+    if (!accessToken || !user) return;
+    if (!user.isAdmin && user.role !== "admin") return;
     fetchPending();
   }, [accessToken, user, fetchPending]);
 

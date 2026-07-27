@@ -20,6 +20,7 @@ import {
   Mail,
   Bell,
   Scan,
+  ShieldCheck,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout as logoutAction } from "@/redux/slices/authSlice";
@@ -70,10 +71,12 @@ function NavLink({
 function UserDropdown({
   userName,
   userRole,
+  isAdmin,
   onLogout,
 }: {
   userName: string;
   userRole: string;
+  isAdmin: boolean;
   onLogout: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -157,6 +160,17 @@ function UserDropdown({
                 <Compass size={16} />
                 Explore Warehouses
               </Link>
+
+              {(isAdmin || userRole === "admin") && (
+                <Link
+                  href="/admin/verifications"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                >
+                  <ShieldCheck size={16} />
+                  Verify Users
+                </Link>
+              )}
 
               <hr className="my-1 border-[#0284C7]/10" />
 
@@ -336,6 +350,7 @@ const Navbar: React.FC = () => {
               <UserDropdown
                 userName={user?.name || "User"}
                 userRole={role}
+                isAdmin={!!user?.isAdmin}
                 onLogout={handleLogout}
               />
             </>
@@ -475,6 +490,17 @@ const Navbar: React.FC = () => {
                     >
                       <Scan size={16} />
                       Scan Cartons
+                    </Link>
+                  )}
+
+                  {(user?.isAdmin || role === "admin") && (
+                    <Link
+                      href="/admin/verifications"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 rounded-xl transition-colors"
+                    >
+                      <ShieldCheck size={16} />
+                      Verify Users
                     </Link>
                   )}
 
