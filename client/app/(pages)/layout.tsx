@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Loader2, LogOut, Clock } from "lucide-react";
+import { Loader2, LogOut, Clock, ArrowLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout } from "@/redux/slices/authSlice";
 import Navbar from "@/components/layout/Navbar";
@@ -45,11 +45,15 @@ export default function PagesLayout({
     return (
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
         {/* Minimal top bar */}
-        <div className="sticky top-0 z-50 bg-white border-b border-slate-200/60 px-4 py-3 flex items-center justify-between">
+        <div className="shrink-0 bg-white border-b border-slate-200/60 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-[#1E293B] font-body">
-              Messages
-            </span>
+            <button
+              onClick={() => router.push("/")}
+              className="inline-flex items-center gap-1.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-slate-100 px-2 py-1 rounded-lg transition-all"
+            >
+              <ArrowLeft size={16} />
+              Back
+            </button>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold font-body">
               <Clock size={11} />
               Verification Pending
