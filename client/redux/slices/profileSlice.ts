@@ -4,6 +4,8 @@ import api from "@/lib/axios";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 export interface ProfileUser {
+  _id?: string;
+  id?: string;
   name: string;
   email: string;
   phone: string;

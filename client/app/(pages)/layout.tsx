@@ -7,7 +7,6 @@ import { useAppSelector } from "@/redux/hooks";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FloatingChatButton from "@/components/ui/FloatingChatButton";
-import VerificationGuard from "@/components/providers/VerificationGuard";
 
 export default function PagesLayout({
   children,
@@ -35,13 +34,11 @@ export default function PagesLayout({
   }
 
   return (
-    <VerificationGuard>
-      <div className="min-h-screen flex flex-col bg-white">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <FloatingChatButton />
-      </div>
-    </VerificationGuard>
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navbar />
+      <main className="flex-1">{children}</main>
+      <Footer />
+      <FloatingChatButton />
+    </div>
   );
 }

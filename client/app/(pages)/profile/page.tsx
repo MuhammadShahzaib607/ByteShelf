@@ -35,6 +35,43 @@ const roleOptions = [
   { value: "worker", label: "Worker", icon: HardHat },
 ];
 
+// ─── Copy Button ─────────────────────────────────────────────────────────────────
+
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const ta = document.createElement("textarea");
+      ta.value = value;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`px-3 py-1.5 text-xs font-body font-medium rounded-lg border transition-all duration-200 shrink-0 ${
+        copied
+          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+          : "bg-white border-slate-200 text-[#0F172A]/60 hover:bg-slate-50 hover:text-[#0F172A] hover:shadow-sm"
+      }`}
+    >
+      {copied ? "Copied!" : "Copy ID"}
+    </button>
+  );
+}
+
 // ─── Toast Component ────────────────────────────────────────────────────────────
 
 function Toast({
@@ -282,6 +319,26 @@ export default function ProfilePage() {
                     : "Worker"}
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* User ID row (below user card) */}
+          {user && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+              className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3 md:p-4 -mt-2 mb-8"
+            >
+              <div>
+                <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider block font-body">
+                  User ID
+                </span>
+                <code className="text-xs md:text-sm font-mono text-[#0F172A]/70 font-medium break-all">
+                  {user._id || user.id || "—"}
+                </code>
+              </div>
+              <CopyButton value={user._id || user.id || ""} />
             </motion.div>
           )}
 
