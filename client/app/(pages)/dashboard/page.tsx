@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -22,6 +21,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import Input from "@/components/ui/Input";
 import MapPicker from "@/components/ui/MapPicker";
 import ImageCarousel from "@/components/ui/ImageCarousel";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -216,9 +216,9 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function OverviewTab() {
-  const router = useRouter();
   const { accessToken } = useAppSelector((s) => s.auth);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
+  const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
   const [totalWh, setTotalWh] = useState(0);
   const [totalSh, setTotalSh] = useState(0);
   const [whLoading, setWhLoading] = useState(true);
@@ -229,6 +229,18 @@ function OverviewTab() {
 
   useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/warehouse/my-warehouses"); const d = r.data.data; if (!c) { setWarehouses(d.warehouses || []); setTotalWh(d.totalWarehouses || 0); setTotalSh(d.totalShelves || 0); } } catch {} finally { if (!c) setWhLoading(false); } })(); return () => { c = true; }; }, [accessToken]);
   useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/booking/owner-bookings"); const d = r.data.data; if (!c) { setBookings(d.bookings || []); setActiveBk(d.activeBookings || 0); setTotalRev(d.totalRevenue || 0); } } catch {} finally { if (!c) setBkLoading(false); } })(); return () => { c = true; }; }, [accessToken]);
+
+  const handleBookingUpdated = useCallback((updatedBooking: BookingData) => {
+    setSelectedBooking(updatedBooking);
+    setBookings((prev) => {
+      const updated = prev.map((b) => b._id === updatedBooking._id ? updatedBooking : b);
+      const newActiveBk = updated.filter((b) => b.status === "confirmed").length;
+      const newTotalRev = updated.filter((b) => b.status === "confirmed").reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      setActiveBk(newActiveBk);
+      setTotalRev(newTotalRev);
+      return updated;
+    });
+  }, []);
 
   const isLoading = whLoading || bkLoading;
   const occShelves = bookings.filter((b) => b.status === "confirmed").reduce((s, b) => s + (b.shelves?.length || 0), 0);
@@ -289,7 +301,7 @@ function OverviewTab() {
               {bookings.slice(0, 10).map((b, i) => (
                 <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
                   className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_120px_130px_140px] gap-2 lg:gap-3 items-center px-6 py-4 hover:bg-[#F8FAFC]/60 transition-colors duration-200 cursor-pointer"
-                  onClick={() => router.push(`/warehouses/${b.warehouse?._id}/inbounds`)}>
+                  onClick={() => setSelectedBooking(b)}>
                   <div className="lg:hidden space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-white font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-[#1E293B] font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
@@ -310,7 +322,273 @@ function OverviewTab() {
           </div>
         )}
       </motion.div>
+
+      {/* ═══ Booking Details Modal ═══ */}
+      <AnimatePresence>
+        {selectedBooking && (
+          <BookingDetailsModal
+            booking={selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            onBookingUpdated={handleBookingUpdated}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BOOKING DETAILS MODAL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: BookingData; onClose: () => void; onBookingUpdated?: (updated: BookingData) => void }) {
+  const { accessToken } = useAppSelector((s) => s.auth);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showPaidConfirm, setShowPaidConfirm] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const handleConfirmPaid = useCallback(async () => {
+    if (!booking.warehouse?._id) return;
+    setActionLoading("paid");
+    setActionError(null);
+    setShowPaidConfirm(false);
+    try {
+      await api.patch(`/booking/warehouse/${booking.warehouse._id}/mark-paid/${booking._id}`);
+      const updated = { ...booking, paymentStatus: "paid" };
+      onBookingUpdated?.(updated);
+      setToast({ message: "Payment marked as PAID successfully", type: "success" });
+    } catch {
+      setActionError("Failed to mark as paid");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [booking, onBookingUpdated]);
+
+  const handleCancelBooking = useCallback(async (reason?: string) => {
+    if (!booking.warehouse?._id) return;
+    setActionLoading("cancel");
+    setActionError(null);
+    setShowCancelConfirm(false);
+    try {
+      await api.patch(`/booking/warehouse/${booking.warehouse._id}/cancel/${booking._id}`, { reason: reason || "" });
+      const updated = { ...booking, status: "cancelled" };
+      onBookingUpdated?.(updated);
+      setToast({ message: "Booking cancelled successfully", type: "success" });
+    } catch {
+      setActionError("Failed to cancel booking");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [booking._id, booking.warehouse?._id]);
+
+  const b = booking;
+  const shelfCount = b.shelves?.length || 0;
+  const start = new Date(b.startDate);
+  const end = new Date(b.endDate);
+  const months = calcMonths(start, end);
+  const isActive = b.status === "confirmed";
+  const canMarkPaid = isActive && b.paymentStatus === "pending";
+  const canCancel = b.status !== "cancelled" && b.status !== "completed";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/40 backdrop-blur-sm overflow-y-auto"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button onClick={onClose}
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] flex items-center justify-center text-[#0F172A]/50 hover:bg-[#F8FAFC] hover:text-[#0F172A] transition-all duration-200 z-10">
+          <X size={16} />
+        </button>
+
+        {/* Toast */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className={`absolute top-5 left-1/2 -translate-x-1/2 z-20 px-5 py-3 rounded-2xl border shadow-lg flex items-center gap-2.5 ${
+                toast.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-red-800"
+              }`}>
+              {toast.type === "success" ? <CheckCircle size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
+              <span className="text-xs font-body font-semibold">{toast.message}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="p-6 sm:p-8">
+          {/* ═══ HEADER: Merchant + Status ═══ */}
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-[#1E293B] flex items-center justify-center shrink-0">
+                <span className="text-sm font-bold text-white font-body">
+                  {b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-heading text-lg font-semibold text-[#1E293B] truncate">{b.merchant?.name || "Unknown Merchant"}</h2>
+                <div className="flex items-center gap-2 text-xs text-[#0F172A]/50 font-body mt-0.5">
+                  <Mail size={12} className="shrink-0" />
+                  <span className="truncate">{b.merchant?.email || "—"}</span>
+                  {b.merchant?.phone && <><span className="text-[#E2E8F0]">·</span><Phone size={12} className="shrink-0" /><span>{b.merchant.phone}</span></>}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {statusBadge(b.status)}
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${
+                b.paymentStatus === "paid" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700"
+              }`}>
+                {b.paymentStatus === "paid" ? <CheckCircle size={11} /> : <Clock size={11} />}
+                {b.paymentStatus === "paid" ? "Paid" : "Pending"}
+              </span>
+            </div>
+          </div>
+
+          {/* ═══ DETAILS: Date Grid + Price ═══ */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Start Date</p>
+              <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(b.startDate)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">End Date</p>
+              <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(b.endDate)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Duration</p>
+              <p className="text-sm font-semibold text-[#1E293B] font-body">{months} {months === 1 ? "month" : "months"}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Shelves</p>
+              <p className="text-sm font-semibold text-[#1E293B] font-body">{shelfCount}</p>
+            </div>
+          </div>
+
+          {/* ═══ WAREHOUSE ═══ */}
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 mb-5">
+            <div className="w-9 h-9 rounded-lg bg-white border border-[#E2E8F0] flex items-center justify-center shrink-0">
+              <Warehouse size={16} className="text-[#0284C7]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-[#1E293B] font-body truncate">{b.warehouse?.name || "—"}</p>
+              <div className="flex items-center gap-1 text-[11px] text-[#0F172A]/50 font-body">
+                <MapPin size={11} />
+                <span className="truncate">{b.warehouse?.location || "—"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ BOOKED SHELVES ═══ */}
+          {b.shelves && b.shelves.length > 0 && (
+            <div className="mb-5">
+              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-2 font-body">Booked Shelves</p>
+              <div className="flex flex-wrap gap-2">
+                {b.shelves.map((shelf) => (
+                  <span key={shelf._id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] text-xs font-body">
+                    <Layers size={12} className="text-[#0284C7]" />
+                    <span className="font-medium text-[#1E293B]">{shelf.shelfNumber}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ═══ FINANCIAL SUMMARY ═══ */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#E2E8F0] mb-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard size={16} className="text-[#0284C7]" />
+                <span className="text-sm font-medium text-[#1E293B] font-body">Total Amount</span>
+              </div>
+              <span className="font-heading text-xl font-bold text-[#1E293B] numeric">
+                Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[11px] text-[#0F172A]/50 font-body pt-3 border-t border-[#E2E8F0]">
+              <span>{shelfCount} shelf{ shelfCount !== 1 ? "s" : "" } × {months} {months === 1 ? "month" : "months"}</span>
+              <span className="font-medium text-[#1E293B] numeric">Rs. {(shelfCount > 0 ? Math.round(b.totalAmount / shelfCount / months) : 0).toLocaleString("en-PK")}/shelf/mo</span>
+            </div>
+          </div>
+
+          {/* ═══ ACTION BUTTONS ═══ */}
+          {actionError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
+              <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-600 font-body">{actionError}</p>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            {canMarkPaid && (
+              <button onClick={() => setShowPaidConfirm(true)} disabled={actionLoading === "paid"}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-full font-body text-sm font-medium hover:bg-emerald-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                {actionLoading === "paid" ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                Mark as Paid
+              </button>
+            )}
+            {canCancel && (
+              <button onClick={() => setShowCancelConfirm(true)} disabled={actionLoading === "cancel"}
+                className={`inline-flex items-center justify-center gap-2 px-5 py-3 border-2 border-red-200 text-red-600 rounded-full font-body text-sm font-medium hover:bg-red-50 active:scale-95 transition-all duration-200 disabled:opacity-50 ${canMarkPaid ? "" : "flex-1"}`}>
+                {actionLoading === "cancel" ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
+                Cancel Booking
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Cancel Confirmation */}
+      <AnimatePresence>
+        {showCancelConfirm && (
+          <ConfirmationModal
+            title="Cancel Booking?"
+            message="Are you sure you want to cancel this booking? The merchant will be notified and the shelves will become available again."
+            confirmLabel="Yes, Cancel Booking"
+            cancelLabel="No, Keep Booking"
+            variant="danger"
+            showReasonInput
+            reasonPlaceholder="Reason for cancellation (Optional)"
+            onConfirm={handleCancelBooking}
+            onCancel={() => setShowCancelConfirm(false)}
+            isLoading={actionLoading === "cancel"}
+          />
+        )}
+
+        {/* Paid Confirmation */}
+        {showPaidConfirm && (
+          <ConfirmationModal
+            title="Confirm Payment"
+            message={`Are you sure you want to mark this booking (Rs. ${(b.totalAmount || 0).toLocaleString("en-PK")}) as PAID?`}
+            confirmLabel="Confirm Payment"
+            cancelLabel="Cancel"
+            variant="warning"
+            onConfirm={handleConfirmPaid}
+            onCancel={() => setShowPaidConfirm(false)}
+            isLoading={actionLoading === "paid"}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
