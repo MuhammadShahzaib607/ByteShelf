@@ -501,7 +501,7 @@ export default function WarehouseDetailPage() {
           className="bg-white rounded-3xl overflow-hidden shadow-lg border border-[#E2E8F0] mb-8"
         >
           <div className="relative overflow-hidden">
-            <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-64 sm:h-72" />
+            <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-64 sm:h-72" containImage={true} />
             {/* Gradient overlay at bottom for text readability */}
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/60 to-transparent pointer-events-none z-20" />
           </div>
@@ -992,7 +992,7 @@ export default function WarehouseDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 rounded-3xl p-6 sm:p-8"
+          className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 rounded-3xl p-6 sm:p-8 pb-20"
         >
           {/* Section Header */}
           <div className="flex items-center justify-between mb-6">
@@ -1196,13 +1196,27 @@ export default function WarehouseDetailPage() {
           ) : (
             <>
               {/* Table Header */}
-              <div className="hidden sm:grid grid-cols-[1fr_100px_130px_60px] gap-3 px-4 py-2.5 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
+              <div className="hidden sm:grid grid-cols-[40px_1fr_90px_105px] gap-2 px-3 py-2.5 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
+                {isMerchantOrWorker && (
+                  <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedShelfIds.length > 0 && selectedShelfIds.length === shelves.filter(s => s.status === "available").length}
+                      onChange={() => {
+                        const availableIds = shelves.filter(s => s.status === "available").map(s => s._id);
+                        if (selectedShelfIds.length === availableIds.length) {
+                          deselectAll();
+                        } else {
+                          selectAll();
+                        }
+                      }}
+                      className="w-3.5 h-3.5 rounded border-[#0284C7]/30 text-[#0284C7] focus:ring-[#0284C7]/30 cursor-pointer"
+                    />
+                  </span>
+                )}
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Shelf</span>
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Status</span>
-                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Rate / Month</span>
-                {isMerchantOrWorker && (
-                  <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body text-center">Select</span>
-                )}
+                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body text-right">Rate / Mo</span>
               </div>
 
               {/* Table Rows */}
@@ -1216,7 +1230,7 @@ export default function WarehouseDetailPage() {
                     <div
                       key={shelf._id}
                       onClick={() => canInteract && toggleShelf(shelf._id)}
-                      className={`grid grid-cols-[1fr_100px_130px_60px] sm:grid-cols-[1fr_100px_130px_60px] gap-3 items-center px-4 py-3 rounded-xl border transition-all duration-200 ${
+                      className={`grid grid-cols-[40px_1fr_90px_105px] gap-2 items-center px-3 py-3 rounded-xl border transition-all duration-200 ${
                         !isAvailable
                           ? "bg-[#F8FAFC]/40 border-[#E2E8F0] opacity-60"
                           : isSelected
@@ -1226,9 +1240,31 @@ export default function WarehouseDetailPage() {
                           : "bg-white border-[#E2E8F0]"
                       }`}
                     >
+                      {/* Checkbox (left side) */}
+                      <div className="flex justify-center">
+                        {canInteract ? (
+                          <span
+                            onClick={(e) => { e.stopPropagation(); toggleShelf(shelf._id); }}
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? "bg-[#0284C7] border-[#0284C7]"
+                                : "border-[#0284C7]/30 bg-white hover:border-[#0284C7]/60"
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-[#0F172A]/20 text-xs">—</span>
+                        )}
+                      </div>
+
                       {/* Shelf Number */}
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isAvailable ? "bg-[#0284C7]/10" : "bg-[#0F172A]/5"}`}>
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isAvailable ? "bg-[#0284C7]/10" : "bg-[#0F172A]/5"}`}>
                           <Layers size={14} className={isAvailable ? "text-[#0284C7]" : "text-[#0F172A]/30"} />
                         </div>
                         <span className="font-semibold text-sm text-[#1E293B] font-body truncate">
@@ -1238,7 +1274,7 @@ export default function WarehouseDetailPage() {
 
                       {/* Status Badge */}
                       <div>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-body font-medium border ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body font-medium border ${
                           isAvailable
                             ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                             : "bg-amber-50 border-amber-200 text-amber-700"
@@ -1249,31 +1285,10 @@ export default function WarehouseDetailPage() {
                       </div>
 
                       {/* Rate */}
-                      <div>
-                        <span className="text-sm font-semibold text-[#1E293B] font-body numeric">
-                          Rs. {(shelf?.pricePerMonth ?? 0).toLocaleString("en-PK")}/mo
+                      <div className="text-right">
+                        <span className="text-xs font-semibold text-[#1E293B] font-body numeric">
+                          Rs. {(shelf?.pricePerMonth ?? 0).toLocaleString("en-PK")}
                         </span>
-                      </div>
-
-                      {/* Selection Checkbox (merchant/worker only) */}
-                      <div className="flex justify-center">
-                        {canInteract ? (
-                          <span
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                              isSelected
-                                ? "bg-[#0284C7] border-[#0284C7]"
-                                : "border-[#0284C7]/30 bg-white"
-                            }`}
-                          >
-                            {isSelected && (
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-[#0F172A]/20 text-xs">—</span>
-                        )}
                       </div>
                     </div>
                   );
@@ -1299,9 +1314,10 @@ export default function WarehouseDetailPage() {
           {/* Booking Summary (Merchants only) */}
           {isMerchantOrWorker && selectedCount > 0 && !bookingSuccess && (
             <motion.div
+              id="booking-summary"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#E2E8F0]"
+              className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#E2E8F0] scroll-mt-24"
             >
               {/* Date Pickers */}
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -1359,18 +1375,43 @@ export default function WarehouseDetailPage() {
                   </span>
                 </div>
               </div>
+            </motion.div>
+          )}
 
-              <button
-                onClick={handleBooking}
-                disabled={isBooking}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#0284C7] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7]/90 transition-all duration-300 shadow-sm shadow-slate-900/10 active:scale-[0.98] disabled:opacity-50"
-              >
-                {isBooking ? (
-                  <><Loader2 size={16} className="animate-spin" />Booking...</>
-                ) : (
-                  <><ArrowRight size={16} />Proceed to Book Shelves</>
-                )}
-              </button>
+          {/* Floating booking bar - visible when shelves are selected */}
+          {isMerchantOrWorker && selectedCount > 0 && !bookingSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-white/90 backdrop-blur-xl border-t border-[#E2E8F0] shadow-[0_-8px_30px_rgb(0,0,0,0.06)]"
+            >
+              <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#0284C7]/10 flex items-center justify-center">
+                    <Layers size={16} className="text-[#0284C7]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1E293B] font-body">
+                      {selectedCount} shelf{selectedCount !== 1 ? "es" : ""} selected
+                    </p>
+                    <p className="text-xs text-[#0F172A]/50 font-body">
+                      Est. Rs. {estimatedTotal.toLocaleString("en-PK")} for {months} month{months !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleBooking}
+                  disabled={isBooking}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#0284C7] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7]/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#0284C7]/25 shrink-0 disabled:opacity-50"
+                >
+                  {isBooking ? (
+                    <><Loader2 size={16} className="animate-spin" />Booking...</>
+                  ) : (
+                    <><ArrowRight size={16} />Confirm Booking</>
+                  )}
+                </button>
+              </div>
             </motion.div>
           )}
 

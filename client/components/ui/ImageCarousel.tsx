@@ -12,6 +12,8 @@ interface ImageCarouselProps {
   alt: string;
   className?: string;
   aspectRatio?: string;
+  /** If true, foreground uses object-contain with max-h-[400px] + blurred background fill */
+  containImage?: boolean;
 }
 
 // ─── Animation variants ─────────────────────────────────────────────────────────
@@ -40,6 +42,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
   alt,
   className = "",
   aspectRatio = "h-44",
+  containImage = false,
 }) => {
   const [[imgIndex, direction], setImgState] = useState([0, 0]);
   const validImages = images?.filter(Boolean) || [];
@@ -104,7 +107,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
         />
         <div className="absolute inset-0 bg-slate-900/10" />
 
-        {/* Foreground Layer — animated carousel */}
+        {/* Foreground Layer — animated carousel with object-contain to avoid cropping */}
         <AnimatePresence initial={false} custom={direction}>
           <motion.img
             key={imgIndex}
@@ -116,7 +119,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
             animate="center"
             exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover z-10"
+            className={`absolute inset-0 w-full h-full z-10 transition-all duration-300 ${
+              containImage
+                ? "object-contain max-h-[400px] mx-auto p-4"
+                : "object-cover"
+            }`}
           />
         </AnimatePresence>
 
