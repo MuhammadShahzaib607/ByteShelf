@@ -21,6 +21,7 @@ import {
   Bell,
   Scan, 
   ShieldCheck,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout as logoutAction } from "@/redux/slices/authSlice";
@@ -152,6 +153,16 @@ function UserDropdown({
                 <User size={16} />
                 Profile
               </Link>
+              {userRole === "warehouseOwner" && (
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                >
+                  <LayoutDashboard size={16} />
+                  Dashboard
+                </Link>
+              )}
               <Link
                 href="/explore"
                 onClick={() => setOpen(false)}
@@ -260,6 +271,7 @@ const Navbar: React.FC = () => {
   const roleLinks: { href: string; label: string }[] = [];
   if (role === "warehouseOwner") {
     roleLinks.push(
+      { href: "/dashboard", label: "Dashboard" },
       { href: "/warehouses", label: "My Warehouses" },
       { href: "/warehouses/add", label: "+ Add Warehouse" }
     );
@@ -453,6 +465,14 @@ const Navbar: React.FC = () => {
 
                   {role === "warehouseOwner" && (
                     <>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 rounded-xl transition-colors"
+                      >
+                        <LayoutDashboard size={16} />
+                        Dashboard
+                      </Link>
                       <Link
                         href="/warehouses"
                         onClick={() => setIsOpen(false)}

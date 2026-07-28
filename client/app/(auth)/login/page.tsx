@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { loginUser, clearError } from "@/redux/slices/authSlice";
+import { fetchProfile } from "@/redux/slices/profileSlice";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
@@ -53,7 +54,17 @@ export default function LoginPage() {
     if (!validate()) return;
     try {
       await dispatch(loginUser({ email: email.trim().toLowerCase(), password })).unwrap();
-      // Full reload ensures entire app tree re-initialises with fresh token and role
+      // Fetch profile to determine role before redirecting
+      try {
+        const profileResult = await dispatch(fetchProfile()).unwrap();
+        if (profileResult?.role === "warehouseOwner") {
+          window.location.href = "/dashboard";
+          return;
+        }
+      } catch {
+        // Profile fetch failed — fall through to default redirect
+      }
+      // Default redirect for non-owners or failed profile fetch
       window.location.href = "/";
     } catch {
       // Handled by Redux + useEffect

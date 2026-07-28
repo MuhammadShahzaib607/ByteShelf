@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -26,6 +27,7 @@ import Footer from "@/components/layout/Footer";
 import api from "@/lib/axios";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import FloatingChatButton from "@/components/ui/FloatingChatButton";
+import { useAppSelector } from "@/redux/hooks";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -255,6 +257,17 @@ const SECTION_IDS = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function Home() {
+  const router = useRouter();
+  const { user, isCheckingAuth, accessToken } = useAppSelector((state) => state.auth);
+
+  // ─── Redirect warehouse owners to dashboard ────────────────────────────
+  useEffect(() => {
+    if (isCheckingAuth) return;
+    if (accessToken && user?.role === "warehouseOwner") {
+      router.replace("/dashboard");
+    }
+  }, [accessToken, user, isCheckingAuth, router]);
+
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [warehousesLoading, setWarehousesLoading] = useState(true);
   const [warehousesError, setWarehousesError] = useState(false);

@@ -8,6 +8,7 @@ import { logout } from "@/redux/slices/authSlice";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FloatingChatButton from "@/components/ui/FloatingChatButton";
+import DashboardLayout from "./dashboard/layout";
 
 export default function PagesLayout({
   children,
@@ -18,6 +19,9 @@ export default function PagesLayout({
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { accessToken, user, isCheckingAuth } = useAppSelector((state) => state.auth);
+
+  // ─── Detect dashboard routes (render sidebar layout instead of public Navbar/Footer) ─
+  const isDashboard = pathname.startsWith("/dashboard");
 
   // ─── Detect if we should show a stripped-down layout (pending user on /messages) ─
   const isPendingOnChat =
@@ -38,6 +42,11 @@ export default function PagesLayout({
         <Loader2 size={32} className="animate-spin text-[#0284C7]" />
       </div>
     );
+  }
+
+  // ─── Dashboard routes — render sidebar layout without public Navbar/Footer ─
+  if (isDashboard) {
+    return <DashboardLayout>{children}</DashboardLayout>;
   }
 
   // ─── Pending user on /messages — stripped layout (no Navbar/Footer/ChatButton) ─

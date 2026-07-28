@@ -215,7 +215,7 @@ export default function WarehouseDetailPage() {
         // Owners fetch all shelves (including booked) for proper management;
         // Merchants/workers only see available shelves for booking
         const endpoint = isOwnWarehouse
-          ? `/shelf/warehouse/${warehouseId}`
+          ? `/shelf/${warehouseId}`
           : `/shelf/warehouse/${warehouseId}/available`;
         const res = await api.get(endpoint);
         if (!cancelled) {
@@ -289,7 +289,7 @@ export default function WarehouseDetailPage() {
     try {
       await api.post(`/shelf/add/${warehouseId}`, { numberOfShelves: addCount });
       // Refetch shelves
-      const res = await api.get(`/shelf/warehouse/${warehouseId}/available`);
+      const res = await api.get(`/shelf/${warehouseId}`);
       setShelves(res.data.data?.shelves || res.data.data || []);
       setShowAddShelves(false);
     } catch (err: any) {

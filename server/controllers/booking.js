@@ -229,6 +229,44 @@ export const cancelBookingByOwner = async (req, res) => {
   }
 };
 
+export const getOwnerBookings = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+
+    // Find all warehouses owned by this user
+    const warehouses = await Warehouse.find({ owner: ownerId }).select("_id name location");
+    const warehouseIds = warehouses.map((w) => w._id);
+
+    if (warehouseIds.length === 0) {
+      return sendRes(res, 200, true, "Bookings fetched successfully", {
+        bookings: [],
+        total: 0,
+        activeBookings: 0,
+        totalRevenue: 0,
+      });
+    }
+
+    const bookings = await Booking.find({ warehouse: { $in: warehouseIds } })
+      .sort({ createdAt: -1 })
+      .populate("shelves", "shelfNumber")
+      .populate("merchant", "name phone email")
+      .populate("warehouse", "name location");
+
+    const activeBookings = bookings.filter((b) => b.status === "confirmed");
+    const totalRevenue = activeBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+
+    return sendRes(res, 200, true, "Bookings fetched successfully", {
+      bookings,
+      total: bookings.length,
+      activeBookings: activeBookings.length,
+      totalRevenue,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
 export const markBookingAsPaid = async (req, res) => {
   try {
     const { bookingId } = req.params;

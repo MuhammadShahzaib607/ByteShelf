@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Donut, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 
 export default function AuthLayout({
