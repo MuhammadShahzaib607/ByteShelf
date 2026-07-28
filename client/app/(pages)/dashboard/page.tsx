@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Warehouse, Plus, User, ShieldCheck, LogOut,
@@ -140,7 +141,7 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
           </div>
           <span className="font-heading text-lg font-semibold text-white tracking-tight">ByteShelf</span>
         </Link>
-        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors font-body"><ArrowLeft size={13} /> Back to Main Site</Link>
+        <a href="/" className="inline-flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors font-body"><ArrowLeft size={13} /> Back to Main Site</a>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-1">
         {SIDEBAR_TABS.filter((t) => !t.adminOnly || isAdmin).map((tab) => {
@@ -1021,6 +1022,7 @@ function ProfileTab() {
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const router = useRouter();
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -1075,11 +1077,19 @@ function ProfileTab() {
           role: u.role || null,
           name: u.name || null,
         }));
+        // Role-based redirect
+        if (payload.role) {
+          if (payload.role === "merchant") {
+            router.push("/");
+          } else if (payload.role === "warehouseOwner") {
+            router.push("/dashboard");
+          }
+        }
       }
     } catch {
       // handled by Redux
     }
-  }, [phone, role, profileUser, dispatch]);
+  }, [phone, role, profileUser, dispatch, router]);
 
   if (isLoading && !profileUser) {
     return (

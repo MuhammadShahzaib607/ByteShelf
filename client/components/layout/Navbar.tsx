@@ -10,11 +10,8 @@ import {
   User,
   LogIn,
   LogOut,
-  Warehouse,
-  Plus,
   Compass,
   ChevronDown,
-  PackageSearch,
   CalendarDays,
   Info,
   Mail,
@@ -255,27 +252,19 @@ const Navbar: React.FC = () => {
     { href: "/explore", label: "Explore" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
-    { href: "#how-it-works", label: "How it Works" },
-    { href: "#pricing", label: "Pricing" },
   ];
 
   // ─── Authenticated links (common) ────────────────────────────────────────
   const authLinks = [
-    { href: "/explore", label: "Explore Warehouses", icon: Compass },
     { href: "/about", label: "About", icon: Info },
     { href: "/contact", label: "Contact", icon: Mail },
-    { href: "/profile", label: "Profile", icon: User },
+    { href: "/explore", label: "Explore Warehouses", icon: Compass },
   ];
 
-  // ─── Role-specific links ─────────────────────────────────────────────────
+  // ─── Role-specific nav links (only what's NOT in dropdown) ───────────────
+
   const roleLinks: { href: string; label: string }[] = [];
-  if (role === "warehouseOwner") {
-    roleLinks.push(
-      { href: "/dashboard", label: "Dashboard" },
-      { href: "/warehouses", label: "My Warehouses" },
-      { href: "/warehouses/add", label: "+ Add Warehouse" }
-    );
-  } else if (role === "merchant" || role === "worker") {
+  if (role === "merchant" || role === "worker") {
     roleLinks.push(
       { href: "/my-bookings", label: "My Bookings" }
     );
@@ -463,34 +452,7 @@ const Navbar: React.FC = () => {
                     </Link>
                   ))}
 
-                  {role === "warehouseOwner" && (
-                    <>
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 rounded-xl transition-colors"
-                      >
-                        <LayoutDashboard size={16} />
-                        Dashboard
-                      </Link>
-                      <Link
-                        href="/warehouses"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
-                      >
-                        <Warehouse size={16} />
-                        My Warehouses
-                      </Link>
-                      <Link
-                        href="/warehouses/add"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
-                      >
-                        <Plus size={16} />
-                        Add Warehouse
-                      </Link>
-                    </>
-                  )}
+
                   {(role === "merchant" || role === "worker") && (
                     <Link
                       href="/my-bookings"
