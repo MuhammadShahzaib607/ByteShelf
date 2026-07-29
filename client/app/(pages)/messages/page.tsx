@@ -433,15 +433,33 @@ function MessagesContent() {
       }
     };
 
-    // ─── Online status listener ────────────────────────────────────────────
-    const handleUserStatus = (data: { userId: string; isOnline: boolean; lastSeen?: string }) => {
-      setOnlineStatus((prev) => ({
-        ...prev,
-        [data.userId]: { isOnline: data.isOnline, lastSeen: data.lastSeen },
-      }));
+    const handleError = (err: string) => {
+      console.error("[Socket] Message error:", err);
     };
 
-    // ─── Active users list (fixes two-way online sync) ─────────────────────
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("messages_read", handleMessagesRead);
+    socket.on("user_typing", handleUserTyping);
+    socket.on("error_message", handleError);
+
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+      socket.off("messages_read", handleMessagesRead);
+      socket.off("user_typing", handleUserTyping);
+      socket.off("error_message", handleError);
+    };
+  }, [activeConvId, accessToken, userId]);
+
+  // ─── Global presence listeners (survives conversation switches) ───────────
+  // Registered in a separate effect so they are NOT torn down when activeConvId
+  // changes. This also eliminates the race condition where the server emits
+  // `active_users_list` before the conversation-specific effect registers.
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+
     const handleActiveUsersList = (activeUserIds: string[]) => {
       setOnlineStatus((prev) => {
         const updated = { ...prev };
@@ -452,26 +470,21 @@ function MessagesContent() {
       });
     };
 
-    const handleError = (err: string) => {
-      console.error("[Socket] Message error:", err);
+    const handleUserStatus = (data: { userId: string; isOnline: boolean; lastSeen?: string }) => {
+      setOnlineStatus((prev) => ({
+        ...prev,
+        [data.userId]: { isOnline: data.isOnline, lastSeen: data.lastSeen },
+      }));
     };
 
-    socket.on("receive_message", handleReceiveMessage);
-    socket.on("messages_read", handleMessagesRead);
-    socket.on("user_typing", handleUserTyping);
-    socket.on("user_status", handleUserStatus);
     socket.on("active_users_list", handleActiveUsersList);
-    socket.on("error_message", handleError);
+    socket.on("user_status", handleUserStatus);
 
     return () => {
-      socket.off("receive_message", handleReceiveMessage);
-      socket.off("messages_read", handleMessagesRead);
-      socket.off("user_typing", handleUserTyping);
-      socket.off("user_status", handleUserStatus);
       socket.off("active_users_list", handleActiveUsersList);
-      socket.off("error_message", handleError);
+      socket.off("user_status", handleUserStatus);
     };
-  }, [activeConvId, accessToken, userId]);
+  }, [accessToken, userId]);
 
   // ─── Cleanup socket on unmount ────────────────────────────────────────────
   useEffect(() => {
