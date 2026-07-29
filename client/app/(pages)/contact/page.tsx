@@ -13,7 +13,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
+import api from "@/lib/axios";
 
 const supportChannels = [
   {
@@ -50,16 +50,18 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setError(null);
 
-    // Simulate form submission
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await api.post("/contact", { name, email, subject, message });
+      if (!res.data.success) {
+        throw new Error(res.data.message || "Failed to send message");
+      }
       setSuccess(true);
       setName("");
       setEmail("");
       setSubject("");
       setMessage("");
-    } catch {
-      setError("Failed to send message. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -107,6 +109,12 @@ export default function ContactPage() {
                   <p className="text-sm text-[#0F172A]/50 font-body">
                     We&apos;ll get back to you within 24 hours.
                   </p>
+                  <button
+                    onClick={() => setSuccess(false)}
+                    className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 hover:shadow-lg active:scale-95 transition-all duration-200"
+                  >
+                    Send Another Message
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -174,24 +182,23 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <Button
+                  <button
                     type="submit"
-                    fullWidth
-                    size="lg"
-                    isLoading={isSubmitting}
+                    disabled={isSubmitting}
+                    className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 size={18} className="animate-spin mr-2" />
+                        <Loader2 size={18} className="animate-spin" />
                         Sending...
                       </>
                     ) : (
                       <>
-                        <Send size={18} className="mr-2" />
+                        <Send size={18} />
                         Send Message
                       </>
                     )}
-                  </Button>
+                  </button>
                 </form>
               )}
             </motion.div>

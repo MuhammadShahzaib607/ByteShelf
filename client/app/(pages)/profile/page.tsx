@@ -227,6 +227,19 @@ export default function ProfilePage() {
           name: u.name || null,
         }));
       }
+      // If role changed, instantly redirect to the appropriate dashboard
+      if (payload.role && payload.role !== (user?.role || "")) {
+        // Force a small delay to let Redux state propagate, then redirect
+        setTimeout(() => {
+          if (payload.role === "warehouseOwner") {
+            router.push("/dashboard");
+          } else if (payload.role === "merchant") {
+            router.push("/merchant-dashboard");
+          } else if (payload.role === "worker") {
+            router.push("/worker/scan");
+          }
+        }, 100);
+      }
     } catch {
       // Error handled by Redux state
     }

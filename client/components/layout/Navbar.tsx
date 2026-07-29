@@ -19,6 +19,7 @@ import {
   Scan, 
   ShieldCheck,
   LayoutDashboard,
+  MessageCircle,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout as logoutAction } from "@/redux/slices/authSlice";
@@ -150,7 +151,8 @@ function UserDropdown({
                 <User size={16} />
                 Profile
               </Link>
-              {userRole === "warehouseOwner" && (
+              
+              {(userRole === "warehouseOwner") && (
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
@@ -160,7 +162,9 @@ function UserDropdown({
                   Dashboard
                 </Link>
               )}
-              <Link
+              {userRole === "merchant" && (
+                <>
+                <Link
                 href="/explore"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0F172A]/70 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 transition-colors font-body"
@@ -168,16 +172,36 @@ function UserDropdown({
                 <Compass size={16} />
                 Explore Warehouses
               </Link>
-
-              {(isAdmin || userRole === "admin") && (
                 <Link
-                  href="/admin/verifications"
+                  href="/merchant-dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
                 >
-                  <ShieldCheck size={16} />
-                  Verify Users
+                  <LayoutDashboard size={16} />
+                  Dashboard
                 </Link>
+                </>
+              )}
+              
+              {(isAdmin || userRole === "admin") && (
+                <>
+                  <Link
+                    href="/admin/verifications"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                  >
+                    <ShieldCheck size={16} />
+                    Verify Users
+                  </Link>
+                  <Link
+                    href="/admin/contacts"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                  >
+                    <MessageCircle size={16} />
+                    Contact Messages
+                  </Link>
+                </>
               )}
 
               <hr className="my-1 border-[#0284C7]/10" />
@@ -256,21 +280,23 @@ const Navbar: React.FC = () => {
 
   // ─── Authenticated links (common, filtered by role) ─────────────────────
   const isOwner = role === "warehouseOwner";
+  const isMerchant = role === "merchant";
   const authLinks = [
      { href: "/", label: "Home" },
      { href: "/about", label: "About" },
      { href: "/how-it-works", label: "How It Works", icon: Info },
      { href: "/help", label: "Help", icon: Mail },
      { href: "/contact", label: "Contact" },
-    ...(!isOwner ? [{ href: "/explore", label: "Explore Warehouses", icon: Compass }] : []),
   ];
 
   // ─── Role-specific nav links (only what's NOT in dropdown) ───────────────
+  // Merchants get ONLY Home, About, How It Works, Help, Contact in top nav.
+  // Explore and My Bookings are accessed from their dashboard.
 
-  const roleLinks: { href: string; label: string }[] = [];
-  if (role === "merchant" || role === "worker") {
+  const roleLinks: { href: string; label: string; icon?: React.ElementType }[] = [];
+  if (role === "worker") {
     roleLinks.push(
-      { href: "/my-bookings", label: "My Bookings" }
+      { href: "/my-bookings", label: "My Bookings", icon: CalendarDays }
     );
   }
 
@@ -456,7 +482,7 @@ const Navbar: React.FC = () => {
                     </Link>
                   ))}
 
-                  {(role === "merchant" || role === "worker") && (
+                  {role === "worker" && (
                     <Link
                       href="/my-bookings"
                       onClick={() => setIsOpen(false)}

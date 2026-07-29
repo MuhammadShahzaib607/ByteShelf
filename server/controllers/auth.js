@@ -1,11 +1,27 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dns from "dns";
 import User from "../models/User.js";
 import { sendRes } from "../utils/responseHandler.js";
 import { sendEmail } from "../utils/otp/sendMail.js";
 import { otpEmailTemplate } from "../utils/otp/otpMailTemplate.js";
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// ─── Validate email domain via MX records ───────────────────────────────────────
+const validateEmailDomain = (email) => {
+  return new Promise((resolve) => {
+    const domain = email.split("@")[1];
+    if (!domain) return resolve(false);
+
+    dns.resolveMx(domain, (err, addresses) => {
+      if (err || !addresses || addresses.length === 0) {
+        return resolve(false);
+      }
+      return resolve(true);
+    });
+  });
+};
 
 export const signup = async (req, res) => {
   try {
@@ -17,6 +33,12 @@ export const signup = async (req, res) => {
 
     if (password.length < 8) {
        return sendRes(res, 404, false, "Password should be 8 characters long");
+    }
+
+    // ─── Validate email domain has valid MX records ──────────────────────────
+    const isValidDomain = await validateEmailDomain(email);
+    if (!isValidDomain) {
+      return sendRes(res, 400, false, "Invalid or non-existent email domain. Please enter a real email address.");
     }
  
     // KYC documents are required for non-admin signups

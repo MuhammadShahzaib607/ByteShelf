@@ -153,7 +153,7 @@ function WarehouseCard({ warehouse }: { warehouse: WarehouseData }) {
         </div>
 
         <Link
-          href={`/warehouse/${warehouse._id}`}
+          href={`/warehouses/${warehouse._id}`}
           className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-body font-medium rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
         >
           View Details & Book

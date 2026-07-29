@@ -22,6 +22,7 @@ export default function PagesLayout({
 
   // ─── Detect dashboard routes (render sidebar layout instead of public Navbar/Footer) ─
   const isDashboard = pathname.startsWith("/dashboard");
+  const isMerchantDashboard = pathname.startsWith("/merchant-dashboard");
 
   // ─── Detect if we should show a stripped-down layout (pending user on /messages) ─
   const isPendingOnChat =
@@ -44,8 +45,8 @@ export default function PagesLayout({
     );
   }
 
-  // ─── Dashboard routes — render sidebar layout without public Navbar/Footer ─
-  if (isDashboard) {
+  // ─── Dashboard/merchant-dashboard routes — render sidebar layout without public Navbar/Footer ─
+  if (isDashboard || isMerchantDashboard) {
     return <DashboardLayout>{children}</DashboardLayout>;
   }
 

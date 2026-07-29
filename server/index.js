@@ -14,6 +14,7 @@ import inboundRoute from "./routes/inboundPlan.js"
 import cartonRoute from "./routes/carton.js"
 import conversationRoute from "./routes/conversation.js"
 import adminRoute from "./routes/admin.js"
+import contactRoute from "./routes/contact.js"
 import dns from 'dns';
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -36,6 +37,7 @@ app.use("/api/v1/inbound", inboundRoute);
 app.use("/api/v1/carton", cartonRoute);
 app.use("/api/v1/conversation", conversationRoute);
 app.use("/api/v1/admin", adminRoute);
+app.use("/api/v1/contact", contactRoute);
 
 const connectDB = async ()=> {
     try {

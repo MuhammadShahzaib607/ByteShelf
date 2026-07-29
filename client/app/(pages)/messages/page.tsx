@@ -15,6 +15,11 @@ interface Participant {
   role: string;
 }
 
+interface ParticipantWithStatus extends Participant {
+  isOnline?: boolean;
+  lastSeen?: string;
+}
+
 interface Conversation {
   _id: string;
   participants: string[];
@@ -209,6 +214,13 @@ function MessagesContent() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
 
+  // ─── Typing indicator state ───────────────────────────────────────────────
+  const [otherTyping, setOtherTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ─── Online status state ──────────────────────────────────────────────────
+  const [onlineStatus, setOnlineStatus] = useState<Record<string, { isOnline: boolean; lastSeen?: string }>>({});
+
   // ─── Scroll-to-bottom state ─────────────────────────────────────────────
   const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
 
@@ -310,11 +322,15 @@ function MessagesContent() {
       }
     },
     []
-  );
-
-  // ─── When active conversation changes ──────────────────────────────────────
+  );    // ─── When active conversation changes ──────────────────────────────────────
   useEffect(() => {
     if (!activeConvId) return;
+    // Reset typing indicator when switching conversations
+    setOtherTyping(false);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
     fetchMessages(activeConvId, 1);
     markAsRead(activeConvId);
     setShowSidebar(false);
@@ -410,17 +426,36 @@ function MessagesContent() {
       }
     };
 
+    // ─── Typing indicator listener ────────────────────────────────────────
+    const handleUserTyping = (data: { conversationId: string; userId: string; isTyping: boolean }) => {
+      if (data.conversationId === activeConvId && data.userId !== userId) {
+        setOtherTyping(data.isTyping);
+      }
+    };
+
+    // ─── Online status listener ────────────────────────────────────────────
+    const handleUserStatus = (data: { userId: string; isOnline: boolean; lastSeen?: string }) => {
+      setOnlineStatus((prev) => ({
+        ...prev,
+        [data.userId]: { isOnline: data.isOnline, lastSeen: data.lastSeen },
+      }));
+    };
+
     const handleError = (err: string) => {
       console.error("[Socket] Message error:", err);
     };
 
     socket.on("receive_message", handleReceiveMessage);
     socket.on("messages_read", handleMessagesRead);
+    socket.on("user_typing", handleUserTyping);
+    socket.on("user_status", handleUserStatus);
     socket.on("error_message", handleError);
 
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("messages_read", handleMessagesRead);
+      socket.off("user_typing", handleUserTyping);
+      socket.off("user_status", handleUserStatus);
       socket.off("error_message", handleError);
     };
   }, [activeConvId, accessToken, userId]);
@@ -432,10 +467,50 @@ function MessagesContent() {
     };
   }, []);
 
+  // ─── Handle typing indicator ──────────────────────────────────────────────
+  const emitTypingStart = useCallback(() => {
+    if (!activeConvId) return;
+    const socket = getSocket();
+    if (socket?.connected) {
+      socket.emit("typing_start", { conversationId: activeConvId });
+    }
+  }, [activeConvId]);
+
+  const emitTypingStop = useCallback(() => {
+    if (!activeConvId) return;
+    const socket = getSocket();
+    if (socket?.connected) {
+      socket.emit("typing_stop", { conversationId: activeConvId });
+    }
+  }, [activeConvId]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    // Emit typing start on first character
+    if (!typingTimeoutRef.current) {
+      emitTypingStart();
+    }
+    // Reset the stop timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      emitTypingStop();
+      typingTimeoutRef.current = null;
+    }, 2500);
+  }, [emitTypingStart, emitTypingStop]);
+
   // ─── Send message ─────────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
     if (!text || !activeConvId || sending) return;
+
+    // Stop typing indicator
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    emitTypingStop();
 
     setSending(true);
     const socket = getSocket();
@@ -444,7 +519,7 @@ function MessagesContent() {
     }
     setInputText("");
     setSending(false);
-  }, [inputText, activeConvId, sending]);
+  }, [inputText, activeConvId, sending, emitTypingStop]);
 
   // ─── Load more (pagination) ───────────────────────────────────────────────
   const loadMore = useCallback(() => {
@@ -568,24 +643,46 @@ function MessagesContent() {
               <>
                 {/* Chat Header */}
                 <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center gap-3 shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0 relative">
                     <span className="text-xs font-semibold text-white font-body">
                       {otherParticipant
                         ? getInitials(otherParticipant.name)
                         : "?"}
                     </span>
+                    {/* Online indicator dot */}
+                    {otherParticipant && onlineStatus[otherParticipant._id]?.isOnline && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                    )}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
-                      {otherParticipant?.name || "Unknown User"}
-                    </p>
-                    <p className="text-[11px] text-[#0F172A]/40 font-body capitalize">
-                      {otherParticipant?.role === "warehouseOwner"
-                        ? "Warehouse Owner"
-                        : otherParticipant?.role === "merchant"
-                        ? "Merchant"
-                        : otherParticipant?.role || ""}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
+                        {otherParticipant?.name || "Unknown User"}
+                      </p>
+                      {/* Online / Last Seen status */}
+                      {otherParticipant && onlineStatus[otherParticipant._id]?.isOnline ? (
+                        <span className="text-[10px] text-emerald-600 font-body font-medium shrink-0">Online</span>
+                      ) : otherParticipant && onlineStatus[otherParticipant._id]?.lastSeen ? (
+                        <span className="text-[10px] text-[#0F172A]/40 font-body shrink-0">
+                          Last seen {formatTime(onlineStatus[otherParticipant._id].lastSeen!)}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[11px] text-[#0F172A]/40 font-body capitalize">
+                        {otherParticipant?.role === "warehouseOwner"
+                          ? "Warehouse Owner"
+                          : otherParticipant?.role === "merchant"
+                          ? "Merchant"
+                          : otherParticipant?.role || ""}
+                      </p>
+                      {/* Typing indicator */}
+                      {otherTyping && (
+                        <span className="text-[11px] text-[#0284C7] font-body font-medium animate-pulse">
+                          ··· typing
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -697,7 +794,7 @@ function MessagesContent() {
                     <div className="flex-1 relative">
                       <textarea
                         value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
+                        onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Type your message..."
                         rows={1}
