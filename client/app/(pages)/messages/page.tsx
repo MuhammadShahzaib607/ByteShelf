@@ -257,7 +257,7 @@ function MessagesContent() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom, otherTyping]);
 
   // ─── Fetch conversations ──────────────────────────────────────────────────
   const fetchConversations = useCallback(async () => {
@@ -702,12 +702,7 @@ function MessagesContent() {
                           ? "Merchant"
                           : otherParticipant?.role || ""}
                       </p>
-                      {/* Typing indicator */}
-                      {otherTyping && (
-                        <span className="text-[11px] text-[#0284C7] font-body font-medium animate-pulse">
-                          ··· typing
-                        </span>
-                      )}
+                      {/* (typing indicator moved into message flow) */}
                     </div>
                   </div>
                 </div>
@@ -797,6 +792,17 @@ function MessagesContent() {
                             </div>
                           );
                         })}
+                    </div>
+                  )}
+
+                  {/* ─── Animated Typing Bubble (in message flow) ──────────── */}
+                  {otherTyping && (
+                    <div className="flex justify-start mb-3">
+                      <div className="px-5 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#1E293B] rounded-bl-lg inline-flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-[#0F172A]/30 animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-[#0F172A]/30 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-[#0F172A]/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
                     </div>
                   )}
 

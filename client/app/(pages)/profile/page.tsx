@@ -225,6 +225,10 @@ export default function ProfilePage() {
           email: u.email || null,
           role: u.role || null,
           name: u.name || null,
+          isAdmin: u.isAdmin || false,
+          isVerified: u.isVerified || false,
+          verificationStatus: u.verificationStatus || null,
+          rejectionReason: u.rejectionReason || null,
         }));
       }
       // If role changed, instantly redirect to the appropriate dashboard
