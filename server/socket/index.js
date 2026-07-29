@@ -44,6 +44,11 @@ export const initializeSocket = (server) => {
     // Broadcast to all connected clients that this user is online
     socket.broadcast.emit("user_status", { userId, isOnline: true });
 
+    // Send the list of currently active/online users back to the joining user
+    // so they instantly know who else is online (fixes two-way sync)
+    const activeUserIds = Array.from(onlineUsers.keys());
+    socket.emit("active_users_list", activeUserIds);
+
     socket.on("join_conversation", (conversationId) => {
       socket.join(conversationId);
     });

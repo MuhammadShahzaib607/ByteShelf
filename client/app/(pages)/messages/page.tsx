@@ -441,6 +441,17 @@ function MessagesContent() {
       }));
     };
 
+    // ─── Active users list (fixes two-way online sync) ─────────────────────
+    const handleActiveUsersList = (activeUserIds: string[]) => {
+      setOnlineStatus((prev) => {
+        const updated = { ...prev };
+        activeUserIds.forEach((id) => {
+          updated[id] = { ...updated[id], isOnline: true };
+        });
+        return updated;
+      });
+    };
+
     const handleError = (err: string) => {
       console.error("[Socket] Message error:", err);
     };
@@ -449,6 +460,7 @@ function MessagesContent() {
     socket.on("messages_read", handleMessagesRead);
     socket.on("user_typing", handleUserTyping);
     socket.on("user_status", handleUserStatus);
+    socket.on("active_users_list", handleActiveUsersList);
     socket.on("error_message", handleError);
 
     return () => {
@@ -456,6 +468,7 @@ function MessagesContent() {
       socket.off("messages_read", handleMessagesRead);
       socket.off("user_typing", handleUserTyping);
       socket.off("user_status", handleUserStatus);
+      socket.off("active_users_list", handleActiveUsersList);
       socket.off("error_message", handleError);
     };
   }, [activeConvId, accessToken, userId]);
