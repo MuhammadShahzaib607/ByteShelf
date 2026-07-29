@@ -1077,13 +1077,13 @@ function ProfileTab() {
           role: u.role || null,
           name: u.name || null,
         }));
-        // Role-based redirect
-        if (payload.role) {
-          if (payload.role === "merchant") {
-            router.push("/");
-          } else if (payload.role === "warehouseOwner") {
-            router.push("/dashboard");
-          }
+      }
+      // Role-based redirect (fires regardless of result.user)
+      if (payload.role) {
+        if (payload.role === "merchant") {
+          router.push("/");
+        } else if (payload.role === "warehouseOwner") {
+          router.push("/dashboard");
         }
       }
     } catch {

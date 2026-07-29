@@ -278,7 +278,13 @@ export default function VerificationGuard({
     (state) => state.auth
   );
 
-  // ─── Show loader while auth is being checked ────────────────────────────
+  // ─── Public routes: skip auth loader entirely (no flicker) ──────────────
+  const publicRoutes = ["/", "/login", "/signup", "/verify-otp", "/about", "/contact", "/explore", "/cookie-policy", "/privacy-policy", "/terms"];
+  if (isCheckingAuth && publicRoutes.includes(pathname)) {
+    return <>{children}</>;
+  }
+
+  // ─── Show loader while auth is being checked (protected routes only) ────
   if (isCheckingAuth) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#FAFAFA]">

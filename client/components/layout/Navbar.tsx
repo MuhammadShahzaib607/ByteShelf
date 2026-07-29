@@ -249,16 +249,20 @@ const Navbar: React.FC = () => {
   // ─── Guest links ─────────────────────────────────────────────────────────
   const guestLinks = [
     { href: "/", label: "Home" },
-    { href: "/explore", label: "Explore" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+    { href: "/explore", label: "Explore Warehouses" },
+    { href: "/how-it-works", label: "How It Works" },
+    { href: "/help", label: "Help" },
   ];
 
-  // ─── Authenticated links (common) ────────────────────────────────────────
+  // ─── Authenticated links (common, filtered by role) ─────────────────────
+  const isOwner = role === "warehouseOwner";
   const authLinks = [
-    { href: "/about", label: "About", icon: Info },
-    { href: "/contact", label: "Contact", icon: Mail },
-    { href: "/explore", label: "Explore Warehouses", icon: Compass },
+     { href: "/", label: "Home" },
+     { href: "/about", label: "About" },
+     { href: "/how-it-works", label: "How It Works", icon: Info },
+     { href: "/help", label: "Help", icon: Mail },
+     { href: "/contact", label: "Contact" },
+    ...(!isOwner ? [{ href: "/explore", label: "Explore Warehouses", icon: Compass }] : []),
   ];
 
   // ─── Role-specific nav links (only what's NOT in dropdown) ───────────────
@@ -451,7 +455,6 @@ const Navbar: React.FC = () => {
                       {link.label}
                     </Link>
                   ))}
-
 
                   {(role === "merchant" || role === "worker") && (
                     <Link
