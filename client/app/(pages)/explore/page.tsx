@@ -45,16 +45,16 @@ interface FetchResponse {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#0284C7]/10 animate-pulse">
-      <div className="h-48 bg-[#F8FAFC]" />
+    <div className="bg-[#111614] rounded-3xl overflow-hidden border border-neutral-800/80 animate-pulse">
+      <div className="h-64 bg-neutral-800/60" />
       <div className="p-5 space-y-3">
-        <div className="h-5 bg-[#F8FAFC] rounded w-3/4" />
-        <div className="h-3 bg-[#F8FAFC] rounded w-1/2" />
+        <div className="h-5 bg-neutral-800/60 rounded w-3/4" />
+        <div className="h-3 bg-neutral-800/60 rounded w-1/2" />
         <div className="flex justify-between pt-2">
-          <div className="h-6 bg-[#F8FAFC] rounded w-1/3" />
-          <div className="h-4 bg-[#F8FAFC] rounded w-1/4" />
+          <div className="h-6 bg-neutral-800/60 rounded w-1/3" />
+          <div className="h-4 bg-neutral-800/60 rounded w-1/4" />
         </div>
-        <div className="h-10 bg-[#F8FAFC] rounded-full w-full mt-2" />
+        <div className="h-10 bg-neutral-800/60 rounded-full w-full mt-2" />
       </div>
     </div>
   );
@@ -143,7 +143,7 @@ export default function ExplorePage() {
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pt-28 pb-20 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#0a0d0c] pt-28 pb-20 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -152,10 +152,10 @@ export default function ExplorePage() {
           transition={{ duration: 0.4 }}
           className="mb-8"
         >
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#1E293B] tracking-tight">
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight">
             Explore Warehouses
           </h1>
-          <p className="mt-1 text-sm text-[#0F172A]/50 font-body">
+          <p className="mt-1 text-sm text-neutral-400 font-body">
             Browse available micro-warehouses across all locations
           </p>
         </motion.div>
@@ -169,14 +169,14 @@ export default function ExplorePage() {
         >
           <Search
             size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/50 pointer-events-none"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
           />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or location..."
-            className="w-full pl-11 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-[#0284C7]/20 rounded-2xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/10 focus:bg-white transition-all text-sm font-body shadow-sm shadow-slate-900/10"
+            className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:ring-2 focus:ring-[#ccff00]/10 focus:bg-neutral-900 transition-all text-sm font-body shadow-sm shadow-black/20"
           />
         </motion.div>
 
@@ -186,7 +186,7 @@ export default function ExplorePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="flex items-center gap-2 mb-6 text-sm text-[#0F172A]/50 font-body"
+            className="flex items-center gap-2 mb-6 text-sm text-neutral-400 font-body"
           >
             <Package size={14} />
             <span>
@@ -216,13 +216,13 @@ export default function ExplorePage() {
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 shadow-sm shadow-slate-900/10">
-              <Warehouse size={28} className="text-[#0284C7]/40" />
+            <div className="w-16 h-16 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-center mx-auto mb-4 shadow-sm shadow-black/20">
+              <Warehouse size={28} className="text-[#ccff00]/40" />
             </div>
-            <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">
+            <h3 className="font-heading text-lg font-semibold text-white mb-2">
               No warehouses found
             </h3>
-            <p className="text-sm text-[#0F172A]/50 font-body max-w-sm mx-auto">
+            <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">
               There are no warehouses available yet. Check back later!
             </p>
           </motion.div>
@@ -235,13 +235,13 @@ export default function ExplorePage() {
             animate={{ opacity: 1 }}
             className="text-center py-16"
           >
-            <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center mx-auto mb-3 shadow-sm shadow-slate-900/10">
-              <Search size={22} className="text-[#0284C7]/40" />
+            <div className="w-14 h-14 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-center mx-auto mb-3 shadow-sm shadow-black/20">
+              <Search size={22} className="text-[#ccff00]/40" />
             </div>
-            <h3 className="font-heading text-base font-semibold text-[#1E293B] mb-1">
+            <h3 className="font-heading text-base font-semibold text-white mb-1">
               No matches
             </h3>
-            <p className="text-sm text-[#0F172A]/50 font-body">
+            <p className="text-sm text-neutral-400 font-body">
               Try a different search term
             </p>
           </motion.div>
@@ -267,35 +267,36 @@ export default function ExplorePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col"
+                className="group bg-[#111614] border border-neutral-800/80 overflow-hidden hover:border-[#ccff00]/40 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-300 rounded-3xl flex flex-col"
               >
                 {/* Image Carousel (shared component) with dual-layer blur */}
                 <ImageCarousel
                   images={w.images || []}
                   alt={w.name}
-                  aspectRatio="h-48"
+                  aspectRatio="h-64"
+                  containImage={true}
                 />
 
                 {/* Content */}
-                <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-white to-[#F8FAFC]/30">
-                  <h3 className="font-heading text-lg font-semibold text-[#1E293B]">
+                <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-transparent to-black/20">
+                  <h3 className="font-heading text-xl font-bold text-white">
                     {w.name}
                   </h3>
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[#0F172A]/50 font-body">
+                  <div className="mt-1.5 flex items-center gap-1.5 text-sm text-neutral-400 font-body">
                     <MapPin size={12} />
                     <span className="truncate">{w.location}</span>
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
                     <div>
-                      <span className="font-heading text-xl font-bold text-[#1E293B] numeric">
+                      <span className="font-heading text-lg font-bold text-[#ccff00] numeric">
                         Rs. {w.pricePerShelf.toLocaleString("en-PK")}
                       </span>
-                      <span className="text-xs text-[#0F172A]/50 font-body ml-1">
+                      <span className="text-xs text-neutral-400 font-body ml-1">
                         /shelf/mo
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#0F172A]/50 font-body">
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body">
                       <Layers size={13} />
                       <span>{w.totalShelves} shelves</span>
                     </div>
@@ -303,7 +304,7 @@ export default function ExplorePage() {
 
                   <button
                     onClick={() => router.push(`/warehouses/${w._id}`)}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-body font-medium rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ccff00] text-black text-sm font-body font-semibold rounded-xl hover:bg-[#b8e600] active:scale-95 transition-all duration-200"
                   >
                     <Eye size={15} />
                     View Details & Shelves
@@ -325,7 +326,7 @@ export default function ExplorePage() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-white border border-[#0284C7]/20 text-[#1E293B] rounded-full font-body font-medium text-sm hover:bg-[#F8FAFC]/60 transition-all duration-300 shadow-sm shadow-slate-900/10 hover:shadow-md active:scale-[0.98] disabled:opacity-60"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-neutral-900/80 border border-neutral-800 text-white rounded-full font-body font-medium text-sm hover:bg-neutral-800 hover:border-[#ccff00]/40 transition-all duration-300 shadow-sm shadow-black/20 hover:shadow-md active:scale-[0.98] disabled:opacity-60"
             >
               {loadingMore ? (
                 <>
@@ -339,7 +340,7 @@ export default function ExplorePage() {
                 </>
               )}
             </button>
-            <p className="mt-3 text-xs text-[#0F172A]/40 font-body">
+            <p className="mt-3 text-xs text-neutral-500 font-body">
               Showing {warehouses.length} of {totalWarehouses} warehouses
             </p>
           </motion.div>

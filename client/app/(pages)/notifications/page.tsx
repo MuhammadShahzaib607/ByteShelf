@@ -228,7 +228,16 @@ export default function NotificationsPage() {
   // ─── Fetch notifications on mount ────────────────────────────────────────
   useEffect(() => {
     if (!accessToken) return;
-    dispatch(fetchNotifications());
+    (async () => {
+      // Fetch first so the list renders, then auto-mark everything as read.
+      // The readAllNotifications.fulfilled reducer flips every item to
+      // isRead: true and zeroes `unread`, clearing the Navbar bell badge
+      // instantly and re-rendering the list as read.
+      const result = await dispatch(fetchNotifications());
+      if (fetchNotifications.fulfilled.match(result)) {
+        dispatch(readAllNotifications());
+      }
+    })();
   }, [accessToken, dispatch]);
 
   // ─── Auto-clear success message ──────────────────────────────────────────

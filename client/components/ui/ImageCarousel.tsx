@@ -88,6 +88,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
         alt={alt}
         aspectRatio={aspectRatio}
         containerClass={className}
+        fit={containImage ? "contain" : "cover"}
       />
     );
   }
