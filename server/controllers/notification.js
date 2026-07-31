@@ -58,6 +58,23 @@ export const markNotificationsAsRead = async (req, res) => {
   }
 };
 
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    // Mark all unread notifications for this user (recipient OR sender) — matches getMyNotifications scope
+    await Notification.updateMany(
+      {
+        $or: [{ recipient: req.user.id }, { sender: req.user.id }],
+        isRead: false,
+      },
+      { $set: { isRead: true } }
+    );
+
+    return sendRes(res, 200, true, "All notifications marked as read");
+  } catch (error) {
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
 export const deleteNotifications = async (req, res) => {
   try {
     const { notificationIds } = req.body;

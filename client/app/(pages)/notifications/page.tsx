@@ -17,7 +17,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchNotifications,
-  markNotificationsAsRead,
+  readAllNotifications,
   deleteNotifications,
 } from "@/redux/slices/notificationSlice";
 import type { Notification } from "@/redux/slices/notificationSlice";
@@ -160,14 +160,9 @@ export default function NotificationsPage() {
 
   // ─── Auto mark all unread as read when page is visited ───────────────────
   useEffect(() => {
-    if (!accessToken || unread === 0 || notifications.length === 0) return;
-    const unreadIds = notifications
-      .filter((n) => !n.isRead)
-      .map((n) => n._id);
-    if (unreadIds.length > 0) {
-      dispatch(markNotificationsAsRead(unreadIds));
-    }
-  }, [accessToken, notifications, unread, dispatch]);
+    if (!accessToken || unread === 0) return;
+    dispatch(readAllNotifications());
+  }, [accessToken, unread, dispatch]);
 
   // ─── Auto-clear success message ──────────────────────────────────────────
   useEffect(() => {

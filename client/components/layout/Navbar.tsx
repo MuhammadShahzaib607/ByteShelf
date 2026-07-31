@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   LayoutDashboard,
   MessageCircle,
+  Newspaper,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout as logoutAction } from "@/redux/slices/authSlice";
@@ -31,11 +32,11 @@ function NotificationBell({ unreadCount }: { unreadCount: number }) {
   return (
     <Link
       href="/notifications"
-      className="relative flex items-center justify-center w-9 h-9 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15 hover:bg-[#F8FAFC] transition-colors"
+      className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/[0.05] border border-lime-500/25 hover:bg-lime-400/10 hover:border-lime-400/50 transition-all"
     >
-      <Bell size={17} className="text-[#0F172A]/60" />
+      <Bell size={17} className="text-slate-200" />
       {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white text-[9px] font-bold text-white font-body shadow-sm">
+        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0D0F0A] text-[9px] font-bold text-white font-body shadow-sm">
           {unreadCount > 99 ? "99+" : unreadCount}
         </span>
       )}
@@ -49,16 +50,22 @@ function NavLink({
   href,
   label,
   onClick,
+  active,
 }: {
   href: string;
   label: string;
   onClick?: () => void;
+  active?: boolean;
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className="px-4 py-1.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] transition-colors rounded-full hover:bg-[#F8FAFC]/40"
+      className={`px-4 py-1.5 text-sm font-body transition-colors rounded-full ${
+        active
+          ? "text-[#D0F219] bg-lime-400/10 font-semibold"
+          : "text-slate-300/80 hover:text-[#D0F219] hover:bg-lime-400/10"
+      }`}
     >
       {label}
     </Link>
@@ -103,16 +110,16 @@ function UserDropdown({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15 hover:bg-[#F8FAFC] transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-lime-500/25 hover:bg-lime-400/10 hover:border-lime-400/50 transition-all"
       >
-        <div className="w-7 h-7 rounded-full bg-[#1E293B] flex items-center justify-center">
-          <span className="text-[11px] font-semibold text-white font-body">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center">
+          <span className="text-[11px] font-semibold text-[#12140E] font-body">
             {initials || "U"}
           </span>
         </div>
         <ChevronDown
           size={14}
-          className={`text-[#0F172A]/50 transition-transform duration-200 ${
+          className={`text-slate-300 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -125,13 +132,13 @@ function UserDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white border border-[#0284C7]/10 shadow-xl shadow-slate-900/10 overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-[#12150E]/95 border border-lime-500/20 shadow-2xl shadow-black/60 backdrop-blur-xl overflow-hidden"
           >
-            <div className="p-3 border-b border-[#0284C7]/10">
-              <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
+            <div className="p-3 border-b border-lime-500/15">
+              <p className="text-sm font-semibold text-white font-body truncate">
                 {userName}
               </p>
-              <p className="text-[11px] text-[#0F172A]/50 font-body capitalize">
+              <p className="text-[11px] text-slate-400 font-body capitalize">
                 {userRole === "warehouseOwner"
                   ? "Warehouse Owner"
                   : userRole === "merchant"
@@ -146,7 +153,7 @@ function UserDropdown({
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0F172A]/70 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 transition-colors font-body"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 transition-colors font-body"
               >
                 <User size={16} />
                 Profile
@@ -156,7 +163,7 @@ function UserDropdown({
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
                 >
                   <LayoutDashboard size={16} />
                   Dashboard
@@ -167,7 +174,7 @@ function UserDropdown({
                 <Link
                 href="/explore"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0F172A]/70 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 transition-colors font-body"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 transition-colors font-body"
               >
                 <Compass size={16} />
                 Explore Warehouses
@@ -175,7 +182,7 @@ function UserDropdown({
                 <Link
                   href="/merchant-dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
                 >
                   <LayoutDashboard size={16} />
                   Dashboard
@@ -188,7 +195,7 @@ function UserDropdown({
                   <Link
                     href="/admin/verifications"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
                   >
                     <ShieldCheck size={16} />
                     Verify Users
@@ -196,7 +203,7 @@ function UserDropdown({
                   <Link
                     href="/admin/contacts"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 transition-colors font-body"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
                   >
                     <MessageCircle size={16} />
                     Contact Messages
@@ -204,14 +211,14 @@ function UserDropdown({
                 </>
               )}
 
-              <hr className="my-1 border-[#0284C7]/10" />
+              <hr className="my-1 border-lime-500/15" />
 
               <button
                 onClick={() => {
                   setOpen(false);
                   onLogout();
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-600 hover:bg-red-50 transition-colors font-body"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors font-body"
               >
                 <LogOut size={16} />
                 Sign Out
@@ -230,6 +237,7 @@ function UserDropdown({
 
 const Navbar: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { accessToken, user, isCheckingAuth } = useAppSelector(
     (state) => state.auth
@@ -275,6 +283,7 @@ const Navbar: React.FC = () => {
     { href: "/", label: "Home" },
     { href: "/explore", label: "Explore Warehouses" },
     { href: "/how-it-works", label: "How It Works" },
+    { href: "/blog", label: "Blog" },
     { href: "/help", label: "Help" },
   ];
 
@@ -285,6 +294,7 @@ const Navbar: React.FC = () => {
      { href: "/", label: "Home" },
      { href: "/about", label: "About" },
      { href: "/how-it-works", label: "How It Works", icon: Info },
+     { href: "/blog", label: "Blog", icon: Newspaper },
      { href: "/help", label: "Help", icon: Mail },
      { href: "/contact", label: "Contact" },
   ];
@@ -308,18 +318,23 @@ const Navbar: React.FC = () => {
     );
   }
 
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  };
+
   // ─── Show nothing while checking auth (prevent flash) ────────────────────
   if (isCheckingAuth) {
     return (
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 pt-4">
-        <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-white shadow-md shadow-slate-900/5">
+        <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-[#0D0F0A]/80 border border-lime-500/20 backdrop-blur-md">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-[#1E293B] flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12140E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
             </div>
-            <span className="font-heading text-lg font-semibold text-[#1E293B] tracking-tight">
+            <span className="font-heading text-lg font-semibold text-white tracking-tight">
               ByteShelf
             </span>
           </Link>
@@ -334,20 +349,20 @@ const Navbar: React.FC = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full transition-all duration-300 bg-white ${
+        className={`w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full transition-all duration-300 bg-[#0D0F0A]/80 backdrop-blur-md border border-lime-500/20 ${
           scrolled
-            ? "shadow-lg shadow-slate-900/10"
-            : "shadow-md shadow-slate-900/5"
+            ? "shadow-lg shadow-lime-950/30"
+            : "shadow-md shadow-black/40"
         }`}
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-[#1E293B] flex items-center justify-center group-hover:bg-[#0284C7] transition-colors duration-300">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(208,242,25,0.5)] transition-shadow duration-300">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12140E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
           </div>
-          <span className="font-heading text-lg font-semibold text-[#1E293B] tracking-tight">
+          <span className="font-heading text-lg font-semibold text-white tracking-tight">
             ByteShelf
           </span>
         </Link>
@@ -356,19 +371,19 @@ const Navbar: React.FC = () => {
         {isLoggedIn ? (
           <div className="hidden md:flex items-center gap-1">
             {authLinks.map((link) => (
-              <NavLink key={`auth-${link.href}`} href={link.href} label={link.label} />
+              <NavLink key={`auth-${link.href}`} href={link.href} label={link.label} active={isActive(link.href)} />
             ))}
             {roleLinks.map((link) => (
-              <NavLink key={`role-${link.href}`} href={link.href} label={link.label} />
+              <NavLink key={`role-${link.href}`} href={link.href} label={link.label} active={isActive(link.href)} />
             ))}
             {workerLinks.map((link) => (
-              <NavLink key={`worker-${link.href}`} href={link.href} label={link.label} />
+              <NavLink key={`worker-${link.href}`} href={link.href} label={link.label} active={isActive(link.href)} />
             ))}
           </div>
         ) : (
           <div className="hidden md:flex items-center gap-1">
             {guestLinks.map((link) => (
-              <NavLink key={link.href} href={link.href} label={link.label} />
+              <NavLink key={link.href} href={link.href} label={link.label} active={isActive(link.href)} />
             ))}
           </div>
         )}
@@ -389,14 +404,14 @@ const Navbar: React.FC = () => {
             <>
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-body text-[#0F172A]/70 hover:text-[#0F172A] transition-colors rounded-full hover:bg-[#F8FAFC]/40"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-body text-slate-300 hover:text-[#D0F219] transition-colors rounded-full hover:bg-lime-400/10"
               >
                 <LogIn size={15} />
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="px-5 py-2 text-sm font-body font-medium bg-slate-900 text-white rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
+                className="px-5 py-2 text-sm font-body font-semibold bg-[#D0F219] text-[#12140E] rounded-full hover:bg-lime-300 hover:shadow-[0_0_25px_rgba(208,242,25,0.35)] active:scale-95 transition-all duration-200"
               >
                 Join Free
               </Link>
@@ -407,7 +422,7 @@ const Navbar: React.FC = () => {
         {/* Mobile menu button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 rounded-full text-[#0F172A]/60 hover:bg-[#F8FAFC]/40 transition-colors"
+          className="md:hidden p-2 rounded-full text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 transition-colors"
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -422,15 +437,15 @@ const Navbar: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-4 right-4 mt-3 rounded-2xl bg-white shadow-xl shadow-slate-900/10 overflow-hidden md:hidden"
+            className="absolute top-full left-4 right-4 mt-3 rounded-2xl bg-[#12150E]/95 border border-lime-500/20 shadow-2xl shadow-black/60 backdrop-blur-xl overflow-hidden md:hidden"
           >
             <div className="p-3 space-y-1">
               {isLoggedIn ? (
                 <>
                   {user && (
-                    <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-[#F8FAFC]/40">
-                      <div className="w-8 h-8 rounded-full bg-[#1E293B] flex items-center justify-center">
-                        <span className="text-xs font-semibold text-white font-body">
+                    <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-white/[0.04] border border-lime-500/10">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center">
+                        <span className="text-xs font-semibold text-[#12140E] font-body">
                           {user.name
                             ?.split(" ")
                             .map((w) => w[0])
@@ -440,10 +455,10 @@ const Navbar: React.FC = () => {
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
+                        <p className="text-sm font-semibold text-white font-body truncate">
                           {user.name}
                         </p>
-                        <p className="text-[11px] text-[#0F172A]/50 font-body capitalize">
+                        <p className="text-[11px] text-slate-400 font-body capitalize">
                           {role === "warehouseOwner"
                             ? "Warehouse Owner"
                             : role === "merchant"
@@ -457,7 +472,7 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/notifications"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
                   >
                     <div className="relative">
                       <Bell size={16} />
@@ -475,9 +490,13 @@ const Navbar: React.FC = () => {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                      className={`flex items-center gap-2.5 px-4 py-2.5 text-sm font-body rounded-xl transition-colors ${
+                        isActive(link.href)
+                          ? "text-[#D0F219] bg-lime-400/10 font-semibold"
+                          : "text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10"
+                      }`}
                     >
-                      <link.icon size={16} />
+                      {link.icon && <link.icon size={16} />}
                       {link.label}
                     </Link>
                   ))}
@@ -486,7 +505,7 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/my-bookings"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
                     >
                       <CalendarDays size={16} />
                       My Bookings
@@ -497,7 +516,7 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/worker/scan"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
                     >
                       <Scan size={16} />
                       Scan Cartons
@@ -508,20 +527,20 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/admin/verifications"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#0284C7] hover:text-[#0284C7] hover:bg-sky-50 rounded-xl transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 rounded-xl transition-colors"
                     >
                       <ShieldCheck size={16} />
                       Verify Users
                     </Link>
                   )}
 
-                  <hr className="my-2 border-[#0284C7]/10" />
+                  <hr className="my-2 border-lime-500/15" />
                   <button
                     onClick={() => {
                       setIsOpen(false);
                       handleLogout();
                     }}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-red-600 hover:bg-red-50 rounded-xl transition-colors w-full text-left"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors w-full text-left"
                   >
                     <LogOut size={16} />
                     Sign Out
@@ -534,23 +553,27 @@ const Navbar: React.FC = () => {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className="block px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                      className={`block px-4 py-2.5 text-sm font-body rounded-xl transition-colors ${
+                        isActive(link.href)
+                          ? "text-[#D0F219] bg-lime-400/10 font-semibold"
+                          : "text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10"
+                      }`}
                     >
                       {link.label}
                     </Link>
                   ))}
-                  <hr className="my-2 border-[#0284C7]/10" />
+                  <hr className="my-2 border-lime-500/15" />
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-2.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-[#F8FAFC]/40 rounded-xl transition-colors"
+                    className="block px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-2.5 text-sm font-body font-medium bg-[#1E293B] text-white text-center rounded-xl hover:bg-[#0284C7] transition-colors"
+                    className="block px-4 py-2.5 text-sm font-body font-semibold bg-[#D0F219] text-[#12140E] text-center rounded-xl hover:bg-lime-300 transition-colors"
                   >
                     Join Free
                   </Link>

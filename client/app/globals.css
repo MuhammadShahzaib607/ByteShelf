@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -22,8 +21,15 @@
   --color-slate-900: var(--slate-900);
   --color-amber: var(--amber);
   --color-error: var(--error-red);
-  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-body: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  /* Executive, modern SaaS typography — tight letter-spacing on headings */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+  }
 }
 
 * {
@@ -38,22 +44,43 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — ByteShelf dark theme + lime green accent */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #0D0F0A;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--cobalt);
-  border-radius: 3px;
+  background: linear-gradient(180deg, #ccff00, #a3e635);
+  border-radius: 4px;
+  border: 2px solid #0D0F0A;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--slate-700);
+  background: #ccff00;
+}
+
+::-webkit-scrollbar-corner {
+  background: #0D0F0A;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a3e635 #0D0F0A;
+}
+
+/* Custom circle cursor — hide native pointer only on hover-capable devices.
+   Text fields keep their I-beam so editing stays natural. */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  body *:not(input):not(textarea):not([contenteditable="true"]) {
+    cursor: none !important;
+  }
 }
 
 /* Framer Motion ready - prevent FOUC */
@@ -102,10 +129,88 @@ body {
   letter-spacing: 0.025em;
 }
 
+/* Lime section badge / pill — SeaCoffee dark-theme accent */
+.section-badge-lime {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(208, 242, 25, 0.08);
+  border: 1px solid rgba(208, 242, 25, 0.25);
+  color: #D0F219;
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+/* Marquee ticker animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+/* ─── Hero Cursor Glow — Neon-Lime spotlight + particle trail ────────────────── */
+/* Coordinates are driven per-frame via CSS custom properties (no layout thrash). */
+.hero-cursor-glow {
+  --mouse-x: -9999px;
+  --mouse-y: -9999px;
+  --dot-x: -9999px;
+  --dot-y: -9999px;
+  overflow: hidden;
+}
+
+.hero-cursor-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    rgba(208, 242, 25, 0.12),
+    transparent 80%
+  );
+}
+
+.hero-cursor-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: #D0F219;
+  box-shadow: 0 0 10px rgba(208, 242, 25, 0.9), 0 0 24px rgba(208, 242, 25, 0.5);
+  transform: translate3d(var(--dot-x), var(--dot-y), 0) translate(-50%, -50%);
+}
+
+/* Hide the effect on touch-only devices (no hover) to save battery & CPU */
+@media (hover: none), (pointer: coarse) {
+  .hero-cursor-glow {
+    display: none;
+  }
+}
+
 /* Numeric Typography — clean tabular figures for all pricing & metrics */
 @layer utilities {
   .numeric {
-    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', 'Helvetica Neue', Arial, sans-serif;
     font-variant-numeric: tabular-nums;
     -moz-font-feature-settings: "tnum" 1;
     font-feature-settings: "tnum" 1;

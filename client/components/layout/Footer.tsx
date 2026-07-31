@@ -28,14 +28,14 @@ const Footer: React.FC = () => {
       ];
 
   return (
-    <footer className="bg-[#1E293B] text-white/80">
+    <footer className="bg-[#0D0F0A] border-t border-lime-500/20 text-slate-300">
       <div className="max-w-6xl mx-auto px-6 py-16 md:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand Statement */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 group mb-4">
-              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center group-hover:bg-white/25 transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(208,242,25,0.4)] transition-shadow">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12140E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                 </svg>
               </div>
@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
                 ByteShelf
               </span>
             </Link>
-            <p className="text-sm text-white/60 leading-relaxed font-body max-w-xs">
+            <p className="text-sm text-slate-400 leading-relaxed font-body max-w-xs">
               The modern micro-warehousing platform connecting merchants with
               verified storage space. Pay per shelf, not per square foot.
             </p>
@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
 
           {/* Platform */}
           <div>
-            <h4 className="text-xs font-semibold tracking-wider uppercase text-white/40 mb-4 font-body">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-lime-300/70 mb-4 font-body">
               Platform
             </h4>
             <ul className="space-y-2.5">
@@ -59,7 +59,7 @@ const Footer: React.FC = () => {
                 <li key={`${link.label}-${link.href}-${index}`}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/70 hover:text-white transition-colors font-body"
+                    className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body"
                   >
                     {link.label}
                   </Link>
@@ -70,37 +70,38 @@ const Footer: React.FC = () => {
 
           {/* Company */}
           <div>
-            <h4 className="text-xs font-semibold tracking-wider uppercase text-white/40 mb-4 font-body">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-lime-300/70 mb-4 font-body">
               Company
             </h4>
             <ul className="space-y-2.5">
-              <li><Link href="/about" className="text-sm text-white/70 hover:text-white transition-colors font-body">About Us</Link></li>
-              <li><Link href="/careers" className="text-sm text-white/70 hover:text-white transition-colors font-body">Careers</Link></li>
-              <li><Link href="/blog" className="text-sm text-white/70 hover:text-white transition-colors font-body">Blog</Link></li>
-              <li><Link href="/contact" className="text-sm text-white/70 hover:text-white transition-colors font-body">Contact</Link></li>
+              <li><Link href="/how-it-works" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">How It Works</Link></li>
+              <li><Link href="/about" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">About Us</Link></li>
+              <li><Link href="/help" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Help</Link></li>
+              <li><Link href="/blog" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Blog</Link></li>
+              <li><Link href="/contact" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Contact</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="text-xs font-semibold tracking-wider uppercase text-white/40 mb-4 font-body">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-lime-300/70 mb-4 font-body">
               Legal
             </h4>
             <ul className="space-y-2.5">
-              <li><Link href="/privacy-policy" className="text-sm text-white/70 hover:text-white transition-colors font-body">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="text-sm text-white/70 hover:text-white transition-colors font-body">Terms of Service</Link></li>
-              <li><Link href="/cookie-policy" className="text-sm text-white/70 hover:text-white transition-colors font-body">Cookie Policy</Link></li>
+              <li><Link href="/privacy-policy" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Terms of Service</Link></li>
+              <li><Link href="/cookie-policy" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-white/40 font-body">
+        <div className="mt-14 pt-6 border-t border-lime-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500 font-body">
             &copy; {year} ByteShelf. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-white/30 font-body">Built with care for growing brands</span>
+            <span className="text-xs text-slate-600 font-body">Built with care for growing brands</span>
           </div>
         </div>
       </div>
