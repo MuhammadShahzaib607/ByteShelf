@@ -53,11 +53,11 @@ function toDateInputValue(date: Date): string { return date.toISOString().split(
 
 function statusBadge(status: string) {
   const c: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
-    confirmed: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: <CheckCircle size={11} />, label: "Confirmed" },
-    cancelled: { bg: "bg-red-50 border-red-200", text: "text-red-700", icon: <XCircle size={11} />, label: "Cancelled" },
-    completed: { bg: "bg-slate-50 border-slate-200", text: "text-slate-600", icon: <CheckCircle size={11} />, label: "Completed" },
-    paid: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: <CreditCard size={11} />, label: "Paid" },
-    pending: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700", icon: <Clock size={11} />, label: "Pending" },
+    confirmed: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Confirmed" },
+    cancelled: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Cancelled" },
+    completed: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <CheckCircle size={11} />, label: "Completed" },
+    paid: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CreditCard size={11} />, label: "Paid" },
+    pending: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Pending" },
   };
   const s = c[status] || c.pending;
   return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${s.bg} ${s.text}`}>{s.icon}{s.label}</span>;
@@ -88,9 +88,9 @@ function CopyButton({ value }: { value: string }) {
   return (
     <button onClick={handleCopy} title="Copy User ID"
       className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${
-        copied ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-white border-slate-200 text-[#0F172A]/40 hover:text-[#0F172A]/70 hover:bg-slate-100 hover:border-slate-300"
+        copied ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-neutral-900/80 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-800/60 hover:border-neutral-700"
       }`}>
-      {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
+      {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
     </button>
   );
 }
@@ -101,7 +101,7 @@ function CopyButton({ value }: { value: string }) {
 
 function ImagePreview({ src, onRemove, isUploading }: { src: string; onRemove: () => void; isUploading?: boolean }) {
   return (
-    <div className="relative group w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-slate-900/5 shrink-0">
+    <div className="relative group w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-white/5 shrink-0">
       <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-60 scale-110" />
       <img src={src} alt="Preview" className="relative z-10 w-full h-full object-contain drop-shadow-2xl" />
       {isUploading && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={18} className="animate-spin text-white" /></div>}
@@ -134,7 +134,7 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
   const handleLogout = () => { dispatch(logout()); localStorage.removeItem("byteshelf_access_token"); localStorage.removeItem("auth_tokens"); window.location.href = "/login"; };
 
   const content = (
-    <div className="flex flex-col h-full bg-slate-900">
+    <div className="flex flex-col h-full bg-[#0d100f]/95 backdrop-blur-md">
       <div className="shrink-0 px-5 pt-6 pb-5 border-b border-white/10">
         <Link href="/" className="inline-flex items-center group mb-4">
           <Image
@@ -155,9 +155,9 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
           return (
             <button key={tab.id} onClick={() => { onTabChange(tab.id); onClose(); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${
-                isActive ? "bg-white/10 text-white font-medium shadow-sm" : "text-white/50 hover:text-white hover:bg-white/5"
+                isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "text-white/50 hover:text-white hover:bg-white/5"
               }`}>
-              <Icon size={18} className={isActive ? "text-[#38BDF8]" : "text-white/40"} />{tab.label}
+              <Icon size={18} className={isActive ? "text-black" : "text-white/40"} />{tab.label}
             </button>
           );
         })}
@@ -175,10 +175,10 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
   );
 
   return (<>
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-slate-900 z-40">{content}</aside>
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-[#0d100f]/95 backdrop-blur-md border-r border-white/10 z-40">{content}</aside>
     <AnimatePresence>{isOpen && (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose}>
-        <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed left-0 top-0 bottom-0 w-60 bg-slate-900 z-50" onClick={(e) => e.stopPropagation()}>{content}</motion.aside>
+        <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed left-0 top-0 bottom-0 w-60 bg-[#0d100f]/95 backdrop-blur-md z-50" onClick={(e) => e.stopPropagation()}>{content}</motion.aside>
       </motion.div>
     )}</AnimatePresence>
   </>);
@@ -194,22 +194,22 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
   useEffect(() => { if (accessToken) dispatch(fetchNotifications()); }, [accessToken, dispatch]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 md:left-60 z-30 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+    <header className="fixed top-0 left-0 right-0 md:left-60 z-30 h-16 bg-[#0a0d0c]/85 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center justify-between h-full px-4 md:px-6">
         <div className="flex items-center gap-3">
-          <button onClick={onMenuToggle} className="md:hidden w-9 h-9 rounded-full bg-[#F8FAFC] flex items-center justify-center text-[#0F172A]/50 hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all"><Menu size={18} /></button>
-          <h1 className="text-sm font-semibold text-[#1E293B] font-body hidden sm:block">Welcome back, {user?.name?.split(" ")[0] || "User"}</h1>
+          <button onClick={onMenuToggle} className="md:hidden w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/20 transition-all"><Menu size={18} /></button>
+          <h1 className="text-sm font-semibold text-white font-body hidden sm:block">Welcome back, {user?.name?.split(" ")[0] || "User"}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/notifications" className="relative flex items-center justify-center w-9 h-9 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15 hover:bg-[#F8FAFC] transition-colors">
-            <Bell size={17} className="text-[#0F172A]/60" />
-            {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
+          <Link href="/notifications" className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-colors">
+            <Bell size={17} className="text-neutral-300" />
+            {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15">
-            <div className="w-7 h-7 rounded-full bg-[#1E293B] flex items-center justify-center">
-              <span className="text-[11px] font-semibold text-white font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
+            <div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center">
+              <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
-            <span className="text-sm font-medium text-[#1E293B] font-body hidden sm:block">{user?.name || "User"}</span>
+            <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
           </div>
         </div>
       </div>
@@ -256,7 +256,7 @@ function OverviewTab() {
     <div>
       {isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl p-5 border border-[#E2E8F0] animate-pulse"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-[#F8FAFC]" /><div className="space-y-2 flex-1"><div className="h-6 bg-[#F8FAFC] rounded w-16" /><div className="h-3 bg-[#F8FAFC] rounded w-24" /></div></div></div>)}
+          {[...Array(4)].map((_, i) => <div key={i} className="bg-[#111614] rounded-2xl p-5 border border-neutral-800/80 animate-pulse"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-neutral-800/60" /><div className="space-y-2 flex-1"><div className="h-6 bg-neutral-800/60 rounded w-16" /><div className="h-3 bg-neutral-800/60 rounded w-24" /></div></div></div>)}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -267,64 +267,64 @@ function OverviewTab() {
             { icon: DollarSign, label: "Est. Monthly Revenue", value: `Rs. ${totalRev.toLocaleString("en-PK")}`, sub: "From active bookings", delay: 0.2 },
           ].map((k) => (
             <motion.div key={k.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: k.delay }}
-              className="bg-white rounded-2xl p-5 border border-[#E2E8F0] shadow-sm hover:shadow-md hover:border-[#0284C7]/20 transition-all duration-300">
+              className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-5 border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#ccff00]/40 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F8FAFC] to-white flex items-center justify-center shadow-sm shadow-slate-900/5">
-                  <k.icon size={20} className="text-[#0284C7]" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center shadow-sm shadow-black/20">
+                  <k.icon size={20} className="text-[#ccff00]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-heading text-2xl font-bold text-[#1E293B] numeric tracking-tight">{k.value}</p>
-                  <p className="text-xs text-[#0F172A]/50 font-body mt-0.5">{k.label}</p>
+                  <p className="font-heading text-2xl font-bold text-white numeric tracking-tight">{k.value}</p>
+                  <p className="text-xs text-neutral-400 font-body mt-0.5">{k.label}</p>
                 </div>
               </div>
-              {k.sub && <div className="mt-3 pt-3 border-t border-[#E2E8F0]"><span className="text-[11px] text-[#0F172A]/40 font-body">{k.sub}</span></div>}
+              {k.sub && <div className="mt-3 pt-3 border-t border-neutral-800"><span className="text-[11px] text-neutral-500 font-body">{k.sub}</span></div>}
             </motion.div>
           ))}
         </div>
       )}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
         <div className="flex items-center justify-between mb-5">
-          <div><h2 className="font-heading text-xl font-semibold text-[#1E293B]">Recent Activity</h2><p className="text-sm text-[#0F172A]/50 font-body mt-0.5">Latest bookings across your properties</p></div>
+          <div><h2 className="font-heading text-xl font-semibold text-white">Recent Activity</h2><p className="text-sm text-neutral-400 font-body mt-0.5">Latest bookings across your properties</p></div>
         </div>
         {bkLoading ? (
-          <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-8 animate-pulse space-y-4">{[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-[#F8FAFC] rounded-xl" />)}</div>
+          <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-8 animate-pulse space-y-4">{[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-neutral-800/60 rounded-xl" />)}</div>
         ) : bookings.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#0284C7]/40" /></div>
-            <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">No bookings yet</h3>
-            <p className="text-sm text-[#0F172A]/50 font-body max-w-sm mx-auto">When merchants book your shelves, their activity will appear here.</p>
+          <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#ccff00]/40" /></div>
+            <h3 className="font-heading text-lg font-semibold text-white mb-2">No bookings yet</h3>
+            <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">When merchants book your shelves, their activity will appear here.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm overflow-hidden">
-            <div className="hidden lg:grid grid-cols-[1fr_1fr_120px_130px_140px] gap-3 px-6 py-3.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Merchant</span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Warehouse</span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Shelves</span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Status</span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body text-right">Amount</span>
+          <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm overflow-hidden">
+            <div className="hidden lg:grid grid-cols-[1fr_1fr_120px_130px_140px] gap-3 px-6 py-3.5 bg-neutral-900/80 border-b border-neutral-800">
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Merchant</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Warehouse</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Shelves</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Status</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body text-right">Amount</span>
             </div>
-            <div className="divide-y divide-[#E2E8F0]">
+            <div className="divide-y divide-neutral-800/80">
               {bookings.slice(0, 10).map((b, i) => (
                 <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_120px_130px_140px] gap-2 lg:gap-3 items-center px-6 py-4 hover:bg-[#F8FAFC]/60 transition-colors duration-200 cursor-pointer"
+                  className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_120px_130px_140px] gap-2 lg:gap-3 items-center px-6 py-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer"
                   onClick={() => setSelectedBooking(b)}>
                   <div className="lg:hidden space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-white font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-[#1E293B] font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
+                      <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
                       {statusBadge(b.status)}
                     </div>
-                    <div className="flex items-center justify-between text-xs text-[#0F172A]/50 font-body"><span className="truncate">{b.warehouse?.name || "Warehouse"}</span><span className="font-semibold text-[#1E293B] numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span></div>
-                    <div className="flex items-center gap-3 text-[11px] text-[#0F172A]/40 font-body"><span>{b.shelves?.length || 0} shelf(ves)</span><span>·</span><span>{formatDate(b.createdAt)}</span></div>
+                    <div className="flex items-center justify-between text-xs text-neutral-400 font-body"><span className="truncate">{b.warehouse?.name || "Warehouse"}</span><span className="font-semibold text-white numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span></div>
+                    <div className="flex items-center gap-3 text-[11px] text-neutral-500 font-body"><span>{b.shelves?.length || 0} shelf(ves)</span><span>·</span><span>{formatDate(b.createdAt)}</span></div>
                   </div>
-                  <div className="hidden lg:flex items-center gap-2.5 min-w-0"><div className="w-7 h-7 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-white font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-[#1E293B] font-body truncate">{b.merchant?.name || "Unknown"}</span><span className="text-[11px] text-[#0F172A]/40 font-body hidden xl:inline">{b.merchant?.email || ""}</span></div>
-                  <div className="hidden lg:block text-sm text-[#0F172A]/70 font-body truncate">{b.warehouse?.name || "—"}</div>
-                  <div className="hidden lg:flex items-center gap-1.5 text-sm text-[#0F172A]/60 font-body"><Layers size={13} className="text-[#0284C7]/60" /><span>{b.shelves?.length || 0}</span></div>
+                  <div className="hidden lg:flex items-center gap-2.5 min-w-0"><div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span><span className="text-[11px] text-neutral-500 font-body hidden xl:inline">{b.merchant?.email || ""}</span></div>
+                  <div className="hidden lg:block text-sm text-neutral-300 font-body truncate">{b.warehouse?.name || "—"}</div>
+                  <div className="hidden lg:flex items-center gap-1.5 text-sm text-neutral-400 font-body"><Layers size={13} className="text-[#ccff00]/60" /><span>{b.shelves?.length || 0}</span></div>
                   <div className="hidden lg:block">{statusBadge(b.status)}</div>
-                  <div className="hidden lg:block text-sm font-semibold text-[#1E293B] font-body numeric text-right">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</div>
+                  <div className="hidden lg:block text-sm font-semibold text-white font-body numeric text-right">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</div>
                 </motion.div>
               ))}
             </div>
-            {bookings.length > 10 && <div className="px-6 py-3.5 border-t border-[#E2E8F0] text-center"><Link href="/warehouses" className="text-sm text-[#0284C7] font-medium font-body hover:text-[#0284C7]/80 transition-colors">View all {bookings.length} bookings</Link></div>}
+            {bookings.length > 10 && <div className="px-6 py-3.5 border-t border-neutral-800 text-center"><Link href="/warehouses" className="text-sm text-[#ccff00] font-medium font-body hover:text-[#b8e600] transition-colors">View all {bookings.length} bookings</Link></div>}
           </div>
         )}
       </motion.div>
@@ -410,7 +410,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/40 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/70 backdrop-blur-sm overflow-y-auto"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
@@ -418,12 +418,12 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden"
+        className="w-full max-w-2xl bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] flex items-center justify-center text-[#0F172A]/50 hover:bg-[#F8FAFC] hover:text-[#0F172A] transition-all duration-200 z-10">
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 border border-neutral-800 flex items-center justify-center text-neutral-400 hover:bg-white/20 hover:text-white transition-all duration-200 z-10">
           <X size={16} />
         </button>
 
@@ -432,7 +432,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           {toast && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
               className={`absolute top-5 left-1/2 -translate-x-1/2 z-20 px-5 py-3 rounded-2xl border shadow-lg flex items-center gap-2.5 ${
-                toast.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-red-800"
+                toast.type === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" : "bg-red-500/10 border-red-500/20 text-red-300"
               }`}>
               {toast.type === "success" ? <CheckCircle size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
               <span className="text-xs font-body font-semibold">{toast.message}</span>
@@ -444,24 +444,24 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           {/* ═══ HEADER: Merchant + Status ═══ */}
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-2xl bg-[#1E293B] flex items-center justify-center shrink-0">
-                <span className="text-sm font-bold text-white font-body">
+              <div className="w-11 h-11 rounded-2xl bg-[#ccff00] flex items-center justify-center shrink-0">
+                <span className="text-sm font-bold text-black font-body">
                   {b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}
                 </span>
               </div>
               <div className="min-w-0">
-                <h2 className="font-heading text-lg font-semibold text-[#1E293B] truncate">{b.merchant?.name || "Unknown Merchant"}</h2>
-                <div className="flex items-center gap-2 text-xs text-[#0F172A]/50 font-body mt-0.5">
+                <h2 className="font-heading text-lg font-semibold text-white truncate">{b.merchant?.name || "Unknown Merchant"}</h2>
+                <div className="flex items-center gap-2 text-xs text-neutral-400 font-body mt-0.5">
                   <Mail size={12} className="shrink-0" />
                   <span className="truncate">{b.merchant?.email || "—"}</span>
-                  {b.merchant?.phone && <><span className="text-[#E2E8F0]">·</span><Phone size={12} className="shrink-0" /><span>{b.merchant.phone}</span></>}
+                  {b.merchant?.phone && <><span className="text-neutral-700">·</span><Phone size={12} className="shrink-0" /><span>{b.merchant.phone}</span></>}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {statusBadge(b.status)}
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${
-                b.paymentStatus === "paid" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700"
+                b.paymentStatus === "paid" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-400"
               }`}>
                 {b.paymentStatus === "paid" ? <CheckCircle size={11} /> : <Clock size={11} />}
                 {b.paymentStatus === "paid" ? "Paid" : "Pending"}
@@ -471,32 +471,32 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
 
           {/* ═══ DETAILS: Date Grid + Price ═══ */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Start Date</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(b.startDate)}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Start Date</p>
+              <p className="text-sm font-semibold text-white font-body">{formatDate(b.startDate)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">End Date</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(b.endDate)}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">End Date</p>
+              <p className="text-sm font-semibold text-white font-body">{formatDate(b.endDate)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Duration</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body">{months} {months === 1 ? "month" : "months"}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Duration</p>
+              <p className="text-sm font-semibold text-white font-body">{months} {months === 1 ? "month" : "months"}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Shelves</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body">{shelfCount}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Shelves</p>
+              <p className="text-sm font-semibold text-white font-body">{shelfCount}</p>
             </div>
           </div>
 
           {/* ═══ WAREHOUSE ═══ */}
-          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 mb-5">
-            <div className="w-9 h-9 rounded-lg bg-white border border-[#E2E8F0] flex items-center justify-center shrink-0">
-              <Warehouse size={16} className="text-[#0284C7]" />
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 border border-white/10 mb-5">
+            <div className="w-9 h-9 rounded-lg bg-neutral-900/80 border border-neutral-800 flex items-center justify-center shrink-0">
+              <Warehouse size={16} className="text-[#ccff00]" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-[#1E293B] font-body truncate">{b.warehouse?.name || "—"}</p>
-              <div className="flex items-center gap-1 text-[11px] text-[#0F172A]/50 font-body">
+              <p className="text-sm font-semibold text-white font-body truncate">{b.warehouse?.name || "—"}</p>
+              <div className="flex items-center gap-1 text-[11px] text-neutral-400 font-body">
                 <MapPin size={11} />
                 <span className="truncate">{b.warehouse?.location || "—"}</span>
               </div>
@@ -506,13 +506,13 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           {/* ═══ BOOKED SHELVES ═══ */}
           {b.shelves && b.shelves.length > 0 && (
             <div className="mb-5">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-2 font-body">Booked Shelves</p>
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Booked Shelves</p>
               <div className="flex flex-wrap gap-2">
                 {b.shelves.map((shelf) => (
                   <span key={shelf._id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] text-xs font-body">
-                    <Layers size={12} className="text-[#0284C7]" />
-                    <span className="font-medium text-[#1E293B]">{shelf.shelfNumber}</span>
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-neutral-800 text-xs font-body">
+                    <Layers size={12} className="text-[#ccff00]" />
+                    <span className="font-medium text-white">{shelf.shelfNumber}</span>
                   </span>
                 ))}
               </div>
@@ -520,41 +520,41 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           )}
 
           {/* ═══ FINANCIAL SUMMARY ═══ */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#E2E8F0] mb-5">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 border border-neutral-800 mb-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-[#0284C7]" />
-                <span className="text-sm font-medium text-[#1E293B] font-body">Total Amount</span>
+                <CreditCard size={16} className="text-[#ccff00]" />
+                <span className="text-sm font-medium text-white font-body">Total Amount</span>
               </div>
-              <span className="font-heading text-xl font-bold text-[#1E293B] numeric">
+              <span className="font-heading text-xl font-bold text-white numeric">
                 Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}
               </span>
             </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-[#0F172A]/50 font-body pt-3 border-t border-[#E2E8F0]">
+            <div className="mt-3 flex items-center justify-between text-[11px] text-neutral-400 font-body pt-3 border-t border-neutral-800">
               <span>{shelfCount} shelf{ shelfCount !== 1 ? "s" : "" } × {months} {months === 1 ? "month" : "months"}</span>
-              <span className="font-medium text-[#1E293B] numeric">Rs. {(shelfCount > 0 ? Math.round(b.totalAmount / shelfCount / months) : 0).toLocaleString("en-PK")}/shelf/mo</span>
+              <span className="font-medium text-white numeric">Rs. {(shelfCount > 0 ? Math.round(b.totalAmount / shelfCount / months) : 0).toLocaleString("en-PK")}/shelf/mo</span>
             </div>
           </div>
 
           {/* ═══ ACTION BUTTONS ═══ */}
           {actionError && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-              <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-red-600 font-body">{actionError}</p>
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
+              <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-400 font-body">{actionError}</p>
             </div>
           )}
 
           <div className="flex flex-col sm:flex-row gap-3">
             {canMarkPaid && (
               <button onClick={() => setShowPaidConfirm(true)} disabled={actionLoading === "paid"}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-full font-body text-sm font-medium hover:bg-emerald-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                 {actionLoading === "paid" ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
                 Mark as Paid
               </button>
             )}
             {canCancel && (
               <button onClick={() => setShowCancelConfirm(true)} disabled={actionLoading === "cancel"}
-                className={`inline-flex items-center justify-center gap-2 px-5 py-3 border-2 border-red-200 text-red-600 rounded-full font-body text-sm font-medium hover:bg-red-50 active:scale-95 transition-all duration-200 disabled:opacity-50 ${canMarkPaid ? "" : "flex-1"}`}>
+                className={`inline-flex items-center justify-center gap-2 px-5 py-3 border-2 border-red-500/30 text-red-400 rounded-full font-body text-sm font-medium hover:bg-red-500/10 active:scale-95 transition-all duration-200 disabled:opacity-50 ${canMarkPaid ? "" : "flex-1"}`}>
                 {actionLoading === "cancel" ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
                 Cancel Booking
               </button>
@@ -639,17 +639,17 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
 
   if (loading) return (
     <div className="max-w-6xl mx-auto animate-pulse space-y-6">
-      <div className="h-5 bg-[#F8FAFC] rounded w-32" />
-      <div className="h-64 bg-[#F8FAFC] rounded-3xl" />
-      <div className="grid grid-cols-3 gap-4"><div className="h-24 bg-[#F8FAFC] rounded-2xl" /><div className="h-24 bg-[#F8FAFC] rounded-2xl" /><div className="h-24 bg-[#F8FAFC] rounded-2xl" /></div>
+      <div className="h-5 bg-neutral-800/60 rounded w-32" />
+      <div className="h-64 bg-neutral-800/60 rounded-3xl" />
+      <div className="grid grid-cols-3 gap-4"><div className="h-24 bg-neutral-800/60 rounded-2xl" /><div className="h-24 bg-neutral-800/60 rounded-2xl" /><div className="h-24 bg-neutral-800/60 rounded-2xl" /></div>
     </div>
   );
 
   if (!w) return (
     <div className="text-center py-16">
-      <AlertCircle size={32} className="mx-auto text-[#0284C7]/40 mb-3" />
-      <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">Warehouse not found</h3>
-      <button onClick={onBack} className="mt-2 px-5 py-2.5 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 transition-all">← Back to My Warehouses</button>
+      <AlertCircle size={32} className="mx-auto text-[#ccff00]/40 mb-3" />
+      <h3 className="font-heading text-lg font-semibold text-white mb-2">Warehouse not found</h3>
+      <button onClick={onBack} className="mt-2 px-5 py-2.5 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all">← Back to My Warehouses</button>
     </div>
   );
 
@@ -661,7 +661,7 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
   return (
     <div className="max-w-6xl mx-auto">
       {/* Back button */}
-      <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-[#0F172A]/50 hover:text-[#1E293B] font-body transition-colors mb-6">
+      <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white font-body transition-colors mb-6">
         <ChevronLeft size={16} /> Back to My Warehouses
       </button>
 
@@ -669,25 +669,25 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mb-6">
         {/* Left: Image + Title */}
-        <div className="bg-white rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-sm">
+        <div className="bg-[#111614]/90 backdrop-blur-md rounded-2xl overflow-hidden border border-neutral-800/80 shadow-sm">
           <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-44" containImage={true} />
           <div className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <h1 className="font-heading text-xl font-bold text-[#1E293B] truncate">{w.name}</h1>
-                <div className="flex items-center gap-1.5 mt-0.5 text-sm text-[#0F172A]/50 font-body truncate">
+                <h1 className="font-heading text-xl font-bold text-white truncate">{w.name}</h1>
+                <div className="flex items-center gap-1.5 mt-0.5 text-sm text-neutral-400 font-body truncate">
                   <MapPin size={13} className="shrink-0" />
                   <span className="truncate">{w.location}</span>
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <p className="font-heading text-lg font-bold text-[#0284C7] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</p>
-                <p className="text-[10px] text-[#0F172A]/40 font-body">per shelf / mo</p>
+                <p className="font-heading text-lg font-bold text-[#ccff00] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</p>
+                <p className="text-[10px] text-neutral-500 font-body">per shelf / mo</p>
               </div>
             </div>
             {isOwnWarehouse && (
               <div className="mt-2.5">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-body font-medium">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-body font-medium">
                   <Warehouse size={11} /> You own this
                 </span>
               </div>
@@ -706,13 +706,13 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="w-9 h-9 rounded-lg bg-[#F8FAFC] flex items-center justify-center shrink-0">
-                <s.icon size={16} className="text-[#0284C7]" />
+              className="flex items-center gap-3 p-3 rounded-xl bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#ccff00]/40 hover:-translate-y-0.5 transition-all duration-300">
+              <div className="w-9 h-9 rounded-lg bg-neutral-800/60 flex items-center justify-center shrink-0">
+                <s.icon size={16} className="text-[#ccff00]" />
               </div>
               <div>
-                <p className="font-heading text-lg font-bold text-[#1E293B] numeric leading-tight">{s.value}</p>
-                <p className="text-[10px] text-[#0F172A]/50 font-body uppercase tracking-wider">{s.label}</p>
+                <p className="font-heading text-lg font-bold text-white numeric leading-tight">{s.value}</p>
+                <p className="text-[10px] text-neutral-400 font-body uppercase tracking-wider">{s.label}</p>
               </div>
             </motion.div>
           ))}
@@ -721,8 +721,8 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
 
       {/* Shelves Section */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}
-        className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-5 sm:p-6">
-        <h2 className="font-heading text-lg font-semibold text-[#1E293B] mb-4">Shelves</h2>
+        className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-5 sm:p-6">
+        <h2 className="font-heading text-lg font-semibold text-white mb-4">Shelves</h2>
 
         {isOwnWarehouse && !shelvesLoading && shelves.length > 0 && (
           <div className="flex items-center gap-1.5 mb-4">
@@ -731,7 +731,7 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
               return (
                 <button key={tab} onClick={() => setShelfFilter(tab as typeof shelfFilter)}
                   className={`px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${
-                    isActive ? "bg-[#1E293B] text-white shadow-sm" : "bg-white border border-[#E2E8F0] text-[#0F172A]/50 hover:text-[#0F172A] hover:border-[#0284C7]/30"
+                    isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#ccff00]/40"
                   }`}>
                   {tab === "all" ? "All Shelves" : tab === "available" ? "Available" : "Booked"}
                 </button>
@@ -741,43 +741,43 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
         )}
 
         {shelvesLoading ? (
-          <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-[#0284C7]" /></div>
+          <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-[#ccff00]" /></div>
         ) : shelves.length === 0 ? (
-          <div className="text-center py-10"><Layers size={32} className="mx-auto text-[#0284C7]/30 mb-3" /><p className="text-sm text-[#0F172A]/50 font-body">No shelves available.</p></div>
+          <div className="text-center py-10"><Layers size={32} className="mx-auto text-[#ccff00]/30 mb-3" /><p className="text-sm text-neutral-400 font-body">No shelves available.</p></div>
         ) : (
           <>
-            <div className="hidden sm:grid grid-cols-[1fr_90px_105px] gap-2 px-4 py-2 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Shelf</span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Status</span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body text-right">Rate / Mo</span>
+            <div className="hidden sm:grid grid-cols-[1fr_90px_105px] gap-2 px-4 py-2 bg-neutral-900/80 rounded-xl border border-neutral-800 mb-1">
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Shelf</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Status</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body text-right">Rate / Mo</span>
             </div>
             <div className="space-y-1">
               {filteredShelves.map((shelf) => (
                 <div key={shelf._id}
-                  className={`grid grid-cols-[1fr_90px_105px] gap-2 items-center px-4 py-3 rounded-xl border transition-all duration-200 bg-white border-[#E2E8F0] hover:bg-[#F8FAFC]/40 ${
+                  className={`grid grid-cols-[1fr_90px_105px] gap-2 items-center px-4 py-3 rounded-xl border transition-all duration-200 bg-neutral-900/60 border-neutral-800 hover:bg-neutral-800/60 ${
                     shelf.status !== "available" ? "opacity-60" : ""
                   }`}>
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${shelf.status === "available" ? "bg-[#0284C7]/10" : "bg-[#0F172A]/5"}`}>
-                      <Layers size={14} className={shelf.status === "available" ? "text-[#0284C7]" : "text-[#0F172A]/30"} />
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${shelf.status === "available" ? "bg-[#ccff00]/10" : "bg-white/5"}`}>
+                      <Layers size={14} className={shelf.status === "available" ? "text-[#ccff00]" : "text-neutral-600"} />
                     </div>
-                    <span className="font-semibold text-sm text-[#1E293B] font-body truncate">Shelf #{shelf.shelfNumber}</span>
+                    <span className="font-semibold text-sm text-white font-body truncate">Shelf #{shelf.shelfNumber}</span>
                   </div>
                   <div>
                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body font-medium border ${
-                      shelf.status === "available" ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700"
+                      shelf.status === "available" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-400"
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${shelf.status === "available" ? "bg-emerald-500" : "bg-amber-500"}`} />
                       {shelf.status === "available" ? "Available" : "Booked"}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-[#1E293B] font-body numeric">Rs. {(shelf?.pricePerMonth ?? 0).toLocaleString("en-PK")}</span>
+                    <span className="text-xs font-semibold text-white font-body numeric">Rs. {(shelf?.pricePerMonth ?? 0).toLocaleString("en-PK")}</span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 text-xs text-[#0F172A]/40 font-body">
+            <div className="mt-4 text-xs text-neutral-500 font-body">
               Showing {filteredShelves.length} of {shelves.length} shelf{filteredShelves.length !== 1 ? "s" : ""}
             </div>
           </>
@@ -796,31 +796,31 @@ function WarehousesTab({ onViewWarehouse }: { onViewWarehouse: (id: string) => v
 
   useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/warehouse/my-warehouses"); const d = r.data.data; if (!c) setWarehouses(d.warehouses || []); } catch {} finally { if (!c) setLoading(false); } })(); return () => { c = true; }; }, [accessToken]);
 
-  if (loading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{[...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-2xl h-52 border border-[#E2E8F0] animate-pulse" />)}</div>;
+  if (loading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{[...Array(3)].map((_, i) => <div key={i} className="bg-[#111614] rounded-2xl h-52 border border-neutral-800/80 animate-pulse" />)}</div>;
   if (warehouses.length === 0) return (
-    <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-      <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><Building2 size={28} className="text-[#0284C7]/40" /></div>
-      <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">No warehouses yet</h3>
-      <p className="text-sm text-[#0F172A]/50 font-body mb-6 max-w-sm mx-auto">Create your first listing and start earning.</p>
-      <button onClick={() => {}} className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-medium hover:bg-slate-800 transition-all"><Plus size={16} /> Add Your First Warehouse</button>
+    <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+      <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Building2 size={28} className="text-[#ccff00]/40" /></div>
+      <h3 className="font-heading text-lg font-semibold text-white mb-2">No warehouses yet</h3>
+      <p className="text-sm text-neutral-400 font-body mb-6 max-w-sm mx-auto">Create your first listing and start earning.</p>
+      <button onClick={() => {}} className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all"><Plus size={16} /> Add Your First Warehouse</button>
     </div>
   );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {warehouses.map((w) => (
-        <div key={w._id} className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
-          <div className="h-2 bg-gradient-to-r from-[#0284C7] to-[#0284C7]/40" />
+        <div key={w._id} className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#ccff00]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
+          <div className="h-2 bg-gradient-to-r from-[#ccff00] to-[#ccff00]/40" />
           <div className="p-5 flex flex-col flex-1">
-            <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-1">{w.name}</h3>
-            <div className="flex items-center gap-1.5 text-xs text-[#0F172A]/50 font-body mb-3"><MapPin size={12} /><span className="truncate">{w.location}</span></div>
-            <div className="flex items-center justify-between text-xs text-[#0F172A]/50 font-body mb-4">
-              <span><strong className="text-[#1E293B] numeric">{w.totalShelves}</strong> shelves</span>
-              <span><strong className="text-[#1E293B] numeric">Rs. {w.pricePerShelf}</strong>/shelf/mo</span>
+            <h3 className="font-heading text-lg font-semibold text-white mb-1">{w.name}</h3>
+            <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body mb-3"><MapPin size={12} /><span className="truncate">{w.location}</span></div>
+            <div className="flex items-center justify-between text-xs text-neutral-400 font-body mb-4">
+              <span><strong className="text-white numeric">{w.totalShelves}</strong> shelves</span>
+              <span><strong className="text-white numeric">Rs. {w.pricePerShelf}</strong>/shelf/mo</span>
             </div>
-            <div className="mt-auto flex items-center gap-2 pt-3 border-t border-[#E2E8F0]">
-              <button onClick={() => onViewWarehouse(w._id)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#0284C7]/30 text-[#0284C7] rounded-full text-xs font-medium hover:bg-[#F8FAFC]/40 transition-colors"><Eye size={14} /> View</button>
-              <Link href={`/warehouses/${w._id}/edit`} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-900 text-white rounded-full text-xs font-medium hover:bg-slate-800 transition-all"><Edit3 size={14} /> Edit</Link>
+            <div className="mt-auto flex items-center gap-2 pt-3 border-t border-neutral-800">
+              <button onClick={() => onViewWarehouse(w._id)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors"><Eye size={14} /> View</button>
+              <Link href={`/warehouses/${w._id}/edit`} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] transition-all"><Edit3 size={14} /> Edit</Link>
             </div>
           </div>
         </div>
@@ -929,28 +929,28 @@ function AddWarehouseTab() {
 
   return (
     <div className="max-w-4xl mx-auto py-6">
-      <div className="bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 p-8 md:p-10">
+      <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl shadow-xl border border-neutral-800/80 p-8 md:p-10">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center">
-            <Warehouse size={20} className="text-[#0284C7]" />
+          <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center">
+            <Warehouse size={20} className="text-[#ccff00]" />
           </div>
-          <h1 className="font-heading text-2xl font-bold text-[#1E293B] tracking-tight">Add Warehouse</h1>
+          <h1 className="font-heading text-2xl font-bold text-white tracking-tight">Add Warehouse</h1>
         </div>
 
         {/* Success */}
         {success && (
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 mb-6">
-            <CheckCircle size={20} className="text-emerald-500 shrink-0" />
-            <p className="text-sm text-emerald-700 font-body">Warehouse created successfully!</p>
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 mb-6">
+            <CheckCircle size={20} className="text-emerald-400 shrink-0" />
+            <p className="text-sm text-emerald-400 font-body">Warehouse created successfully!</p>
           </div>
         )}
 
         {/* API Error */}
         {apiError && (
-          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 mb-6">
-            <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-600 font-body">{apiError}</p>
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 mb-6">
+            <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-400 font-body">{apiError}</p>
           </div>
         )}
 
@@ -969,11 +969,11 @@ function AddWarehouseTab() {
 
           {/* Map Picker */}
           <MapPicker latitude={latitude} longitude={longitude} onChange={(lat, lng) => { setLatitude(lat); setLongitude(lng); }} />
-          {errors.coordinates && <p className="text-red-500 text-xs mt-1 ml-1 font-body">{errors.coordinates}</p>}
+          {errors.coordinates && <p className="text-red-400 text-xs mt-1 ml-1 font-body">{errors.coordinates}</p>}
 
           {/* Image Upload */}
           <div>
-            <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-3 block font-body">Images (Max 5)</label>
+            <label className="text-xs font-semibold tracking-wider text-white uppercase mb-3 block font-body">Images (Max 5)</label>
             {imagePreviews.length > 0 && (
               <div className="flex flex-wrap gap-3 mb-4">
                 {imagePreviews.map((src, i) => <ImagePreview key={i} src={src} onRemove={() => removeImage(i)} />)}
@@ -988,19 +988,19 @@ function AddWarehouseTab() {
             )}
             {imageFiles.length + uploadedUrls.length < 5 && (
               <div onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-dashed border-[#0284C7]/30 hover:border-[#0284C7]/60 bg-[#F8FAFC]/20 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all hover:bg-[#F8FAFC]/40 shrink-0">
-                <Plus size={20} className="text-[#0284C7]/50" />
-                <span className="text-[10px] text-[#0284C7]/50 font-body">Add Image</span>
+                className="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-dashed border-[#ccff00]/30 hover:border-[#ccff00]/60 bg-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all hover:bg-white/10 shrink-0">
+                <Plus size={20} className="text-[#ccff00]/50" />
+                <span className="text-[10px] text-[#ccff00]/50 font-body">Add Image</span>
               </div>
             )}
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={handleFileSelect} />
-            {errors.images && <p className="text-red-500 text-xs mt-2 font-body">{errors.images}</p>}
+            {errors.images && <p className="text-red-400 text-xs mt-2 font-body">{errors.images}</p>}
           </div>
 
           {/* Submit */}
           <div className="pt-4">
             <button type="submit" disabled={isSubmitting || uploadingImage}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-sm hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
               {uploadingImage ? (
                 <><Loader2 size={18} className="animate-spin" /> Uploading Images...</>
               ) : isSubmitting ? (
@@ -1099,16 +1099,16 @@ function ProfileTab() {
   if (isLoading && !profileUser) {
     return (
       <div className="max-w-3xl mx-auto py-6">
-        <div className="bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 p-8 md:p-10 animate-pulse">
-          <div className="h-8 bg-[#F8FAFC] rounded-lg w-40 mb-8" />
+        <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl shadow-xl border border-neutral-800/80 p-8 md:p-10 animate-pulse">
+          <div className="h-8 bg-neutral-800/60 rounded-lg w-40 mb-8" />
           <div className="flex items-center gap-5 mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC]" />
-            <div className="space-y-2 flex-1"><div className="h-5 bg-[#F8FAFC] rounded w-48" /><div className="h-4 bg-[#F8FAFC] rounded w-64" /></div>
+            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60" />
+            <div className="space-y-2 flex-1"><div className="h-5 bg-neutral-800/60 rounded w-48" /><div className="h-4 bg-neutral-800/60 rounded w-64" /></div>
           </div>
           <div className="space-y-6">
-            <div className="h-12 bg-[#F8FAFC] rounded-xl w-full" />
-            <div className="h-12 bg-[#F8FAFC] rounded-xl w-full" />
-            <div className="h-12 bg-[#F8FAFC] rounded-full w-full mt-8" />
+            <div className="h-12 bg-neutral-800/60 rounded-xl w-full" />
+            <div className="h-12 bg-neutral-800/60 rounded-xl w-full" />
+            <div className="h-12 bg-neutral-800/60 rounded-full w-full mt-8" />
           </div>
         </div>
       </div>
@@ -1122,44 +1122,44 @@ function ProfileTab() {
         {toast && (
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
             className={`mb-6 p-4 rounded-2xl border flex items-center gap-3 ${
-              toast.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-red-800"
+              toast.type === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" : "bg-red-500/10 border-red-500/20 text-red-300"
             }`}>
             {toast.type === "success" ? <CheckCircle size={20} className="shrink-0 text-emerald-500" /> : <XCircle size={20} className="shrink-0 text-red-500" />}
             <span className="text-sm font-body font-medium flex-1">{toast.message}</span>
-            <button onClick={() => setToast(null)} className="p-1 rounded-full hover:bg-black/5"><X size={14} className="opacity-50" /></button>
+            <button onClick={() => setToast(null)} className="p-1 rounded-full hover:bg-white/10"><X size={14} className="opacity-50" /></button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 p-8 md:p-10">
+      <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl shadow-xl border border-neutral-800/80 p-8 md:p-10">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center">
-            <User size={20} className="text-[#0284C7]" />
+          <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center">
+            <User size={20} className="text-[#ccff00]" />
           </div>
-          <h1 className="font-heading text-2xl font-bold text-[#1E293B] tracking-tight">My Profile</h1>
+          <h1 className="font-heading text-2xl font-bold text-white tracking-tight">My Profile</h1>
         </div>
 
         {/* User Card */}
         {profileUser && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}
-            className="flex items-start gap-4 md:gap-5 p-5 md:p-6 rounded-2xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 mb-6">
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#1E293B]/10 flex items-center justify-center shrink-0">
-              <User size={28} className="text-[#1E293B]/60" />
+            className="flex items-start gap-4 md:gap-5 p-5 md:p-6 rounded-2xl bg-white/5 border border-white/10 mb-6">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#ccff00]/10 flex items-center justify-center shrink-0">
+              <User size={28} className="text-[#ccff00]" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="font-heading text-lg md:text-xl font-semibold text-[#1E293B] truncate">{profileUser.name}</h2>
+                <h2 className="font-heading text-lg md:text-xl font-semibold text-white truncate">{profileUser.name}</h2>
                 {profileUser.isVerified && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-body font-medium">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-body font-medium">
                     <ShieldCheck size={12} /> Verified
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 mt-1 text-sm text-[#0F172A]/50 font-body">
+              <div className="flex items-center gap-1.5 mt-1 text-sm text-neutral-400 font-body">
                 <Mail size={14} /> <span className="truncate">{profileUser.email}</span>
               </div>
-              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 border border-[#0284C7]/15 text-[11px] text-[#0284C7] font-body font-medium capitalize">
+              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] text-[#ccff00] font-body font-medium capitalize">
                 {(() => {
                   const opt = roleOptions.find((r) => r.value === profileUser.role);
                   const Icon = opt?.icon || Store;
@@ -1174,10 +1174,10 @@ function ProfileTab() {
         {/* User ID row */}
         {profileUser && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
-            className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3 md:p-4 mb-8">
+            className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 rounded-xl p-3 md:p-4 mb-8">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider whitespace-nowrap font-body">USER ID:</span>
-              <code className="text-xs md:text-sm font-mono text-[#0F172A]/70 font-medium break-all">{profileUser._id || profileUser.id || "—"}</code>
+              <span className="text-[10px] text-neutral-500 uppercase font-semibold tracking-wider whitespace-nowrap font-body">USER ID:</span>
+              <code className="text-xs md:text-sm font-mono text-neutral-300 font-medium break-all">{profileUser._id || profileUser.id || "—"}</code>
             </div>
             <CopyButton value={profileUser._id || profileUser.id || ""} />
           </motion.div>
@@ -1187,17 +1187,17 @@ function ProfileTab() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="space-y-6">
           {/* Phone */}
           <div>
-            <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Phone Number</label>
+            <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Phone Number</label>
             <div className="relative">
-              <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/60 pointer-events-none" />
+              <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/60 pointer-events-none" />
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000"
-                className="w-full pl-11 pr-4 py-3.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20 rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all text-sm font-body" />
+                className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all text-sm font-body" />
             </div>
           </div>
 
           {/* Role Selector */}
           <div>
-            <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-3 block font-body">Account Role</label>
+            <label className="text-xs font-semibold tracking-wider text-white uppercase mb-3 block font-body">Account Role</label>
             <div className="grid grid-cols-3 gap-2.5">
               {roleOptions.map((opt) => {
                 const isActive = role === opt.value;
@@ -1205,8 +1205,8 @@ function ProfileTab() {
                   <button key={opt.value} type="button" onClick={() => setRole(opt.value)}
                     className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-[#1E293B] text-white border-[#1E293B] shadow-sm"
-                        : "bg-transparent text-[#0284C7] border-[#0284C7]/30 hover:border-[#0284C7]/60 hover:bg-[#F8FAFC]/30"
+                        ? "bg-[#ccff00] text-black border-[#ccff00] shadow-lg shadow-[#ccff00]/20"
+                        : "bg-transparent text-neutral-400 border-neutral-800 hover:border-[#ccff00]/50 hover:bg-white/5"
                     }`}>
                     <opt.icon size={20} />
                     <span className="text-[11px] leading-tight text-center">{opt.label}</span>
@@ -1219,7 +1219,7 @@ function ProfileTab() {
           {/* Save Button */}
           <div className="pt-4">
             <button onClick={handleSave} disabled={isUpdating}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-sm hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
               {isUpdating ? <><Loader2 size={18} className="animate-spin" /> Updating...</> : <><Save size={18} /> Save Changes</>}
             </button>
           </div>
@@ -1280,51 +1280,51 @@ function VerificationsTab() {
   }, [rejectTarget, rejectReason, fetchVerifications]);
 
   const sBadge = (status: string) => ({
-    approved: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: CheckCircle, label: "Approved" },
-    rejected: { bg: "bg-red-50 border-red-200", text: "text-red-700", icon: XCircle, label: "Rejected" },
-  }[status] || { bg: "bg-amber-50 border-amber-200", text: "text-amber-700", icon: Clock, label: "Pending" });
+    approved: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: CheckCircle, label: "Approved" },
+    rejected: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: XCircle, label: "Rejected" },
+  }[status] || { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: Clock, label: "Pending" });
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="flex items-center gap-1.5 bg-white/60 border border-slate-200/50 rounded-2xl p-1.5 shadow-sm">
+        <div className="flex items-center gap-1.5 bg-white/5 border border-neutral-800/80 rounded-2xl p-1.5 shadow-sm">
           {([{ k: "all", l: "All" }, { k: "pending", l: "Pending" }, { k: "approved", l: "Approved" }, { k: "rejected", l: "Rejected" }] as { k: FilterStatus; l: string }[]).map((t) => {
             const isActive = filter === t.k; const cnt = counts[t.k];
-            return <button key={t.k} onClick={() => setFilter(t.k)} className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1E293B] text-white shadow-md" : "text-[#0F172A]/50 hover:text-[#0F172A] hover:bg-slate-100"}`}>{t.l}{cnt > 0 && <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20 text-white" : "bg-slate-200/60 text-[#0F172A]/50"}`}>{cnt}</span>}</button>;
+            return <button key={t.k} onClick={() => setFilter(t.k)} className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "text-neutral-400 hover:text-white hover:bg-white/10"}`}>{t.l}{cnt > 0 && <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? "bg-black/20 text-black" : "bg-white/10 text-neutral-400"}`}>{cnt}</span>}</button>;
           })}
         </div>
         <div className="relative flex-1 max-w-xs">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0F172A]/30 pointer-events-none" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search users..." className="w-full pl-9 pr-3 py-2 bg-white/80 border border-slate-200/60 rounded-xl text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] transition-all font-body" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search users..." className="w-full pl-9 pr-3 py-2 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] transition-all font-body" />
         </div>
       </div>
-      {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-2"><AlertCircle size={16} className="text-red-500 shrink-0" /><p className="text-sm text-red-700 font-body">{error}</p></div>}
-      {loading && <div className="flex items-center justify-center py-16"><Loader2 size={28} className="animate-spin text-[#0284C7]" /></div>}
+      {error && <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-2"><AlertCircle size={16} className="text-red-400 shrink-0" /><p className="text-sm text-red-400 font-body">{error}</p></div>}
+      {loading && <div className="flex items-center justify-center py-16"><Loader2 size={28} className="animate-spin text-[#ccff00]" /></div>}
       {!loading && users.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><CheckCircle size={28} className="text-emerald-400" /></div>
-          <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">All caught up!</h3>
-          <p className="text-sm text-[#0F172A]/50 font-body">No pending verification requests.</p>
+        <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CheckCircle size={28} className="text-emerald-400" /></div>
+          <h3 className="font-heading text-lg font-semibold text-white mb-2">All caught up!</h3>
+          <p className="text-sm text-neutral-400 font-body">No pending verification requests.</p>
         </div>
       )}
       {!loading && users.length > 0 && (
         <div className="space-y-3">
           {users.map((u) => { const b = sBadge(u.verificationStatus); const BI = b.icon; return (
-            <div key={u._id} className="bg-white/80 border border-slate-200/60 shadow-sm rounded-3xl p-5">
+            <div key={u._id} className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-sm rounded-3xl p-5">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-[#1E293B] flex items-center justify-center shrink-0"><User size={18} className="text-white" /></div>
+                <div className="w-11 h-11 rounded-2xl bg-[#ccff00] flex items-center justify-center shrink-0"><User size={18} className="text-black" /></div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2.5 flex-wrap"><h3 className="font-heading text-base font-semibold text-[#1E293B] truncate">{u.name}</h3><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${b.bg} ${b.text}`}><BI size={11} />{b.label}</span></div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-[#0F172A]/50 font-body"><span>{u.email}</span><span className="capitalize">Role: {u.role}</span><span>{formatDate(u.createdAt)}</span></div>
+                  <div className="flex items-center gap-2.5 flex-wrap"><h3 className="font-heading text-base font-semibold text-white truncate">{u.name}</h3><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${b.bg} ${b.text}`}><BI size={11} />{b.label}</span></div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-neutral-400 font-body"><span>{u.email}</span><span className="capitalize">Role: {u.role}</span><span>{formatDate(u.createdAt)}</span></div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => setSelected(u)} className="px-3.5 py-2 bg-slate-900 text-white rounded-full text-xs font-medium hover:bg-slate-800 transition-all">Review Docs</button>
-                  {u.verificationStatus === "pending" && <><button onClick={() => updateStatus(u._id, "approved")} disabled={actionLoading} className="p-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-100 transition-all disabled:opacity-50" title="Approve"><ThumbsUp size={15} /></button><button onClick={() => updateStatus(u._id, "rejected")} disabled={actionLoading} className="p-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-all disabled:opacity-50" title="Reject"><ThumbsDown size={15} /></button></>}
-                  {u.verificationStatus === "approved" && <><button onClick={() => updateStatus(u._id, "pending")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all text-xs font-medium disabled:opacity-50"><Undo2 size={13} /> Pending</button><button onClick={() => updateStatus(u._id, "rejected")} disabled={actionLoading} className="p-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-all disabled:opacity-50" title="Reject"><ThumbsDown size={15} /></button></>}
-                  {u.verificationStatus === "rejected" && <><button onClick={() => updateStatus(u._id, "approved")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-all text-xs font-medium disabled:opacity-50"><ThumbsUp size={13} /> Approve</button><button onClick={() => updateStatus(u._id, "pending")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all text-xs font-medium disabled:opacity-50"><Undo2 size={13} /> Pending</button></>}
+                  <button onClick={() => setSelected(u)} className="px-3.5 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all">Review Docs</button>
+                  {u.verificationStatus === "pending" && <><button onClick={() => updateStatus(u._id, "approved")} disabled={actionLoading} className="p-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all disabled:opacity-50" title="Approve"><ThumbsUp size={15} /></button><button onClick={() => updateStatus(u._id, "rejected")} disabled={actionLoading} className="p-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50" title="Reject"><ThumbsDown size={15} /></button></>}
+                  {u.verificationStatus === "approved" && <><button onClick={() => updateStatus(u._id, "pending")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-all text-xs font-medium disabled:opacity-50"><Undo2 size={13} /> Pending</button><button onClick={() => updateStatus(u._id, "rejected")} disabled={actionLoading} className="p-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50" title="Reject"><ThumbsDown size={15} /></button></>}
+                  {u.verificationStatus === "rejected" && <><button onClick={() => updateStatus(u._id, "approved")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all text-xs font-medium disabled:opacity-50"><ThumbsUp size={13} /> Approve</button><button onClick={() => updateStatus(u._id, "pending")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-all text-xs font-medium disabled:opacity-50"><Undo2 size={13} /> Pending</button></>}
                 </div>
               </div>
-              {u.verificationStatus === "rejected" && u.rejectionReason && <div className="mt-3 pt-3 border-t border-red-100/60"><p className="text-xs text-red-600/70 font-body flex items-start gap-1.5"><AlertCircle size={12} className="mt-0.5 shrink-0" /><span><span className="font-medium">Reason:</span> {u.rejectionReason}</span></p></div>}
+              {u.verificationStatus === "rejected" && u.rejectionReason && <div className="mt-3 pt-3 border-t border-red-500/20"><p className="text-xs text-red-400/80 font-body flex items-start gap-1.5"><AlertCircle size={12} className="mt-0.5 shrink-0" /><span><span className="font-medium">Reason:</span> {u.rejectionReason}</span></p></div>}
             </div>
           );})}
         </div>
@@ -1332,31 +1332,31 @@ function VerificationsTab() {
 
       {/* Review Docs Modal */}
       <AnimatePresence>{selected && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200/60">
-            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-slate-200/60 px-6 py-4 flex items-center justify-between rounded-t-3xl">
-              <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-[#F8FAFC] flex items-center justify-center"><ShieldCheck size={18} className="text-[#0284C7]" /></div><div><h3 className="font-heading text-lg font-semibold text-[#1E293B]">KYC — {selected.name}</h3><p className="text-xs text-[#0F172A]/50 font-body">{selected.email}</p></div></div>
-              <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-full bg-[#F8FAFC] flex items-center justify-center text-[#0F172A]/50 hover:text-[#0F172A] hover:bg-[#F1F5F9]"><X size={16} /></button>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80">
+            <div className="sticky top-0 bg-[#111614]/90 backdrop-blur-sm border-b border-neutral-800 px-6 py-4 flex items-center justify-between rounded-t-3xl">
+              <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><ShieldCheck size={18} className="text-[#ccff00]" /></div><div><h3 className="font-heading text-lg font-semibold text-white">KYC — {selected.name}</h3><p className="text-xs text-neutral-400 font-body">{selected.email}</p></div></div>
+              <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/20"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {(["nicFront", "nicBack"] as const).map((doc) => (
-                  <div key={doc}><p className="text-xs font-semibold text-[#1E293B] uppercase mb-2 font-body">{doc === "nicFront" ? "NIC Front" : "NIC Back"}</p>
-                    <div className="relative rounded-2xl overflow-hidden bg-[#F8FAFC] border border-slate-200/60 h-48 cursor-pointer hover:border-[#0284C7]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.[doc] || null); setPreviewLabel(doc === "nicFront" ? "NIC Front" : "NIC Back"); }}>
-                      {selected.kycDocuments?.[doc] ? <img src={selected.kycDocuments[doc]!} alt={doc} className="w-full h-full object-contain p-2" /> : <div className="flex items-center justify-center h-full text-[#0F172A]/30"><ImageIcon size={32} /></div>}
+                  <div key={doc}><p className="text-xs font-semibold text-white uppercase mb-2 font-body">{doc === "nicFront" ? "NIC Front" : "NIC Back"}</p>
+                    <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-800 h-48 cursor-pointer hover:border-[#ccff00]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.[doc] || null); setPreviewLabel(doc === "nicFront" ? "NIC Front" : "NIC Back"); }}>
+                      {selected.kycDocuments?.[doc] ? <img src={selected.kycDocuments[doc]!} alt={doc} className="w-full h-full object-contain p-2" /> : <div className="flex items-center justify-center h-full text-neutral-600"><ImageIcon size={32} /></div>}
                     </div>
                   </div>
                 ))}
               </div>
-              <div><p className="text-xs font-semibold text-[#1E293B] uppercase mb-2 font-body">Live Photo</p>
-                <div className="relative rounded-2xl overflow-hidden bg-[#F8FAFC] border border-slate-200/60 h-48 cursor-pointer hover:border-[#0284C7]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.livePhoto || null); setPreviewLabel("Live Photo"); }}>
-                  {selected.kycDocuments?.livePhoto ? <img src={selected.kycDocuments.livePhoto} alt="Live Photo" className="w-full h-full object-contain p-2" /> : <div className="flex items-center justify-center h-full text-[#0F172A]/30"><ImageIcon size={32} /></div>}
+              <div><p className="text-xs font-semibold text-white uppercase mb-2 font-body">Live Photo</p>
+                <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-800 h-48 cursor-pointer hover:border-[#ccff00]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.livePhoto || null); setPreviewLabel("Live Photo"); }}>
+                  {selected.kycDocuments?.livePhoto ? <img src={selected.kycDocuments.livePhoto} alt="Live Photo" className="w-full h-full object-contain p-2" /> : <div className="flex items-center justify-center h-full text-neutral-600"><ImageIcon size={32} /></div>}
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/60">
-                <button onClick={() => setSelected(null)} className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-full text-sm font-medium hover:bg-slate-50 transition-all">Close</button>
-                {selected.verificationStatus !== "approved" && <button onClick={() => { updateStatus(selected._id, "approved"); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-medium hover:bg-emerald-700 transition-all disabled:opacity-50">{actionLoading ? <Loader2 size={15} className="animate-spin" /> : <ThumbsUp size={15} />} Approve</button>}
-                {selected.verificationStatus !== "rejected" && <button onClick={() => { setRejectTarget(selected._id); setShowReject(true); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-all disabled:opacity-50"><ThumbsDown size={15} /> Reject</button>}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
+                <button onClick={() => setSelected(null)} className="px-5 py-2.5 border border-neutral-800 text-neutral-400 rounded-full text-sm font-medium hover:bg-white/5 transition-all">Close</button>
+                {selected.verificationStatus !== "approved" && <button onClick={() => { updateStatus(selected._id, "approved"); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ccff00] text-black rounded-full text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all disabled:opacity-50">{actionLoading ? <Loader2 size={15} className="animate-spin" /> : <ThumbsUp size={15} />} Approve</button>}
+                {selected.verificationStatus !== "rejected" && <button onClick={() => { setRejectTarget(selected._id); setShowReject(true); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full text-sm font-medium hover:bg-red-500/20 transition-all disabled:opacity-50"><ThumbsDown size={15} /> Reject</button>}
               </div>
             </div>
           </motion.div>
@@ -1365,14 +1365,14 @@ function VerificationsTab() {
 
       {/* Reject Modal */}
       <AnimatePresence>{showReject && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowReject(false); setRejectTarget(null); setRejectReason(""); } }}>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200/60 p-6">
-            <h3 className="font-heading text-xl font-semibold text-[#1E293B] mb-2">Reject Verification</h3>
-            <p className="text-sm text-[#0F172A]/50 font-body mb-5">Provide a reason visible to the user.</p>
-            <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Enter reason..." rows={3} className="w-full p-3 rounded-xl border border-slate-200/60 text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-red-400 transition-all font-body resize-none" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowReject(false); setRejectTarget(null); setRejectReason(""); } }}>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 p-6">
+            <h3 className="font-heading text-xl font-semibold text-white mb-2">Reject Verification</h3>
+            <p className="text-sm text-neutral-400 font-body mb-5">Provide a reason visible to the user.</p>
+            <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Enter reason..." rows={3} className="w-full p-3 rounded-xl border border-neutral-800 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-red-400 transition-all font-body resize-none" />
             <div className="flex items-center justify-end gap-3 mt-5">
-              <button onClick={() => { setShowReject(false); setRejectTarget(null); setRejectReason(""); }} className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-full text-sm font-medium hover:bg-slate-50 transition-all">Cancel</button>
-              <button onClick={handleRejectSubmit} disabled={!rejectReason.trim() || actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-all disabled:opacity-50">{actionLoading ? <Loader2 size={15} className="animate-spin" /> : <ThumbsDown size={15} />} Submit</button>
+              <button onClick={() => { setShowReject(false); setRejectTarget(null); setRejectReason(""); }} className="px-5 py-2.5 border border-neutral-800 text-neutral-400 rounded-full text-sm font-medium hover:bg-white/5 transition-all">Cancel</button>
+              <button onClick={handleRejectSubmit} disabled={!rejectReason.trim() || actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full text-sm font-medium hover:bg-red-500/20 transition-all disabled:opacity-50">{actionLoading ? <Loader2 size={15} className="animate-spin" /> : <ThumbsDown size={15} />} Submit</button>
             </div>
           </motion.div>
         </motion.div>
@@ -1410,22 +1410,25 @@ export default function DashboardPage() {
   }, [activeTab]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="relative overflow-hidden min-h-screen bg-[#0a0d0c]">
+      {/* Ambient smoky radial glows */}
+      <div className="pointer-events-none fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#ccff00]/10 blur-[130px] z-0" />
+      <div className="pointer-events-none fixed bottom-[5%] right-[-5%] w-[450px] h-[450px] rounded-full bg-emerald-500/10 blur-[150px] z-0" />
       <Sidebar activeTab={activeTab} onTabChange={(tab) => { setActiveTab(tab); setSelectedWarehouseId(null); }} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} isAdmin={isAdmin} />
       <TopHeader onMenuToggle={() => setSidebarOpen(true)} unread={unread} />
       <main className="md:ml-60 pt-16">
-        <div className="px-4 lg:px-6 py-6">
+        <div className="px-4 lg:px-6 py-6 relative z-10">
           {/* Tab header — show only when not in warehouse detail view */}
           {!(activeTab === "warehouses" && selectedWarehouseId) && (
             <div className="mb-6">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#1E293B] tracking-tight">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight">
                 {activeTab === "overview" && "Dashboard"}
                 {activeTab === "warehouses" && "My Warehouses"}
                 {activeTab === "add-warehouse" && "Add Warehouse"}
                 {activeTab === "profile" && "Account / Profile"}
                 {activeTab === "verifications" && "KYC Verifications"}
               </h1>
-              <p className="mt-1 text-sm text-[#0F172A]/50 font-body">
+              <p className="mt-1 text-sm text-neutral-400 font-body">
                 {activeTab === "overview" && "Here's your overview at a glance"}
                 {activeTab === "warehouses" && "Manage your listed properties"}
                 {activeTab === "add-warehouse" && "Create a new warehouse listing"}
@@ -1434,18 +1437,20 @@ export default function DashboardPage() {
               </p>
             </div>
           )}
-          {/* Tab content */}
-          {activeTab === "overview" && <OverviewTab />}
-          {activeTab === "warehouses" && (
-            selectedWarehouseId ? (
-              <WarehouseDetailView warehouseId={selectedWarehouseId} onBack={() => setSelectedWarehouseId(null)} />
-            ) : (
-              <WarehousesTab onViewWarehouse={(id) => setSelectedWarehouseId(id)} />
-            )
-          )}
-          {activeTab === "add-warehouse" && <AddWarehouseTab />}
-          {activeTab === "profile" && <ProfileTab />}
-          {activeTab === "verifications" && <VerificationsTab />}
+          {/* Tab content (fade-in on switch) */}
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            {activeTab === "overview" && <OverviewTab />}
+            {activeTab === "warehouses" && (
+              selectedWarehouseId ? (
+                <WarehouseDetailView warehouseId={selectedWarehouseId} onBack={() => setSelectedWarehouseId(null)} />
+              ) : (
+                <WarehousesTab onViewWarehouse={(id) => setSelectedWarehouseId(id)} />
+              )
+            )}
+            {activeTab === "add-warehouse" && <AddWarehouseTab />}
+            {activeTab === "profile" && <ProfileTab />}
+            {activeTab === "verifications" && <VerificationsTab />}
+          </motion.div>
         </div>
       </main>
     </div>
