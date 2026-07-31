@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   description:
     "Streamline your warehouse and inventory management with ByteShelf. Join merchants and warehouse owners today.",
   keywords: ["inventory", "warehouse", "shelf management", "ByteShelf"],
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -136,7 +136,7 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
   const content = (
     <div className="flex flex-col h-full bg-slate-900">
       <div className="shrink-0 px-5 pt-6 pb-5 border-b border-white/10">
-        <Link href="/" className="inline-flex items-center gap-2.5 group mb-4">
+        <Link href="/" className="inline-flex items-center group mb-4">
           <Image
             src="/logo.png"
             alt="ByteShelf Logo"

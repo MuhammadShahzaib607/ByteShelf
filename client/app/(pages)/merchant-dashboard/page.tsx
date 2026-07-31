@@ -65,13 +65,13 @@ function toDateInputValue(date: Date): string { return date.toISOString().split(
 
 function statusBadge(status: string) {
   const c: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
-    confirmed: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: <CheckCircle size={11} />, label: "Confirmed" },
-    cancelled: { bg: "bg-red-50 border-red-200", text: "text-red-700", icon: <XCircle size={11} />, label: "Cancelled" },
-    completed: { bg: "bg-slate-50 border-slate-200", text: "text-slate-600", icon: <CheckCircle size={11} />, label: "Completed" },
-    "in-transit": { bg: "bg-blue-50 border-blue-200", text: "text-blue-700", icon: <Clock size={11} />, label: "In Transit" },
-    arrived: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: <CheckCircle size={11} />, label: "Arrived" },
-    paid: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: <CreditCard size={11} />, label: "Paid" },
-    pending: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700", icon: <Clock size={11} />, label: "Pending" },
+    confirmed: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Confirmed" },
+    cancelled: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Cancelled" },
+    completed: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <CheckCircle size={11} />, label: "Completed" },
+    "in-transit": { bg: "bg-sky-500/10 border-sky-500/20", text: "text-sky-400", icon: <Clock size={11} />, label: "In Transit" },
+    arrived: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Arrived" },
+    paid: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CreditCard size={11} />, label: "Paid" },
+    pending: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Pending" },
   };
   const s = c[status] || c.pending;
   return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${s.bg} ${s.text}`}>{s.icon}{s.label}</span>;
@@ -85,8 +85,8 @@ function CopyButton({ value }: { value: string }) {
     }
   };
   return (
-    <button onClick={handleCopy} title="Copy ID" className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${copied ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-white border-slate-200 text-[#0F172A]/40 hover:text-[#0F172A]/70 hover:bg-slate-100 hover:border-slate-300"}`}>
-      {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
+    <button onClick={handleCopy} title="Copy ID" className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${copied ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-neutral-900/80 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-800/60 hover:border-neutral-700"}`}>
+      {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
     </button>
   );
 }
@@ -111,9 +111,9 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose }: {
   const handleLogout = () => { dispatch(logout()); localStorage.removeItem("byteshelf_access_token"); localStorage.removeItem("auth_tokens"); window.location.href = "/login"; };
 
   const content = (
-    <div className="flex flex-col h-full bg-slate-900">
+    <div className="flex flex-col h-full bg-[#0d100f]/95 backdrop-blur-md">
       <div className="shrink-0 px-5 pt-6 pb-5 border-b border-white/10">
-        <Link href="/" className="inline-flex items-center gap-2.5 group mb-4">
+        <Link href="/" className="inline-flex items-center group mb-4">
           <Image
             src="/logo.png"
             alt="ByteShelf Logo"
@@ -130,8 +130,8 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose }: {
           const Icon = tab.icon; const isActive = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => { onTabChange(tab.id); onClose(); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${isActive ? "bg-white/10 text-white font-medium shadow-sm" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
-              <Icon size={18} className={isActive ? "text-[#38BDF8]" : "text-white/40"} />{tab.label}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
+              <Icon size={18} className={isActive ? "text-black" : "text-white/40"} />{tab.label}
             </button>
           );
         })}
@@ -149,10 +149,10 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose }: {
   );
 
   return (<>
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-slate-900 z-40">{content}</aside>
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-[#0d100f]/95 backdrop-blur-md border-r border-white/10 z-40">{content}</aside>
     <AnimatePresence>{isOpen && (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose}>
-        <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed left-0 top-0 bottom-0 w-60 bg-slate-900 z-50" onClick={(e) => e.stopPropagation()}>{content}</motion.aside>
+        <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed left-0 top-0 bottom-0 w-60 bg-[#0d100f]/95 backdrop-blur-md z-50" onClick={(e) => e.stopPropagation()}>{content}</motion.aside>
       </motion.div>
     )}</AnimatePresence>
   </>);
@@ -168,22 +168,22 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
   useEffect(() => { if (accessToken) dispatch(fetchNotifications()); }, [accessToken, dispatch]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 md:left-60 z-30 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+    <header className="fixed top-0 left-0 right-0 md:left-60 z-30 h-16 bg-[#0a0d0c]/85 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center justify-between h-full px-4 md:px-6">
         <div className="flex items-center gap-3">
-          <button onClick={onMenuToggle} className="md:hidden w-9 h-9 rounded-full bg-[#F8FAFC] flex items-center justify-center text-[#0F172A]/50 hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all"><Menu size={18} /></button>
-          <h1 className="text-sm font-semibold text-[#1E293B] font-body hidden sm:block">Welcome, {user?.name?.split(" ")[0] || "Merchant"}</h1>
+          <button onClick={onMenuToggle} className="md:hidden w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/20 transition-all"><Menu size={18} /></button>
+          <h1 className="text-sm font-semibold text-white font-body hidden sm:block">Welcome, {user?.name?.split(" ")[0] || "Merchant"}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/notifications" className="relative flex items-center justify-center w-9 h-9 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15 hover:bg-[#F8FAFC] transition-colors">
-            <Bell size={17} className="text-[#0F172A]/60" />
-            {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
+          <Link href="/notifications" className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-colors">
+            <Bell size={17} className="text-neutral-300" />
+            {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F8FAFC]/60 border border-[#0284C7]/15">
-            <div className="w-7 h-7 rounded-full bg-[#1E293B] flex items-center justify-center">
-              <span className="text-[11px] font-semibold text-white font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
+            <div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center">
+              <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
-            <span className="text-sm font-medium text-[#1E293B] font-body hidden sm:block">{user?.name || "User"}</span>
+            <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ function OverviewTab() {
     <div>
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl p-5 border border-[#E2E8F0] animate-pulse"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-[#F8FAFC]" /><div className="space-y-2 flex-1"><div className="h-6 bg-[#F8FAFC] rounded w-16" /><div className="h-3 bg-[#F8FAFC] rounded w-24" /></div></div></div>)}
+          {[...Array(4)].map((_, i) => <div key={i} className="bg-[#111614] rounded-2xl p-5 border border-neutral-800/80 animate-pulse"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-neutral-800/60" /><div className="space-y-2 flex-1"><div className="h-6 bg-neutral-800/60 rounded w-16" /><div className="h-3 bg-neutral-800/60 rounded w-24" /></div></div></div>)}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -244,17 +244,17 @@ function OverviewTab() {
             { icon: DollarSign, label: "Total Spend", value: `Rs. ${stats.totalSpend.toLocaleString("en-PK")}`, sub: "Across all bookings", delay: 0.2 },
           ].map((k) => (
             <motion.div key={k.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: k.delay }}
-              className="bg-white rounded-2xl p-5 border border-[#E2E8F0] shadow-sm hover:shadow-md hover:border-[#0284C7]/20 transition-all duration-300">
+              className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-5 border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#ccff00]/40 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F8FAFC] to-white flex items-center justify-center shadow-sm shadow-slate-900/5">
-                  <k.icon size={20} className="text-[#0284C7]" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center shadow-sm shadow-black/20">
+                  <k.icon size={20} className="text-[#ccff00]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-heading text-2xl font-bold text-[#1E293B] numeric tracking-tight">{k.value}</p>
-                  <p className="text-xs text-[#0F172A]/50 font-body mt-0.5">{k.label}</p>
+                  <p className="font-heading text-2xl font-bold text-white numeric tracking-tight">{k.value}</p>
+                  <p className="text-xs text-neutral-400 font-body mt-0.5">{k.label}</p>
                 </div>
               </div>
-              {k.sub && <div className="mt-3 pt-3 border-t border-[#E2E8F0]"><span className="text-[11px] text-[#0F172A]/40 font-body">{k.sub}</span></div>}
+              {k.sub && <div className="mt-3 pt-3 border-t border-neutral-800"><span className="text-[11px] text-neutral-500 font-body">{k.sub}</span></div>}
             </motion.div>
           ))}
         </div>
@@ -263,29 +263,29 @@ function OverviewTab() {
       {/* Recent Activity */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
         <div className="flex items-center justify-between mb-5">
-          <div><h2 className="font-heading text-xl font-semibold text-[#1E293B]">Recent Bookings</h2><p className="text-sm text-[#0F172A]/50 font-body mt-0.5">Your latest booking activity</p></div>
+          <div><h2 className="font-heading text-xl font-semibold text-white">Recent Bookings</h2><p className="text-sm text-neutral-400 font-body mt-0.5">Your latest booking activity</p></div>
         </div>
         {loading ? (
-          <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-8 animate-pulse space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-10 bg-[#F8FAFC] rounded-xl" />)}</div>
+          <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-8 animate-pulse space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-10 bg-neutral-800/60 rounded-xl" />)}</div>
         ) : recentBookings.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#0284C7]/40" /></div>
-            <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">No bookings yet</h3>
-            <p className="text-sm text-[#0F172A]/50 font-body max-w-sm mx-auto">Explore warehouses and book shelf space to get started.</p>
+          <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#ccff00]/40" /></div>
+            <h3 className="font-heading text-lg font-semibold text-white mb-2">No bookings yet</h3>
+            <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">Explore warehouses and book shelf space to get started.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm overflow-hidden">
-            <div className="divide-y divide-[#E2E8F0]">
+          <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm overflow-hidden">
+            <div className="divide-y divide-neutral-800/80">
               {recentBookings.map((b, i) => (
                 <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-[#F8FAFC]/60 transition-colors duration-200">
+                  className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors duration-200">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] flex items-center justify-center shrink-0">
-                      <Store size={16} className="text-[#0284C7]" />
+                    <div className="w-8 h-8 rounded-lg bg-neutral-800/60 flex items-center justify-center shrink-0">
+                      <Store size={16} className="text-[#ccff00]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#1E293B] font-body truncate">{b.warehouse?.name || b.warehouseName || "Warehouse"}</p>
-                      <div className="flex items-center gap-2 text-xs text-[#0F172A]/50 font-body">
+                      <p className="text-sm font-medium text-white font-body truncate">{b.warehouse?.name || b.warehouseName || "Warehouse"}</p>
+                      <div className="flex items-center gap-2 text-xs text-neutral-400 font-body">
                         <span>{formatDate(b.startDate)} – {formatDate(b.endDate)}</span>
                         <span>·</span>
                         <span>{b.shelves?.length || b.shelfIds?.length || 0} shelves</span>
@@ -294,7 +294,7 @@ function OverviewTab() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {statusBadge(b.status)}
-                    <span className="text-sm font-semibold text-[#1E293B] font-body numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
+                    <span className="text-sm font-semibold text-white font-body numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
                   </div>
                 </motion.div>
               ))}
@@ -351,27 +351,27 @@ function ExploreTab() {
     <div>
       {/* Search */}
       <div className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/50 pointer-events-none" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by name or location..."
-          className="w-full pl-11 pr-4 py-3 bg-white/70 backdrop-blur-sm border border-[#0284C7]/20 rounded-2xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/10 focus:bg-white transition-all text-sm font-body shadow-sm shadow-slate-900/5" />
+          className="w-full pl-11 pr-4 py-3 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:ring-2 focus:ring-[#ccff00]/10 focus:bg-neutral-900 transition-all text-sm font-body shadow-sm shadow-black/20" />
       </div>
 
-      {!loading && <div className="flex items-center gap-2 mb-6 text-sm text-[#0F172A]/50 font-body">
+      {!loading && <div className="flex items-center gap-2 mb-6 text-sm text-neutral-400 font-body">
         <Package size={14} /><span>{totalWarehouses} warehouse{totalWarehouses !== 1 ? "s" : ""} available{searchQuery.trim() && ` · ${filteredWarehouses.length} match${filteredWarehouses.length !== 1 ? "es" : ""}`}</span>
       </div>}
 
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => <div key={i} className="bg-white rounded-2xl overflow-hidden border border-[#E2E8F0] animate-pulse"><div className="h-48 bg-[#F8FAFC]" /><div className="p-5 space-y-3"><div className="h-5 bg-[#F8FAFC] rounded w-3/4" /><div className="h-3 bg-[#F8FAFC] rounded w-1/2" /><div className="h-10 bg-[#F8FAFC] rounded-full w-full" /></div></div>)}
+          {[1, 2, 3].map((i) => <div key={i} className="bg-[#111614] rounded-2xl overflow-hidden border border-neutral-800/80 animate-pulse"><div className="h-48 bg-neutral-800/60" /><div className="p-5 space-y-3"><div className="h-5 bg-neutral-800/60 rounded w-3/4" /><div className="h-3 bg-neutral-800/60 rounded w-1/2" /><div className="h-10 bg-neutral-800/60 rounded-full w-full" /></div></div>)}
         </div>
       )}
 
       {!loading && warehouses.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0]">
-          <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><Warehouse size={28} className="text-[#0284C7]/40" /></div>
-          <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">No warehouses found</h3>
-          <p className="text-sm text-[#0F172A]/50 font-body">Check back later!</p>
+        <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Warehouse size={28} className="text-[#ccff00]/40" /></div>
+          <h3 className="font-heading text-lg font-semibold text-white mb-2">No warehouses found</h3>
+          <p className="text-sm text-neutral-400 font-body">Check back later!</p>
         </div>
       )}
 
@@ -380,19 +380,19 @@ function ExploreTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredWarehouses.map((w, i) => (
               <motion.div key={w._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
+                className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#ccff00]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
                 <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-48" />
                 <div className="p-5 flex flex-col flex-1">
-                  <h3 className="font-heading text-lg font-semibold text-[#1E293B]">{w.name}</h3>
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[#0F172A]/50 font-body">
+                  <h3 className="font-heading text-lg font-semibold text-white">{w.name}</h3>
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-neutral-400 font-body">
                     <MapPin size={12} /><span className="truncate">{w.location}</span>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <div><span className="font-heading text-xl font-bold text-[#1E293B] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</span><span className="text-xs text-[#0F172A]/50 font-body ml-1">/shelf/mo</span></div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#0F172A]/50 font-body"><Layers size={13} /><span>{w.totalShelves} shelves</span></div>
+                    <div><span className="font-heading text-xl font-bold text-[#ccff00] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</span><span className="text-xs text-neutral-400 font-body ml-1">/shelf/mo</span></div>
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body"><Layers size={13} /><span>{w.totalShelves} shelves</span></div>
                   </div>
                   <button onClick={() => setSelectedWhId(w._id)}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-body font-medium rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200">
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ccff00] text-black text-sm font-body font-semibold rounded-full hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
                     <Eye size={15} /> View Details & Shelves
                   </button>
                 </div>
@@ -403,10 +403,10 @@ function ExploreTab() {
           {hasMore && (
             <div className="mt-10 text-center">
               <button onClick={handleLoadMore} disabled={loadingMore}
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-white border border-[#0284C7]/20 text-[#1E293B] rounded-full font-body font-medium text-sm hover:bg-[#F8FAFC]/60 transition-all duration-300 shadow-sm shadow-slate-900/10 hover:shadow-md active:scale-[0.98] disabled:opacity-60">
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#111614]/90 border border-neutral-800 text-white rounded-full font-body font-medium text-sm hover:bg-neutral-800/80 hover:border-[#ccff00]/40 transition-all duration-300 shadow-sm shadow-black/20 hover:shadow-md active:scale-[0.98] disabled:opacity-60">
                 {loadingMore ? <><Loader2 size={18} className="animate-spin" /> Loading...</> : <><ChevronDown size={18} /> Load More</>}
               </button>
-              <p className="mt-3 text-xs text-[#0F172A]/40 font-body">Showing {warehouses.length} of {totalWarehouses} warehouses</p>
+              <p className="mt-3 text-xs text-neutral-500 font-body">Showing {warehouses.length} of {totalWarehouses} warehouses</p>
             </div>
           )}
         </>
@@ -511,33 +511,33 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="w-full max-w-xl bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        className="w-full max-w-xl bg-[#111614] shadow-2xl overflow-y-auto border-l border-white/10" onClick={(e) => e.stopPropagation()}>
         
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-[#E2E8F0] px-6 py-4 flex items-center justify-between">
-          <h2 className="font-heading text-lg font-semibold text-[#1E293B]">
+        <div className="sticky top-0 z-10 bg-[#111614]/90 backdrop-blur-md border-b border-neutral-800 px-6 py-4 flex items-center justify-between">
+          <h2 className="font-heading text-lg font-semibold text-white">
             {loading ? "Loading..." : w?.name || "Warehouse Details"}
           </h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#F8FAFC] flex items-center justify-center text-[#0F172A]/50 hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/20 transition-all">
             <X size={16} />
           </button>
         </div>
 
         {loading ? (
           <div className="p-8 animate-pulse space-y-6">
-            <div className="h-48 bg-[#F8FAFC] rounded-2xl" />
-            <div className="h-6 bg-[#F8FAFC] rounded w-3/4" />
+            <div className="h-48 bg-neutral-800/60 rounded-2xl" />
+            <div className="h-6 bg-neutral-800/60 rounded w-3/4" />
             <div className="grid grid-cols-3 gap-4">
-              <div className="h-20 bg-[#F8FAFC] rounded-xl" />
-              <div className="h-20 bg-[#F8FAFC] rounded-xl" />
-              <div className="h-20 bg-[#F8FAFC] rounded-xl" />
+              <div className="h-20 bg-neutral-800/60 rounded-xl" />
+              <div className="h-20 bg-neutral-800/60 rounded-xl" />
+              <div className="h-20 bg-neutral-800/60 rounded-xl" />
             </div>
           </div>
         ) : !w ? (
-          <div className="p-8 text-center"><AlertCircle size={32} className="mx-auto text-red-400 mb-3" /><p className="text-sm text-[#0F172A]/50">Warehouse not found.</p></div>
+          <div className="p-8 text-center"><AlertCircle size={32} className="mx-auto text-red-400 mb-3" /><p className="text-sm text-neutral-400">Warehouse not found.</p></div>
         ) : (
           <div className="p-6 space-y-6">
             {/* Image */}
@@ -545,39 +545,39 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
 
             {/* Info */}
             <div>
-              <h3 className="font-heading text-xl font-bold text-[#1E293B]">{w.name}</h3>
-              <div className="flex items-center gap-1.5 mt-1 text-sm text-[#0F172A]/50 font-body">
+              <h3 className="font-heading text-xl font-bold text-white">{w.name}</h3>
+              <div className="flex items-center gap-1.5 mt-1 text-sm text-neutral-400 font-body">
                 <MapPin size={14} /><span>{w.location}</span>
               </div>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-4 rounded-2xl bg-[#F8FAFC]/80 border border-[#E2E8F0] text-center">
-                <p className="font-heading text-xl font-bold text-[#1E293B] numeric">{w.totalShelves}</p>
-                <p className="text-[10px] text-[#0F172A]/50 uppercase tracking-wider font-body">Total</p>
+              <div className="p-4 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-center">
+                <p className="font-heading text-xl font-bold text-white numeric">{w.totalShelves}</p>
+                <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-body">Total</p>
               </div>
-              <div className="p-4 rounded-2xl bg-[#F8FAFC]/80 border border-[#E2E8F0] text-center">
-                <p className="font-heading text-xl font-bold text-emerald-600 numeric">{detail?.available ?? 0}</p>
-                <p className="text-[10px] text-[#0F172A]/50 uppercase tracking-wider font-body">Available</p>
+              <div className="p-4 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-center">
+                <p className="font-heading text-xl font-bold text-emerald-400 numeric">{detail?.available ?? 0}</p>
+                <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-body">Available</p>
               </div>
-              <div className="p-4 rounded-2xl bg-[#F8FAFC]/80 border border-[#E2E8F0] text-center">
-                <p className="font-heading text-xl font-bold text-[#1E293B] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</p>
-                <p className="text-[10px] text-[#0F172A]/50 uppercase tracking-wider font-body">/Shelf/Mo</p>
+              <div className="p-4 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-center">
+                <p className="font-heading text-xl font-bold text-white numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</p>
+                <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-body">/Shelf/Mo</p>
               </div>
             </div>
 
             {/* Available Shelves */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-[#1E293B] font-body">
-                  Available Shelves <span className="text-[#0F172A]/40 font-normal">({shelves.length})</span>
+                <h4 className="text-sm font-semibold text-white font-body">
+                  Available Shelves <span className="text-neutral-500 font-normal">({shelves.length})</span>
                 </h4>
                 <div className="flex gap-1.5">
                   <button onClick={() => setSelectedShelfIds(shelves.filter(s => s.status === "available").map(s => s._id))}
-                    className="text-[10px] px-2 py-1 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A]/50 hover:text-[#0F172A] font-body">Select All</button>
+                    className="text-[10px] px-2 py-1 rounded-full bg-white/10 border border-neutral-800 text-neutral-400 hover:text-white font-body">Select All</button>
                   <button onClick={() => setSelectedShelfIds([])}
-                    className="text-[10px] px-2 py-1 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A]/50 hover:text-[#0F172A] font-body">Clear</button>
+                    className="text-[10px] px-2 py-1 rounded-full bg-white/10 border border-neutral-800 text-neutral-400 hover:text-white font-body">Clear</button>
                 </div>
               </div>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -587,13 +587,13 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
                     <button key={shelf._id} onClick={() => toggleShelf(shelf._id)}
                       disabled={shelf.status !== "available"}
                       className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${isSelected
-                        ? "bg-slate-900 border-slate-900 text-white shadow-md"
+                        ? "bg-[#ccff00] border-[#ccff00] text-black shadow-md shadow-[#ccff00]/20"
                         : shelf.status === "available"
-                          ? "bg-white border-[#E2E8F0] text-[#1E293B] hover:border-[#0284C7]/40 hover:shadow-sm"
-                          : "bg-[#F8FAFC] border-[#E2E8F0] text-[#0F172A]/30 cursor-not-allowed"
+                          ? "bg-neutral-900/60 border-neutral-800 text-white hover:border-[#ccff00]/40 hover:shadow-sm"
+                          : "bg-white/5 border-neutral-800 text-neutral-600 cursor-not-allowed"
                       }`}>
                       <p className="text-xs font-semibold font-body">Shelf {shelf.shelfNumber}</p>
-                      <p className={`text-[10px] mt-0.5 font-body ${isSelected ? "text-white/70" : "text-[#0F172A]/40"}`}>
+                      <p className={`text-[10px] mt-0.5 font-body ${isSelected ? "text-black/70" : "text-neutral-500"}`}>
                         Rs. {(shelf.pricePerMonth || pricePerMonth).toLocaleString("en-PK")}/mo
                       </p>
                     </button>
@@ -601,55 +601,55 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
                 })}
               </div>
               {shelves.length === 0 && (
-                <p className="text-center py-6 text-sm text-[#0F172A]/50 font-body">No available shelves at this time.</p>
+                <p className="text-center py-6 text-sm text-neutral-400 font-body">No available shelves at this time.</p>
               )}
             </div>
 
             {/* Booking Form */}
             {shelves.length > 0 && (
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#E2E8F0]">
-                <h4 className="text-sm font-semibold text-[#1E293B] font-body mb-4">Book Shelves</h4>
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 border border-neutral-800">
+                <h4 className="text-sm font-semibold text-white font-body mb-4">Book Shelves</h4>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 block font-body">Start Date</label>
+                    <label className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 block font-body">Start Date</label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
                       min={toDateInputValue(new Date())}
-                      className="w-full px-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] transition-all font-body" />
+                      className="w-full px-3 py-2.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] transition-all font-body" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 block font-body">End Date</label>
+                    <label className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 block font-body">End Date</label>
                     <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
                       min={startDate}
-                      className="w-full px-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] transition-all font-body" />
+                      className="w-full px-3 py-2.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] transition-all font-body" />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-white border border-[#E2E8F0]">
+                <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
                   <div>
-                    <p className="text-xs text-[#0F172A]/50 font-body">
+                    <p className="text-xs text-neutral-400 font-body">
                       {selectedCount} shelf{selectedCount !== 1 ? "s" : ""} × {months} month{months !== 1 ? "s" : ""}
                     </p>
                   </div>
-                  <p className="font-heading text-lg font-bold text-[#1E293B] numeric">
+                  <p className="font-heading text-lg font-bold text-white numeric">
                     Rs. {estimatedTotal.toLocaleString("en-PK")}
                   </p>
                 </div>
 
                 {bookingError && (
-                  <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-                    <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-600 font-body">{bookingError}</p>
+                  <div className="mb-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
+                    <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-400 font-body">{bookingError}</p>
                   </div>
                 )}
 
                 {bookingSuccess ? (
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
-                    <CheckCircle size={20} className="text-emerald-500 shrink-0" />
-                    <p className="text-sm font-semibold text-emerald-700 font-body">Booking confirmed! Redirecting...</p>
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
+                    <CheckCircle size={20} className="text-emerald-400 shrink-0" />
+                    <p className="text-sm font-semibold text-emerald-400 font-body">Booking confirmed! Redirecting...</p>
                   </div>
                 ) : (
                   <button onClick={handleBooking} disabled={selectedCount === 0 || isBooking}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                     {isBooking ? <><Loader2 size={16} className="animate-spin" />Booking...</> : <><Eye size={16} />Book {selectedCount > 0 ? `${selectedCount} Shelf${selectedCount > 1 ? "s" : ""}` : "Shelves"}</>}
                   </button>
                 )}
@@ -757,9 +757,9 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       {/* Cancel Success Toast */}
       <AnimatePresence>{cancelSuccess && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-          className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
-          <CheckCircle size={18} className="text-emerald-500 shrink-0" />
-          <p className="text-sm text-emerald-700 font-body">{cancelSuccess}</p>
+          className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
+          <CheckCircle size={18} className="text-emerald-400 shrink-0" />
+          <p className="text-sm text-emerald-400 font-body">{cancelSuccess}</p>
         </motion.div>
       )}</AnimatePresence>
 
@@ -769,7 +769,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
           const isActive = filterStatus === tab;
           return (
             <button key={tab} onClick={() => setFilterStatus(tab)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1E293B] text-white shadow-sm" : "bg-white border border-[#E2E8F0] text-[#0F172A]/50 hover:text-[#0F172A] hover:border-[#0284C7]/30"}`}>
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#ccff00]/40"}`}>
               {tab === "all" ? "All" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           );
@@ -778,13 +778,13 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2].map((i) => <div key={i} className="bg-white rounded-2xl p-5 border border-[#E2E8F0] animate-pulse"><div className="h-5 bg-[#F8FAFC] rounded w-3/4 mb-3" /><div className="h-3 bg-[#F8FAFC] rounded w-1/2 mb-4" /><div className="h-8 bg-[#F8FAFC] rounded-full w-1/3" /></div>)}
+          {[1, 2].map((i) => <div key={i} className="bg-[#111614] rounded-2xl p-5 border border-neutral-800/80 animate-pulse"><div className="h-5 bg-neutral-800/60 rounded w-3/4 mb-3" /><div className="h-3 bg-neutral-800/60 rounded w-1/2 mb-4" /><div className="h-8 bg-neutral-800/60 rounded-full w-1/3" /></div>)}
         </div>
       ) : filteredBookings.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#0284C7]/40" /></div>
-          <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">No {filterStatus !== "all" ? filterStatus : ""} bookings found</h3>
-          <p className="text-sm text-[#0F172A]/50 font-body mb-6">Browse available warehouses to book shelf space.</p>
+        <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#ccff00]/40" /></div>
+          <h3 className="font-heading text-lg font-semibold text-white mb-2">No {filterStatus !== "all" ? filterStatus : ""} bookings found</h3>
+          <p className="text-sm text-neutral-400 font-body mb-6">Browse available warehouses to book shelf space.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -792,39 +792,39 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
             const canCancel = b.status !== "cancelled";
             return (
               <motion.div key={b._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}
-                className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
+                className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 hover:border-[#ccff00]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     {statusBadge(b.status)}
                     {statusBadge(b.paymentStatus === "paid" ? "paid" : "pending")}
                   </div>
-                  <h3 className="font-heading text-lg font-semibold text-[#1E293B]">{b.warehouseName || b.warehouse?.name || "Warehouse Booking"}</h3>
+                  <h3 className="font-heading text-lg font-semibold text-white">{b.warehouseName || b.warehouse?.name || "Warehouse Booking"}</h3>
                   {(b.warehouseLocation || b.warehouse?.location) && (
-                    <div className="flex items-center gap-1.5 mt-1 text-xs text-[#0F172A]/50 font-body"><MapPin size={12} /><span className="truncate">{b.warehouseLocation || b.warehouse?.location}</span></div>
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-neutral-400 font-body"><MapPin size={12} /><span className="truncate">{b.warehouseLocation || b.warehouse?.location}</span></div>
                   )}
-                  <hr className="my-4 border-[#0284C7]/10" />
-                  <div className="flex items-center justify-between text-xs text-[#0F172A]/60 font-body">
+                  <hr className="my-4 border-white/10" />
+                  <div className="flex items-center justify-between text-xs text-neutral-400 font-body">
                     <CalendarDays size={13} /><span>{formatDate(b.startDate)} – {formatDate(b.endDate)}</span>
                     <div className="flex items-center gap-1"><Layers size={13} /><span>{b.shelves?.length || b.shelfIds?.length || 0} shelves</span></div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-[#0284C7]/10 flex items-center justify-between">
-                    <span className="font-heading text-lg font-bold text-[#1E293B] numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
-                    <span className="text-[10px] text-[#0F172A]/40 font-body">ID: {b._id.slice(-8)}</span>
+                  <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span className="font-heading text-lg font-bold text-white numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
+                    <span className="text-[10px] text-neutral-500 font-body">ID: {b._id.slice(-8)}</span>
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button onClick={() => setSelectedBooking(b)}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#0284C7]/30 text-[#0284C7] rounded-full text-xs font-medium hover:bg-sky-50 transition-colors">
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors">
                       <Eye size={13} /> View Details
                     </button>
                     {b.status === "confirmed" && (
                       <button onClick={() => openInboundModal(b)}
-                        className="flex-[1.5] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-full text-xs font-medium hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-900/20 active:scale-95 transition-all duration-200">
+                        className="flex-[1.5] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
                         <Package size={13} /> Create Inbound
                       </button>
                     )}
                     {canCancel && (
                       <button onClick={() => { setCancelTarget(b._id); setShowCancelConfirm(true); }}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border-2 border-red-200 text-red-600 rounded-full text-xs font-medium hover:bg-red-50 transition-all">
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border-2 border-red-500/30 text-red-400 rounded-full text-xs font-medium hover:bg-red-500/10 transition-all">
                         <Ban size={13} /> Cancel
                       </button>
                     )}
@@ -840,19 +840,19 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       <AnimatePresence>
         {selectedBooking && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/40 backdrop-blur-sm overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/70 backdrop-blur-sm overflow-y-auto"
             onClick={(e) => { if (e.target === e.currentTarget) setSelectedBooking(null); }}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => setSelectedBooking(null)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] flex items-center justify-center text-[#0F172A]/50 hover:bg-[#F8FAFC] hover:text-[#0F172A] transition-all z-10"><X size={16} /></button>
+              className="w-full max-w-lg bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => setSelectedBooking(null)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 border border-neutral-800 flex items-center justify-center text-neutral-400 hover:bg-white/20 hover:text-white transition-all z-10"><X size={16} /></button>
               <div className="p-6 sm:p-8">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-2xl bg-[#1E293B] flex items-center justify-center shrink-0">
-                    <Store size={20} className="text-white" />
+                  <div className="w-10 h-10 rounded-2xl bg-[#ccff00] flex items-center justify-center shrink-0">
+                    <Store size={20} className="text-black" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-heading text-lg font-semibold text-[#1E293B] truncate">{selectedBooking.warehouseName || selectedBooking.warehouse?.name || "Warehouse"}</h2>
-                    <p className="text-xs text-[#0F172A]/50 font-body">{selectedBooking.warehouseLocation || selectedBooking.warehouse?.location || ""}</p>
+                    <h2 className="font-heading text-lg font-semibold text-white truncate">{selectedBooking.warehouseName || selectedBooking.warehouse?.name || "Warehouse"}</h2>
+                    <p className="text-xs text-neutral-400 font-body">{selectedBooking.warehouseLocation || selectedBooking.warehouse?.location || ""}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mb-4">
@@ -860,25 +860,25 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                   {statusBadge(selectedBooking.paymentStatus === "paid" ? "paid" : "pending")}
                 </div>
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Start Date</p>
-                    <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(selectedBooking.startDate)}</p>
+                  <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+                    <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Start Date</p>
+                    <p className="text-sm font-semibold text-white font-body">{formatDate(selectedBooking.startDate)}</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">End Date</p>
-                    <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(selectedBooking.endDate)}</p>
+                  <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+                    <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">End Date</p>
+                    <p className="text-sm font-semibold text-white font-body">{formatDate(selectedBooking.endDate)}</p>
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#E2E8F0] flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#1E293B] font-body">Total Amount</span>
-                  <span className="font-heading text-xl font-bold text-[#1E293B] numeric">Rs. {(selectedBooking.totalAmount || 0).toLocaleString("en-PK")}</span>
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 border border-neutral-800 flex items-center justify-between">
+                  <span className="text-sm font-medium text-white font-body">Total Amount</span>
+                  <span className="font-heading text-xl font-bold text-white numeric">Rs. {(selectedBooking.totalAmount || 0).toLocaleString("en-PK")}</span>
                 </div>
                 {selectedBooking.shelves && selectedBooking.shelves.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-2 font-body">Booked Shelves</p>
+                    <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Booked Shelves</p>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedBooking.shelves.map((shelf) => (
-                        <span key={shelf._id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] text-[11px] font-body"><Layers size={11} className="text-[#0284C7]" /><span className="font-medium text-[#1E293B]">{shelf.shelfNumber}</span></span>
+                        <span key={shelf._id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body"><Layers size={11} className="text-[#ccff00]" /><span className="font-medium text-white">{shelf.shelfNumber}</span></span>
                       ))}
                     </div>
                   </div>
@@ -893,59 +893,59 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       <AnimatePresence>
         {showInboundModal && inboundBooking && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/40 backdrop-blur-sm overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/70 backdrop-blur-sm overflow-y-auto"
             onClick={(e) => { if (e.target === e.currentTarget) { setShowInboundModal(false); setInboundBooking(null); } }}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              className="w-full max-w-lg bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="p-6 sm:p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                    <Package size={20} className="text-emerald-600" />
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                    <Package size={20} className="text-emerald-400" />
                   </div>
                   <div>
-                    <h2 className="font-heading text-lg font-semibold text-[#1E293B]">Create Inbound Shipment</h2>
-                    <p className="text-xs text-[#0F172A]/50 font-body">for {inboundBooking.warehouseName || inboundBooking.warehouse?.name || "Booking"}</p>
+                    <h2 className="font-heading text-lg font-semibold text-white">Create Inbound Shipment</h2>
+                    <p className="text-xs text-neutral-400 font-body">for {inboundBooking.warehouseName || inboundBooking.warehouse?.name || "Booking"}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Batch Name</label>
+                    <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Batch Name</label>
                     <input type="text" value={inboundBatchName} onChange={(e) => setInboundBatchName(e.target.value)}
                       placeholder="e.g. Q4 Inventory Restock"
-                      className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                      className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Total Cartons</label>
+                      <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Total Cartons</label>
                       <input type="number" min={1} value={inboundCartons}
                         onChange={(e) => setInboundCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Arrival Date</label>
+                      <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Arrival Date</label>
                       <input type="date" value={inboundArrivalDate}
                         onChange={(e) => setInboundArrivalDate(e.target.value)}
                         min={new Date().toISOString().split("T")[0]}
-                        className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
                     </div>
                   </div>
 
                   {inboundCreateError && (
-                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-                      <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
-                      <p className="text-xs text-red-600 font-body">{inboundCreateError}</p>
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
+                      <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-red-400 font-body">{inboundCreateError}</p>
                     </div>
                   )}
 
                   <div className="flex items-center gap-3 pt-2">
                     <button onClick={handleCreateInboundFromBooking}
                       disabled={creatingInbound || !inboundBatchName.trim() || !inboundArrivalDate}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-body font-medium hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-900/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                       {creatingInbound ? <><Loader2 size={16} className="animate-spin" />Creating...</> : <><Send size={16} />Create Shipment</>}
                     </button>
                     <button onClick={() => { setShowInboundModal(false); setInboundBooking(null); }}
-                      className="px-5 py-3 border border-[#E2E8F0] text-[#0F172A]/60 rounded-full text-sm font-body hover:bg-[#F8FAFC] transition-colors">Cancel</button>
+                      className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -958,31 +958,31 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       <AnimatePresence>
         {showInboundSuccess && createdPlanId && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget) setShowInboundSuccess(false); }}>
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] p-8 text-center" onClick={(e) => e.stopPropagation()}>
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={28} className="text-emerald-500" />
+              className="w-full max-w-md bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 p-8 text-center" onClick={(e) => e.stopPropagation()}>
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={28} className="text-emerald-400" />
               </div>
-              <h2 className="font-heading text-xl font-bold text-[#1E293B] mb-2">Inbound Plan Created!</h2>
-              <p className="text-sm text-[#0F172A]/50 font-body mb-5">Your shipment has been created and the warehouse owner will be notified.</p>
+              <h2 className="font-heading text-xl font-bold text-white mb-2">Inbound Plan Created!</h2>
+              <p className="text-sm text-neutral-400 font-body mb-5">Your shipment has been created and the warehouse owner will be notified.</p>
               
-              <div className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3 mb-5">
+              <div className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 rounded-xl p-3 mb-5">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider font-body">PLAN ID:</span>
-                  <code className="text-xs font-mono text-[#0F172A]/70 font-medium break-all">{createdPlanId}</code>
+                  <span className="text-[10px] text-neutral-500 uppercase font-semibold tracking-wider font-body">PLAN ID:</span>
+                  <code className="text-xs font-mono text-neutral-300 font-medium break-all">{createdPlanId}</code>
                 </div>
                 <CopyButton value={createdPlanId} />
               </div>
 
               <div className="flex gap-3">
                 <button onClick={() => { setShowInboundSuccess(false); onTabChange("inbounds"); }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200">
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
                   <Package size={16} /> View Inbounds
                 </button>
                 <button onClick={() => setShowInboundSuccess(false)}
-                  className="px-5 py-3 border border-[#E2E8F0] text-[#0F172A]/60 rounded-full text-sm font-body hover:bg-[#F8FAFC] transition-colors">Close</button>
+                  className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Close</button>
               </div>
             </motion.div>
           </motion.div>
@@ -1137,10 +1137,10 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
           { icon: Clock, label: "In Transit", value: inTransitCount },
           { icon: CheckCircle, label: "Arrived", value: arrivedCount },
         ].map((k) => (
-          <div key={k.label} className="bg-white rounded-2xl p-4 border border-[#E2E8F0] shadow-sm">
+          <div key={k.label} className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-4 border border-neutral-800/80 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F8FAFC] flex items-center justify-center"><k.icon size={18} className="text-[#0284C7]" /></div>
-              <div><p className="font-heading text-xl font-bold text-[#1E293B] numeric">{k.value}</p><p className="text-[11px] text-[#0F172A]/50 font-body">{k.label}</p></div>
+              <div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><k.icon size={18} className="text-[#ccff00]" /></div>
+              <div><p className="font-heading text-xl font-bold text-white numeric">{k.value}</p><p className="text-[11px] text-neutral-400 font-body">{k.label}</p></div>
             </div>
           </div>
         ))}
@@ -1148,56 +1148,56 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
 
       {/* Search Bar */}
       <div className="relative mb-5">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/40 pointer-events-none" />
+        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
         <input type="text" value={inboundSearch} onChange={(e) => setInboundSearch(e.target.value)}
           placeholder="Search by Plan ID, Warehouse Name, or Batch Name..."
-          className="w-full pl-10 pr-4 py-2.5 bg-white/70 backdrop-blur-sm border border-[#0284C7]/20 rounded-xl text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/10 focus:bg-white transition-all font-body shadow-sm shadow-slate-900/5" />
+          className="w-full pl-10 pr-4 py-2.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:ring-2 focus:ring-[#ccff00]/10 focus:bg-neutral-900 transition-all font-body shadow-sm shadow-black/20" />
       </div>
 
       {/* Create Button & results count */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="font-heading text-lg font-semibold text-[#1E293B]">Inbound Plans</h2>
-          <p className="text-sm text-[#0F172A]/50 font-body">
+          <h2 className="font-heading text-lg font-semibold text-white">Inbound Plans</h2>
+          <p className="text-sm text-neutral-400 font-body">
             Track incoming inventory
             {inboundSearch.trim() && filteredPlans.length > 0 && ` · ${filteredPlans.length} match${filteredPlans.length !== 1 ? "es" : ""}`}
           </p>
         </div>
-        <button onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded-full text-xs font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200">
+        {/* <button onClick={() => setShowCreateForm(true)}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#ccff00] text-black rounded-full text-xs font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
           <Plus size={14} /> New Inbound Plan
-        </button>
+        </button> */}
       </div>
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-8 animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-[#F8FAFC] rounded-xl" />)}
+        <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-8 animate-pulse space-y-4">
+          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-neutral-800/60 rounded-xl" />)}
         </div>
       )}
 
       {/* Empty state when no plans at all */}
       {!loading && plans.length === 0 && !showCreateForm && (
-        <div className="text-center py-16 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4"><Package size={28} className="text-[#0284C7]/40" /></div>
-          <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">No inbound plans yet</h3>
-          <p className="text-sm text-[#0F172A]/50 font-body mb-6">Create your first inbound shipment plan to start tracking inventory.</p>
+        <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Package size={28} className="text-[#ccff00]/40" /></div>
+          <h3 className="font-heading text-lg font-semibold text-white mb-2">No inbound plans yet</h3>
+          <p className="text-sm text-neutral-400 font-body mb-6">Create your first inbound shipment plan to start tracking inventory.</p>
         </div>
       )}
 
       {/* Empty search results */}
       {!loading && plans.length > 0 && filteredPlans.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-3xl border border-[#E2E8F0] shadow-sm">
-          <Search size={28} className="mx-auto text-[#0284C7]/30 mb-3" />
-          <p className="text-sm text-[#0F172A]/50 font-body">No inbound plans match your search.</p>
-          <button onClick={() => setInboundSearch("")} className="mt-3 text-xs text-[#0284C7] font-body hover:underline">Clear search</button>
+        <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+          <Search size={28} className="mx-auto text-[#ccff00]/30 mb-3" />
+          <p className="text-sm text-neutral-400 font-body">No inbound plans match your search.</p>
+          <button onClick={() => setInboundSearch("")} className="mt-3 text-xs text-[#ccff00] font-body hover:underline">Clear search</button>
         </div>
       )}
 
       {/* Plans List */}
       {!loading && filteredPlans.length > 0 && (
-        <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm overflow-hidden mb-6">
-          <div className="divide-y divide-[#E2E8F0]">
+        <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm overflow-hidden mb-6">
+          <div className="divide-y divide-neutral-800/80">
             {filteredPlans.map((plan, i) => {
               const stats = plan.cartonStats || [];
               const tn = stats.find((s) => s._id === "in-transit")?.count || 0;
@@ -1205,23 +1205,23 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               const st = stats.find((s) => s._id === "stored")?.count || 0;
               return (
                 <motion.div key={plan._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className="px-5 py-4 hover:bg-[#F8FAFC]/60 transition-colors duration-200">
+                  className="px-5 py-4 hover:bg-white/5 transition-colors duration-200">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm text-[#1E293B] font-body">{plan.batchName}</span>
+                        <span className="font-semibold text-sm text-white font-body">{plan.batchName}</span>
                         {statusBadge(plan.status)}
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-[#0F172A]/50 font-body">
+                      <div className="flex items-center gap-3 text-xs text-neutral-400 font-body">
                         <span className="flex items-center gap-1"><Box size={12} />{plan.totalCartons} cartons</span>
                         <span>·</span>
                         <span className="flex items-center gap-1"><CalendarIcon size={12} />Expected: {formatDate(plan.expectedDate)}</span>
                         {plan.warehouse?.name && <><span>·</span><span className="flex items-center gap-1"><Warehouse size={12} />{plan.warehouse.name}</span></>}
                       </div>
                       {(tn > 0 || ar > 0 || st > 0) && (
-                        <div className="flex items-center gap-3 mt-2 text-[11px] text-[#0F172A]/50 font-body">
+                        <div className="flex items-center gap-3 mt-2 text-[11px] text-neutral-400 font-body">
                           {tn > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{tn} in transit</span>}
-                          {ar > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400" />{ar} arrived</span>}
+                          {ar > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" />{ar} arrived</span>}
                           {st > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" />{st} stored</span>}
                         </div>
                       )}
@@ -1229,12 +1229,12 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     <div className="flex items-center gap-2 shrink-0">
                       {plan.status === "in-transit" && (
                         <button onClick={() => { setAddCartonsPlan(plan); setAddCartonsCount(1); setAddCartonsError(null); }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-xs font-medium hover:bg-emerald-100 transition-colors">
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-medium hover:bg-emerald-500/20 transition-colors">
                           <PlusCircle size={12} /> Add Cartons
                         </button>
                       )}
                       <button onClick={() => handleViewPlan(plan._id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#0284C7]/30 text-[#0284C7] rounded-full text-xs font-medium hover:bg-sky-50 transition-colors">
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors">
                         <Eye size={13} /> View
                       </button>
                     </div>
@@ -1250,44 +1250,44 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       <AnimatePresence>
         {showCreateForm && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="bg-white rounded-3xl p-6 border border-[#E2E8F0] shadow-sm mb-6">
-            <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-5">Create Inbound Plan</h3>
+            className="bg-[#111614]/90 backdrop-blur-md rounded-3xl p-6 border border-neutral-800/80 shadow-sm mb-6">
+            <h3 className="font-heading text-lg font-semibold text-white mb-5">Create Inbound Plan</h3>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Active Booking</label>
+                <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Active Booking</label>
                 <select value={selectedBookingId} onChange={(e) => setSelectedBookingId(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body">
+                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body">
                   <option value="">Select a booking...</option>
                   {activeBookings.map((b) => (
                     <option key={b._id} value={b._id}>{b.warehouseName || b.warehouse?.name || "Warehouse"} – {formatDate(b.startDate)}</option>
                   ))}
                 </select>
-                {activeBookings.length === 0 && <p className="text-xs text-amber-600 font-body mt-1">No active bookings. Book a warehouse first.</p>}
+                {activeBookings.length === 0 && <p className="text-xs text-amber-400 font-body mt-1">No active bookings. Book a warehouse first.</p>}
               </div>
               <div>
-                <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Batch Name</label>
+                <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Batch Name</label>
                 <input type="text" value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="e.g. Q4 Inventory Restock"
-                  className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Total Cartons</label>
+                  <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Total Cartons</label>
                   <input type="number" min={1} value={totalCartons} onChange={(e) => setTotalCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Expected Date</label>
+                  <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Expected Date</label>
                   <input type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
-                    className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
                 </div>
               </div>
-              {createError && <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5"><AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" /><p className="text-xs text-red-600 font-body">{createError}</p></div>}
+              {createError && <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5"><AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" /><p className="text-xs text-red-400 font-body">{createError}</p></div>}
               <div className="flex items-center gap-3 pt-2">
                 <button onClick={handleCreateInbound} disabled={creating || !batchName.trim() || !expectedDate || !selectedBookingId}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-body font-medium hover:bg-slate-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                   {creating ? <><Loader2 size={16} className="animate-spin" />Creating...</> : <><Send size={16} />Create Inbound Plan</>}
                 </button>
-                <button onClick={() => setShowCreateForm(false)} className="px-5 py-3 border border-[#E2E8F0] text-[#0F172A]/60 rounded-full text-sm font-body hover:bg-[#F8FAFC] transition-colors">Cancel</button>
+                <button onClick={() => setShowCreateForm(false)} className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
               </div>
             </div>
           </motion.div>
@@ -1301,10 +1301,10 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3"
+            className="mb-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3"
           >
-            <CheckCircle size={18} className="text-emerald-500 shrink-0" />
-            <p className="text-sm font-semibold text-emerald-700 font-body">{addCartonsSuccess}</p>
+            <CheckCircle size={18} className="text-emerald-400 shrink-0" />
+            <p className="text-sm font-semibold text-emerald-400 font-body">{addCartonsSuccess}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1313,38 +1313,38 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       <AnimatePresence>
         {addCartonsPlan && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget) setAddCartonsPlan(null); }}>
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] p-6" onClick={(e) => e.stopPropagation()}>
+              className="w-full max-w-sm bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                  <Package size={20} className="text-emerald-600" />
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                  <Package size={20} className="text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-lg font-semibold text-[#1E293B]">Add Cartons</h3>
-                  <p className="text-xs text-[#0F172A]/50 font-body truncate">{addCartonsPlan.batchName}</p>
+                  <h3 className="font-heading text-lg font-semibold text-white">Add Cartons</h3>
+                  <p className="text-xs text-neutral-400 font-body truncate">{addCartonsPlan.batchName}</p>
                 </div>
               </div>
               <div className="mb-4">
-                <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Number of Cartons to Add</label>
+                <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Number of Cartons to Add</label>
                 <input type="number" min={1} value={addCartonsCount}
                   onChange={(e) => setAddCartonsCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body" />
+                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
               </div>
               {addCartonsError && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-                  <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-600 font-body">{addCartonsError}</p>
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
+                  <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-400 font-body">{addCartonsError}</p>
                 </div>
               )}
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleAddCartons} disabled={isAddingCartons || addCartonsCount < 1}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-body font-medium hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-900/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                   {isAddingCartons ? <><Loader2 size={16} className="animate-spin" />Adding...</> : <><PlusCircle size={16} />Add Cartons</>}
                 </button>
                 <button onClick={() => setAddCartonsPlan(null)}
-                  className="px-5 py-3 border border-[#E2E8F0] text-[#0F172A]/60 rounded-full text-sm font-body hover:bg-[#F8FAFC] transition-colors">Cancel</button>
+                  className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
               </div>
             </motion.div>
           </motion.div>
@@ -1453,88 +1453,88 @@ function PlanDetailModal({ plan, onClose }: { plan: PlanDetail; onClose: () => v
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/40 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/70 backdrop-blur-sm overflow-y-auto"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+        className="w-full max-w-2xl bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="absolute top-5 right-5 flex items-center gap-2 z-10">
           {cartons.length > 0 && (
             <button onClick={handleDownloadPDF} disabled={pdfGenerating}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white rounded-full text-[11px] font-body font-medium hover:bg-slate-800 hover:shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-50 whitespace-nowrap">
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ccff00] text-black rounded-full text-[11px] font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 whitespace-nowrap">
               {pdfGenerating ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               QR Labels (PDF)
             </button>
           )}
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#F8FAFC]/60 border border-[#E2E8F0] flex items-center justify-center text-[#0F172A]/50 hover:bg-[#F8FAFC] hover:text-[#0F172A] transition-all"><X size={16} /></button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 border border-neutral-800 flex items-center justify-center text-neutral-400 hover:bg-white/20 hover:text-white transition-all"><X size={16} /></button>
         </div>
         <div className="p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] flex items-center justify-center"><Package size={24} className="text-[#0284C7]" /></div>
+            <div className="w-12 h-12 rounded-2xl bg-neutral-800/60 flex items-center justify-center"><Package size={24} className="text-[#ccff00]" /></div>
             <div>
-              <h2 className="font-heading text-xl font-bold text-[#1E293B]">{p.batchName}</h2>
-              <p className="text-sm text-[#0F172A]/50 font-body">Inbound Plan Details</p>
+              <h2 className="font-heading text-xl font-bold text-white">{p.batchName}</h2>
+              <p className="text-sm text-neutral-400 font-body">Inbound Plan Details</p>
             </div>
           </div>
 
           {/* Info grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Total Cartons</p>
-              <p className="text-lg font-bold text-[#1E293B] font-body numeric">{p.totalCartons}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Total Cartons</p>
+              <p className="text-lg font-bold text-white font-body numeric">{p.totalCartons}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Expected</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(p.expectedDate)}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Expected</p>
+              <p className="text-sm font-semibold text-white font-body">{formatDate(p.expectedDate)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Status</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body capitalize">{p.status.replace("-", " ")}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Status</p>
+              <p className="text-sm font-semibold text-white font-body capitalize">{p.status.replace("-", " ")}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-              <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase mb-1 font-body">Created</p>
-              <p className="text-sm font-semibold text-[#1E293B] font-body">{formatDate(p.createdAt)}</p>
+            <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Created</p>
+              <p className="text-sm font-semibold text-white font-body">{formatDate(p.createdAt)}</p>
             </div>
           </div>
 
           {/* Carton summary */}
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] text-center shadow-sm">
-              <p className="text-lg font-bold text-[#1E293B] font-body numeric">{cartons.length}</p>
-              <p className="text-[10px] text-[#0F172A]/50 font-body uppercase tracking-wider">Total</p>
+            <div className="p-3 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-center">
+              <p className="text-lg font-bold text-white font-body numeric">{cartons.length}</p>
+              <p className="text-[10px] text-neutral-400 font-body uppercase tracking-wider">Total</p>
             </div>
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] text-center shadow-sm">
+            <div className="p-3 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-center">
               <div className="w-3 h-3 rounded-full bg-amber-400 mx-auto mb-1" />
-              <p className="text-lg font-bold text-[#1E293B] font-body numeric">{inTransit}</p>
-              <p className="text-[10px] text-[#0F172A]/50 font-body uppercase tracking-wider">In Transit</p>
+              <p className="text-lg font-bold text-white font-body numeric">{inTransit}</p>
+              <p className="text-[10px] text-neutral-400 font-body uppercase tracking-wider">In Transit</p>
             </div>
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] text-center shadow-sm">
+            <div className="p-3 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-center">
               <div className="w-3 h-3 rounded-full bg-emerald-400 mx-auto mb-1" />
-              <p className="text-lg font-bold text-[#1E293B] font-body numeric">{arrived}</p>
-              <p className="text-[10px] text-[#0F172A]/50 font-body uppercase tracking-wider">Arrived</p>
+              <p className="text-lg font-bold text-white font-body numeric">{arrived}</p>
+              <p className="text-[10px] text-neutral-400 font-body uppercase tracking-wider">Arrived</p>
             </div>
           </div>
 
           {/* Cartons list */}
           {cartons.length > 0 && (
             <div>
-              <div className="hidden sm:grid grid-cols-[1fr_100px_110px] gap-3 px-4 py-2 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
-                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Carton Code</span>
-                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Status</span>
-                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Shelf</span>
+              <div className="hidden sm:grid grid-cols-[1fr_100px_110px] gap-3 px-4 py-2 bg-neutral-900/80 rounded-xl border border-neutral-800 mb-1">
+                <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Carton Code</span>
+                <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Status</span>
+                <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Shelf</span>
               </div>
               <div className="space-y-1 max-h-60 overflow-y-auto">
                 {cartons.map((carton) => (
-                  <div key={carton._id} className="grid grid-cols-[1fr_100px_110px] gap-3 items-center px-4 py-2.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]/40 transition-colors">
+                  <div key={carton._id} className="grid grid-cols-[1fr_100px_110px] gap-3 items-center px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800/60 transition-colors">
                     <div className="flex items-center gap-2 min-w-0">
-                      <Box size={13} className="text-[#0284C7] shrink-0" />
-                      <span className="text-sm font-medium text-[#1E293B] font-body truncate">{carton.cartonCode}</span>
+                      <Box size={13} className="text-[#ccff00] shrink-0" />
+                      <span className="text-sm font-medium text-white font-body truncate">{carton.cartonCode}</span>
                     </div>
-                    <div><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${carton.status === "in-transit" ? "bg-amber-50 border-amber-200 text-amber-700" : carton.status === "arrived" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-emerald-50 border-emerald-200 text-emerald-700"}`}>{carton.status === "in-transit" ? "In Transit" : carton.status === "arrived" ? "Arrived" : "Stored"}</span></div>
-                    <div className="text-xs text-[#0F172A]/50 font-body">{carton.shelf || "—"}</div>
+                    <div><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${carton.status === "in-transit" ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : carton.status === "arrived" ? "bg-sky-500/10 border-sky-500/20 text-sky-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"}`}>{carton.status === "in-transit" ? "In Transit" : carton.status === "arrived" ? "Arrived" : "Stored"}</span></div>
+                    <div className="text-xs text-neutral-400 font-body">{carton.shelf || "—"}</div>
                   </div>
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-[#E2E8F0] text-xs text-[#0F172A]/40 font-body flex items-center justify-between">
+              <div className="mt-3 pt-3 border-t border-neutral-800 text-xs text-neutral-500 font-body flex items-center justify-between">
                 <span>{stored > 0 ? `${stored} stored` : arrived > 0 ? `${arrived} arrived` : "All in transit"}</span>
                 <span>{cartons.length} of {p.totalCartons} cartons</span>
               </div>
@@ -1611,46 +1611,46 @@ function AccountTab() {
       {/* Toast */}
       <AnimatePresence>{toast && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-          className={`fixed top-28 right-6 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md ${toast.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-red-800"}`}>
+          className={`fixed top-28 right-6 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md ${toast.type === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" : "bg-red-500/10 border-red-500/20 text-red-300"}`}>
           {toast.type === "success" ? <CheckCircle size={18} className="shrink-0 text-emerald-500" /> : <AlertCircle size={18} className="shrink-0 text-red-500" />}
           <span className="text-sm font-body font-medium">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="ml-2 p-1 rounded-full hover:bg-black/5 transition-colors"><XCircle size={14} className="opacity-50" /></button>
+          <button onClick={() => setToast(null)} className="ml-2 p-1 rounded-full hover:bg-white/10 transition-colors"><XCircle size={14} className="opacity-50" /></button>
         </motion.div>
       )}</AnimatePresence>
 
       {isLoading && !user ? (
-        <div className="bg-white rounded-3xl p-8 border border-[#E2E8F0] animate-pulse space-y-6">
-          <div className="h-8 bg-[#F8FAFC] rounded-lg w-40" />
-          <div className="flex items-center gap-5"><div className="w-16 h-16 rounded-2xl bg-[#F8FAFC]" /><div className="space-y-2"><div className="h-5 bg-[#F8FAFC] rounded w-48" /><div className="h-4 bg-[#F8FAFC] rounded w-64" /></div></div>
-          <div className="h-12 bg-[#F8FAFC] rounded-xl w-full" />
+        <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl p-8 border border-neutral-800/80 animate-pulse space-y-6">
+          <div className="h-8 bg-neutral-800/60 rounded-lg w-40" />
+          <div className="flex items-center gap-5"><div className="w-16 h-16 rounded-2xl bg-neutral-800/60" /><div className="space-y-2"><div className="h-5 bg-neutral-800/60 rounded w-48" /><div className="h-4 bg-neutral-800/60 rounded w-64" /></div></div>
+          <div className="h-12 bg-neutral-800/60 rounded-xl w-full" />
         </div>
       ) : (
-        <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#E2E8F0] shadow-sm">
+        <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-neutral-800/80 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center"><User size={20} className="text-[#0284C7]" /></div>
-            <h2 className="font-heading text-xl font-bold text-[#1E293B]">My Profile</h2>
+            <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center"><User size={20} className="text-[#ccff00]" /></div>
+            <h2 className="font-heading text-xl font-bold text-white">My Profile</h2>
           </div>
 
           {user && (
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-[#1E293B]/10 flex items-center justify-center shrink-0">
-                <User size={28} className="text-[#1E293B]/60" />
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-[#ccff00]/10 flex items-center justify-center shrink-0">
+                <User size={28} className="text-[#ccff00]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <h3 className="font-heading text-lg font-semibold text-[#1E293B] truncate">{user.name}</h3>
-                  {user.isVerified && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-body font-medium"><CheckCircle size={11} /> Verified</span>}
+                  <h3 className="font-heading text-lg font-semibold text-white truncate">{user.name}</h3>
+                  {user.isVerified && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-body font-medium"><CheckCircle size={11} /> Verified</span>}
                 </div>
-                <div className="flex items-center gap-1.5 mt-1 text-sm text-[#0F172A]/50 font-body"><Mail size={14} /><span className="truncate">{user.email}</span></div>
+                <div className="flex items-center gap-1.5 mt-1 text-sm text-neutral-400 font-body"><Mail size={14} /><span className="truncate">{user.email}</span></div>
               </div>
             </div>
           )}
 
           {user && (
-            <div className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3 mb-6">
+            <div className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 rounded-xl p-3 mb-6">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider font-body">USER ID:</span>
-                <code className="text-xs font-mono text-[#0F172A]/70 font-medium break-all">{user._id || user.id || "—"}</code>
+                <span className="text-[10px] text-neutral-500 uppercase font-semibold tracking-wider font-body">USER ID:</span>
+                <code className="text-xs font-mono text-neutral-300 font-medium break-all">{user._id || user.id || "—"}</code>
               </div>
               <CopyButton value={user._id || user.id || ""} />
             </div>
@@ -1658,22 +1658,22 @@ function AccountTab() {
 
           <div className="space-y-5">
             <div>
-              <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Phone Number</label>
+              <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Phone Number</label>
               <div className="relative">
-                <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/60 pointer-events-none" />
+                <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/60 pointer-events-none" />
                 <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000"
-                  className="w-full pl-11 pr-4 py-3.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20 rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all text-sm font-body" />
+                  className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all text-sm font-body" />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-3 block font-body">Account Role</label>
+              <label className="text-xs font-semibold tracking-wider text-white uppercase mb-3 block font-body">Account Role</label>
               <div className="grid grid-cols-3 gap-2.5">
                 {roleOptions.map((opt) => {
                   const isActive = role === opt.value;
                   return (
                     <button key={opt.value} type="button" onClick={() => setRole(opt.value)}
-                      className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1E293B] text-white border-[#1E293B] shadow-sm" : "bg-transparent text-[#0284C7] border-[#0284C7]/30 hover:border-[#0284C7]/60 hover:bg-[#F8FAFC]/30"}`}>
+                      className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black border-[#ccff00] shadow-lg shadow-[#ccff00]/20" : "bg-transparent text-neutral-400 border-neutral-800 hover:border-[#ccff00]/50 hover:bg-white/5"}`}>
                       <opt.icon size={20} /><span className="text-[11px] leading-tight text-center">{opt.label}</span>
                     </button>
                   );
@@ -1682,7 +1682,7 @@ function AccountTab() {
             </div>
 
             <button onClick={handleSubmit} disabled={isUpdating}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-sm hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
               {isUpdating ? <><Loader2 size={18} className="animate-spin" />Updating...</> : <><Save size={18} />Save Changes</>}
             </button>
           </div>
@@ -1712,8 +1712,8 @@ export default function MerchantDashboardPage() {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-900">
-        <Loader2 size={32} className="animate-spin text-[#38BDF8]" />
+      <div className="flex h-screen w-full items-center justify-center bg-[#0a0d0c]">
+        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
       </div>
     );
   }
@@ -1746,17 +1746,20 @@ export default function MerchantDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="relative overflow-hidden min-h-screen bg-[#0a0d0c]">
+      {/* Ambient smoky radial glows */}
+      <div className="pointer-events-none fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#ccff00]/10 blur-[130px] z-0" />
+      <div className="pointer-events-none fixed bottom-[5%] right-[-5%] w-[450px] h-[450px] rounded-full bg-emerald-500/10 blur-[150px] z-0" />
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <TopHeader onMenuToggle={() => setSidebarOpen(true)} unread={unread} />
 
       <main className="pt-16 md:pl-60">
-        <div className="px-4 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto relative z-10">
           {/* Page header */}
           <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
             className="mb-6">
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#1E293B] tracking-tight">{tabTitles[activeTab]}</h1>
-            <p className="mt-1 text-sm text-[#0F172A]/50 font-body">{tabDescriptions[activeTab]}</p>
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight">{tabTitles[activeTab]}</h1>
+            <p className="mt-1 text-sm text-neutral-400 font-body">{tabDescriptions[activeTab]}</p>
           </motion.div>
 
           {/* Tab content */}

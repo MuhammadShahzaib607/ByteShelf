@@ -18,8 +18,6 @@ import {
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 
-import ImageCarousel from "@/components/ui/ImageCarousel";
-
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 interface WarehouseData {
@@ -143,8 +141,11 @@ export default function ExplorePage() {
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0a0d0c] pt-28 pb-20 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="relative overflow-hidden min-h-screen bg-[#0a0d0c] pt-28 pb-20 px-4 sm:px-6">
+      {/* Background smoky glow / radial lighting */}
+      <div className="pointer-events-none absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#ccff00]/10 blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-emerald-500/10 blur-[140px]" />
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -267,15 +268,30 @@ export default function ExplorePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group bg-[#111614] border border-neutral-800/80 overflow-hidden hover:border-[#ccff00]/40 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-300 rounded-3xl flex flex-col"
+                className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 hover:border-[#ccff00]/50 transition-all duration-300 rounded-2xl overflow-hidden shadow-xl flex flex-col"
               >
-                {/* Image Carousel (shared component) with dual-layer blur */}
-                <ImageCarousel
-                  images={w.images || []}
-                  alt={w.name}
-                  aspectRatio="h-64"
-                  containImage={true}
-                />
+                {/* Image Showcase — blurred backdrop + centered foreground */}
+                <div className="relative w-full h-48 overflow-hidden bg-neutral-900/40">
+                  {w.images?.[0] ? (
+                    <>
+                      <img
+                        src={w.images[0]}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover filter blur-md opacity-40 scale-105"
+                      />
+                      <img
+                        src={w.images[0]}
+                        alt={w.name}
+                        className="relative z-10 w-full h-48 object-contain p-2"
+                      />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Warehouse size={40} strokeWidth={1} className="text-neutral-600" />
+                    </div>
+                  )}
+                </div>
 
                 {/* Content */}
                 <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-transparent to-black/20">
