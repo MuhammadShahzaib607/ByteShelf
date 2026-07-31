@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Footer: React.FC = () => {
   const year = new Date().getFullYear();
@@ -34,11 +35,13 @@ const Footer: React.FC = () => {
           {/* Brand Statement */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 group mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(208,242,25,0.4)] transition-shadow">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12140E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
-              </div>
+              <Image
+                src="/logo.png"
+                alt="ByteShelf Logo"
+                width={32}
+                height={32}
+                className="object-contain transition-[filter] group-hover:drop-shadow-[0_0_12px_rgba(208,242,25,0.4)]"
+              />
               <span className="font-heading text-lg font-semibold text-white tracking-tight">
                 ByteShelf
               </span>

@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { verifyOtp, resendOtp, clearError } from "@/redux/slices/authSlice";
 import OtpInput from "@/components/ui/OtpInput";
 import Button from "@/components/ui/Button";
+import AuthShell from "@/components/layout/AuthShell";
 
 export default function VerifyOtpPage() {
   const router = useRouter();
@@ -63,11 +64,11 @@ export default function VerifyOtpPage() {
   const displayError = localError || error;
 
   return (
-    <div className="w-full max-w-md p-8 md:p-10 bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 flex flex-col gap-6">
+    <AuthShell>
       {/* Back */}
       <button
         onClick={() => router.push("/signup")}
-        className="flex items-center gap-1.5 text-xs text-[#0F172A]/50 hover:text-[#0F172A] transition-colors font-body self-start"
+        className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-200 transition-colors font-body self-start"
       >
         <ArrowLeft size={14} />
         Back
@@ -75,39 +76,39 @@ export default function VerifyOtpPage() {
 
       {/* Header */}
       <div className="text-center">
-        <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-3">
-          <Mail size={20} className="text-[#0284C7]" />
+        <div className="w-12 h-12 rounded-2xl bg-[#ccff00]/10 border border-[#ccff00]/25 flex items-center justify-center mx-auto mb-3">
+          <Mail size={20} className="text-[#ccff00]" />
         </div>
-        <h1 className="font-heading text-2xl text-[#1E293B] font-bold">
+        <h1 className="font-heading text-2xl text-white font-bold">
           Verify Email
         </h1>
-        <p className="mt-1 text-sm text-[#0F172A]/50 font-body">
+        <p className="mt-1 text-sm text-slate-400 font-body">
           Code sent to
         </p>
-        <p className="font-heading text-sm font-semibold text-[#1E293B] mt-0.5">
+        <p className="font-heading text-sm font-semibold text-white mt-0.5">
           {tempEmail || ""}
         </p>
       </div>
 
       {/* Success */}
       {successMsg && (
-        <div className="p-3 rounded-xl bg-green-50 border border-green-200 flex items-start gap-2.5">
-          <CheckCircle size={16} className="text-green-600 shrink-0 mt-0.5" />
-          <p className="text-xs text-green-700 font-body">{successMsg}</p>
+        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5">
+          <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-emerald-300 font-body">{successMsg}</p>
         </div>
       )}
 
       {/* Error */}
       {displayError && !successMsg && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-          <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-red-600 font-body">{displayError}</p>
+        <div className="p-3 rounded-xl bg-red-950/30 border border-red-500/25 flex items-start gap-2.5">
+          <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-red-300 font-body">{displayError}</p>
         </div>
       )}
 
       {/* OTP */}
       <div>
-        <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-3 block text-center">
+        <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase mb-3 block text-center font-body">
           Verification Code
         </label>
         <OtpInput
@@ -131,21 +132,21 @@ export default function VerifyOtpPage() {
 
       {/* Resend */}
       <div className="text-center">
-        <p className="text-xs text-[#0F172A]/50 font-body">
+        <p className="text-xs text-slate-500 font-body">
           Didn&apos;t receive it?{" "}
           <button
             onClick={handleResend}
             disabled={resendTimer > 0 || isLoading || !!successMsg}
             className={`font-medium underline underline-offset-2 transition-colors ${
               resendTimer > 0 || isLoading || !!successMsg
-                ? "text-[#0F172A]/30 cursor-not-allowed"
-                : "text-[#1E293B] hover:text-[#0284C7]"
+                ? "text-slate-600 cursor-not-allowed"
+                : "text-[#ccff00] hover:text-lime-300"
             }`}
           >
             {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend Code"}
           </button>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

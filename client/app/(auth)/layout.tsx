@@ -23,17 +23,17 @@ export default function AuthLayout({
   // ─── Show loading spinner while checking auth ────────────────────────────
   if (isCheckingAuth) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-[#F8FAFC]">
-        <Loader2 size={32} className="animate-spin text-[#0284C7]" />
+      <div className="flex h-screen w-full items-center justify-center bg-[#05080e]">
+        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
       </div>
     );
   }
 
+  // Full-bleed dark shell — the 50/50 split-screen layout is rendered by the
+  // page itself via the shared AuthShell component.
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center py-8 px-4 bg-[#F8FAFC]">
-      <main className="flex-1 flex items-center justify-center w-full pt-16">
-        {children}
-      </main>
+    <div className="min-h-screen bg-[#05080e] relative overflow-hidden">
+      <main className="min-h-screen">{children}</main>
     </div>
   );
 }

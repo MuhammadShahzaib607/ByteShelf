@@ -39,8 +39,8 @@ export default function PagesLayout({
 
   if (isCheckingAuth) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-white">
-        <Loader2 size={32} className="animate-spin text-[#0284C7]" />
+      <div className="flex h-screen w-full items-center justify-center bg-[#0D0F0A]">
+        <Loader2 size={32} className="animate-spin text-[#D0F219]" />
       </div>
     );
   }
@@ -53,13 +53,13 @@ export default function PagesLayout({
   // ─── Pending user on /messages — stripped layout (no Navbar/Footer/ChatButton) ─
   if (isPendingOnChat) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      <div className="min-h-screen flex flex-col bg-[#0D0F0A]">
         {/* Minimal top bar */}
-        <div className="shrink-0 bg-white border-b border-slate-200/60 px-4 py-3 flex items-center justify-between">
+        <div className="shrink-0 bg-[#11140C]/90 border-b border-lime-500/10 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/")}
-              className="inline-flex items-center gap-1.5 text-sm font-body text-[#0F172A]/60 hover:text-[#0F172A] hover:bg-slate-100 px-2 py-1 rounded-lg transition-all"
+              className="inline-flex items-center gap-1.5 text-sm font-body text-slate-400 hover:text-[#D0F219] hover:bg-lime-400/10 px-2 py-1 rounded-lg transition-all"
             >
               <ArrowLeft size={16} />
               Back
@@ -78,7 +78,7 @@ export default function PagesLayout({
               }
               router.push("/login");
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-slate-200 text-slate-700 rounded-full text-xs font-body font-medium hover:bg-slate-50 active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-slate-700/70 text-slate-300 rounded-full text-xs font-body font-medium hover:bg-white/[0.04] hover:text-[#D0F219] active:scale-95 transition-all"
           >
             <LogOut size={13} />
             Logout
@@ -90,7 +90,7 @@ export default function PagesLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[#0D0F0A]">
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />

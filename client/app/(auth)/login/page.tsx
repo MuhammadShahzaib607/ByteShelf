@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { loginUser, clearError } from "@/redux/slices/authSlice";
 import { fetchProfile } from "@/redux/slices/profileSlice";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import AuthShell from "@/components/layout/AuthShell";
 
 interface FormErrors {
   email?: string;
@@ -72,22 +74,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 md:p-10 bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 flex flex-col gap-6">
+    <AuthShell>
       {/* Header */}
       <div className="text-center">
-        <h1 className="font-heading text-3xl text-[#1E293B] font-bold">
+        <Image
+          src="/logo.png"
+          alt="ByteShelf Logo"
+          width={48}
+          height={48}
+          className="object-contain drop-shadow-[0_0_12px_rgba(204,255,0,0.3)] block mx-auto mb-4"
+        />
+        <h1 className="font-heading text-3xl text-white font-bold">
           Welcome Back
         </h1>
-        <p className="mt-1 text-sm text-[#0F172A]/50 font-body">
+        <p className="mt-1 text-sm text-slate-400 font-body">
           Sign in to your account
         </p>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-          <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-red-600 font-body">{error}</p>
+        <div className="p-3 rounded-xl bg-red-950/30 border border-red-500/25 flex items-start gap-2.5">
+          <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-red-300 font-body">{error}</p>
         </div>
       )}
 
@@ -102,6 +111,7 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           error={errors.email}
           autoComplete="email"
+          dark
         />
 
         <Input
@@ -114,6 +124,7 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
           autoComplete="current-password"
+          dark
         />
 
         <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
@@ -123,16 +134,16 @@ export default function LoginPage() {
 
       {/* Footer link */}
       <div className="text-center">
-        <p className="text-xs text-[#0F172A]/50 font-body">
+        <p className="text-xs text-slate-500 font-body">
           Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="text-[#1E293B] font-medium hover:text-[#0284C7] transition-colors underline underline-offset-2"
+            className="text-[#ccff00] font-medium hover:text-lime-300 transition-colors underline underline-offset-2"
           >
             Register
           </Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

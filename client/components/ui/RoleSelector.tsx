@@ -33,7 +33,7 @@ const roles: RoleOption[] = [
 const RoleSelector: React.FC<RoleSelectorProps> = ({ value, onChange, error }) => {
   return (
     <div className="w-full my-2">
-      <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-3 block">
+      <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase mb-3 block font-body">
         I want to join as
       </label>
       <div className="grid grid-cols-2 gap-3 w-full">
@@ -49,18 +49,18 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ value, onChange, error }) =
                 cursor-pointer transition-all duration-200
                 ${
                   isSelected
-                    ? "border-[#1E293B] bg-[#F8FAFC]/60 text-[#1E293B]"
-                    : "border-gray-200 bg-transparent text-gray-500 hover:border-[#0284C7]/40"
+                    ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00] shadow-[0_0_20px_rgba(204,255,0,0.15)]"
+                    : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-[#ccff00]/50 hover:text-slate-200"
                 }
               `}
             >
-              <div className={isSelected ? "text-[#1E293B]" : "text-gray-400"}>
+              <div className={isSelected ? "text-[#ccff00]" : "text-slate-500"}>
                 {role.icon}
               </div>
               <div className="text-center">
                 <p
                   className={`font-heading text-sm font-semibold ${
-                    isSelected ? "text-[#1E293B]" : "text-gray-500"
+                    isSelected ? "text-[#ccff00]" : "text-slate-300"
                   }`}
                 >
                   {role.label}
@@ -72,7 +72,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ value, onChange, error }) =
         })}
       </div>
       {error && (
-        <p className="text-red-500 text-xs mt-2 font-body">{error}</p>
+        <p className="text-red-400 text-xs mt-2 font-body">{error}</p>
       )}
     </div>
   );

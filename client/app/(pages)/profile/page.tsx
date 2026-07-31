@@ -18,8 +18,6 @@ import {
   Copy,
   Check,
 } from "lucide-react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchProfile,
@@ -65,11 +63,11 @@ function CopyButton({ value }: { value: string }) {
       title="Copy User ID"
       className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${
         copied
-          ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-          : "bg-white border-slate-200 text-[#0F172A]/40 hover:text-[#0F172A]/70 hover:bg-slate-100 hover:border-slate-300"
+          ? "bg-[#D0F219]/15 border-lime-500/40 text-[#D0F219]"
+          : "bg-white/[0.04] border-slate-700/70 text-slate-400 hover:text-[#D0F219] hover:bg-lime-400/10 hover:border-lime-500/40"
       }`}
     >
-      {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
+      {copied ? <Check size={16} className="text-[#D0F219]" /> : <Copy size={16} />}
     </button>
   );
 }
@@ -98,19 +96,19 @@ function Toast({
       transition={{ duration: 0.25, ease: "easeOut" }}
       className={`fixed top-28 right-6 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md ${
         type === "success"
-          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-          : "bg-red-50 border-red-200 text-red-800"
+          ? "bg-[#10130A]/95 border-lime-500/30 text-lime-200"
+          : "bg-[#170B0B]/95 border-red-500/30 text-red-300"
       }`}
     >
       {type === "success" ? (
-        <CheckCircle size={20} className="shrink-0 text-emerald-500" />
+        <CheckCircle size={20} className="shrink-0 text-[#D0F219]" />
       ) : (
-        <XCircle size={20} className="shrink-0 text-red-500" />
+        <XCircle size={20} className="shrink-0 text-red-400" />
       )}
       <span className="text-sm font-body font-medium">{message}</span>
       <button
         onClick={onClose}
-        className="ml-2 p-1 rounded-full hover:bg-black/5 transition-colors"
+        className="ml-2 p-1 rounded-full hover:bg-white/5 transition-colors"
         aria-label="Dismiss notification"
       >
         <XCircle size={14} className="opacity-50" />
@@ -123,26 +121,24 @@ function Toast({
 
 function ProfileSkeleton() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
-      <Navbar />
+    <div className="min-h-screen bg-[#0D0F0A] flex flex-col">
       <main className="flex-1 flex items-center justify-center px-4 pt-32 pb-20">
-        <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 p-8 md:p-10 animate-pulse">
-          <div className="h-8 bg-[#F8FAFC] rounded-lg w-40 mb-8" />
+        <div className="w-full max-w-2xl bg-[#11140C]/80 rounded-3xl shadow-2xl shadow-black/40 border border-lime-500/15 p-8 md:p-10 animate-pulse">
+          <div className="h-8 bg-white/[0.06] rounded-lg w-40 mb-8" />
           <div className="flex items-center gap-5 mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC]" />
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.06]" />
             <div className="space-y-2 flex-1">
-              <div className="h-5 bg-[#F8FAFC] rounded w-48" />
-              <div className="h-4 bg-[#F8FAFC] rounded w-64" />
+              <div className="h-5 bg-white/[0.06] rounded w-48" />
+              <div className="h-4 bg-white/[0.06] rounded w-64" />
             </div>
           </div>
           <div className="space-y-6">
-            <div className="h-12 bg-[#F8FAFC] rounded-xl w-full" />
-            <div className="h-12 bg-[#F8FAFC] rounded-xl w-full" />
-            <div className="h-12 bg-[#F8FAFC] rounded-full w-full mt-8" />
+            <div className="h-12 bg-white/[0.06] rounded-xl w-full" />
+            <div className="h-12 bg-white/[0.06] rounded-xl w-full" />
+            <div className="h-12 bg-white/[0.06] rounded-full w-full mt-8" />
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
@@ -256,9 +252,7 @@ export default function ProfilePage() {
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
-      <Navbar />
-
+    <div className="min-h-screen bg-[#0D0F0A] flex flex-col">
       {/* Toast notification */}
       <AnimatePresence>
         {toast && (
@@ -272,18 +266,18 @@ export default function ProfilePage() {
 
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-32 pb-20">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="w-full max-w-2xl bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 p-8 md:p-10"
+          className="w-full max-w-2xl bg-[#11140C]/80 rounded-3xl shadow-2xl shadow-black/40 border border-lime-500/15 backdrop-blur-xl p-8 md:p-10"
         >
           {/* ═══ Header ═══ */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center">
-                <User size={20} className="text-[#0284C7]" />
+              <div className="w-10 h-10 rounded-xl bg-lime-400/10 border border-lime-500/20 flex items-center justify-center">
+                <User size={20} className="text-[#D0F219]" />
               </div>
-              <h1 className="font-heading text-2xl md:text-3xl font-bold text-[#1E293B] tracking-tight">
+              <h1 className="font-heading text-2xl md:text-3xl font-bold text-white tracking-tight">
                 My Profile
               </h1>
             </div>
@@ -295,32 +289,32 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="flex items-start gap-4 md:gap-5 p-5 md:p-6 rounded-2xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 mb-8"
+              className="flex items-start gap-4 md:gap-5 p-5 md:p-6 rounded-2xl bg-white/[0.03] border border-lime-500/10 mb-8"
             >
               {/* Avatar */}
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#1E293B]/10 flex items-center justify-center shrink-0">
-                <User size={28} className="text-[#1E293B]/60" />
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[#D0F219]/25 to-[#C0E70B]/10 flex items-center justify-center shrink-0 border border-lime-500/20">
+                <User size={28} className="text-[#D0F219]" />
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <h2 className="font-heading text-lg md:text-xl font-semibold text-[#1E293B] truncate">
+                  <h2 className="font-heading text-lg md:text-xl font-semibold text-white truncate">
                     {user.name}
                   </h2>
                   {user.isVerified && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-body font-medium">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-lime-400/10 border border-lime-500/30 text-[#D0F219] text-[11px] font-body font-medium">
                       <ShieldCheck size={12} />
                       Verified
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 mt-1 text-sm text-[#0F172A]/50 font-body">
+                <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-400 font-body">
                   <Mail size={14} />
                   <span className="truncate">{user.email}</span>
                 </div>
                 {/* Smaller role badge */}
-                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 border border-[#0284C7]/15 text-[11px] text-[#0284C7] font-body font-medium capitalize">
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-lime-400/10 border border-lime-500/25 text-[11px] text-[#D0F219] font-body font-medium capitalize">
                   {roleOptions.find((r) => r.value === user.role)?.icon && (
                     <span>
                       {(() => {
@@ -347,13 +341,13 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.15 }}
-              className="flex items-center justify-between bg-[#F8FAFC]/80 border border-slate-200/60 rounded-xl p-3 md:p-4 -mt-2 mb-8"
+              className="flex items-center justify-between bg-white/[0.03] border border-slate-800/80 rounded-xl p-3 md:p-4 -mt-2 mb-8"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[10px] text-[#0F172A]/40 uppercase font-semibold tracking-wider whitespace-nowrap font-body">
+                <span className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider whitespace-nowrap font-body">
                   USER ID:
                 </span>
-                <code className="text-xs md:text-sm font-mono text-[#0F172A]/70 font-medium break-all">
+                <code className="text-xs md:text-sm font-mono text-slate-300 font-medium break-all">
                   {user._id || user.id || "—"}
                 </code>
               </div>
@@ -370,27 +364,27 @@ export default function ProfilePage() {
           >
             {/* ── Phone Field ── */}
             <div>
-              <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">
+              <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase mb-1.5 block font-body">
                 Phone Number
               </label>
               <div className="relative">
                 <Phone
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/60 pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D0F219]/50 pointer-events-none"
                 />
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+1 (555) 000-0000"
-                  className="w-full pl-11 pr-4 py-3.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20 rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all text-sm font-body"
+                  className="w-full pl-11 pr-4 py-3.5 bg-[#0A0C07] border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D0F219] focus:ring-1 focus:ring-[#D0F219]/50 transition-all text-sm font-body"
                 />
               </div>
             </div>
 
             {/* ── Role Selector ── */}
             <div>
-              <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-3 block font-body">
+              <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase mb-3 block font-body">
                 Account Role
               </label>
               <div className="grid grid-cols-3 gap-2.5">
@@ -403,8 +397,8 @@ export default function ProfilePage() {
                       onClick={() => setRole(opt.value)}
                       className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${
                         isActive
-                          ? "bg-[#1E293B] text-white border-[#1E293B] shadow-sm"
-                          : "bg-transparent text-[#0284C7] border-[#0284C7]/30 hover:border-[#0284C7]/60 hover:bg-[#F8FAFC]/30"
+                          ? "bg-[#D0F219] text-[#12140E] border-[#D0F219] shadow-[0_0_20px_rgba(208,242,25,0.25)]"
+                          : "bg-transparent text-slate-400 border-slate-700/70 hover:border-lime-500/50 hover:text-[#D0F219] hover:bg-lime-400/5"
                       }`}
                     >
                       <opt.icon size={20} />
@@ -422,7 +416,7 @@ export default function ProfilePage() {
               <button
                 onClick={handleSubmit}
                 disabled={isUpdating}
-                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-slate-900 text-white rounded-full font-body font-medium text-sm hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
+                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#D0F219] text-[#12140E] rounded-full font-body font-semibold text-sm hover:bg-lime-300 hover:shadow-[0_0_30px_rgba(208,242,25,0.35)] active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#D0F219] disabled:hover:shadow-none"
               >
                 {isUpdating ? (
                   <>
@@ -440,8 +434,6 @@ export default function ProfilePage() {
           </motion.div>
         </motion.div>
       </main>
-
-      <Footer />
     </div>
   );
 }

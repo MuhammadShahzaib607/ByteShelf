@@ -21,7 +21,7 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "relative inline-flex items-center justify-center font-body font-medium rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#0284C7]/30";
+    "relative inline-flex items-center justify-center font-body font-semibold rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ccff00]/40";
 
   const sizeStyles = {
     sm: "px-4 py-2 text-sm",
@@ -31,13 +31,13 @@ const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      "bg-[#1E293B] text-white hover:bg-[#0284C7] active:bg-[#0284C7]/90 shadow-md hover:shadow-lg shadow-slate-900/10",
+      "bg-[#ccff00] text-black hover:bg-[#b8e600] active:bg-[#b8e600]/90 shadow-md hover:shadow-[0_0_30px_rgba(204,255,0,0.35)] shadow-slate-950/30",
     secondary:
-      "bg-[#0284C7] text-white hover:bg-[#0284C7]/80 active:bg-[#0284C7]/70 shadow-sm hover:shadow-md shadow-slate-900/10",
+      "bg-slate-800 text-white hover:bg-slate-700 active:bg-slate-700/90 shadow-sm hover:shadow-md shadow-slate-950/20",
     outline:
-      "border-2 border-[#1E293B] text-[#1E293B] bg-transparent hover:bg-[#F8FAFC]/40 active:bg-[#F8FAFC]/60",
+      "border-2 border-slate-700 text-slate-200 bg-transparent hover:bg-white/5 active:bg-white/10",
     ghost:
-      "text-[#1E293B] bg-transparent hover:bg-[#F8FAFC]/40 active:bg-[#F8FAFC]/60",
+      "text-slate-200 bg-transparent hover:bg-white/5 active:bg-white/10",
   };
 
   return (

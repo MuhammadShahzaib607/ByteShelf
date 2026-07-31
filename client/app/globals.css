@@ -44,6 +44,86 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Browser autofill — keep dark (auth) inputs dark with bright white text.
+   Scoped to the `.dark-input` class so light-themed dashboard forms stay untouched. */
+.dark-input:-webkit-autofill,
+.dark-input:-webkit-autofill:hover,
+.dark-input:-webkit-autofill:focus,
+.dark-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #090d16 inset !important;
+  caret-color: #ffffff;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ─── Auth liquid-gradient background orbs — fluid morphing glow blobs ──────── */
+@keyframes auth-orb-1 {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.6; }
+  33%      { transform: translate(70px, -50px) scale(1.2) rotate(35deg); opacity: 0.85; }
+  66%      { transform: translate(-50px, 40px) scale(0.9) rotate(-25deg); opacity: 0.5; }
+}
+
+@keyframes auth-orb-2 {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.5; }
+  40%      { transform: translate(-60px, 60px) scale(1.1) rotate(-30deg); opacity: 0.75; }
+  75%      { transform: translate(40px, -30px) scale(1.25) rotate(20deg); opacity: 0.6; }
+}
+
+@keyframes auth-orb-3 {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.45; }
+  30%      { transform: translate(-70px, -40px) scale(0.85) rotate(25deg); opacity: 0.7; }
+  70%      { transform: translate(50px, 50px) scale(1.15) rotate(-35deg); opacity: 0.5; }
+}
+
+@keyframes auth-orb-4 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50%      { transform: translate(30px, -60px) scale(1.35); opacity: 0.7; }
+}
+
+.auth-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.animate-auth-orb-1 { animation: auth-orb-1 18s ease-in-out infinite; }
+.animate-auth-orb-2 { animation: auth-orb-2 22s ease-in-out infinite; }
+.animate-auth-orb-3 { animation: auth-orb-3 26s ease-in-out infinite; }
+.animate-auth-orb-4 { animation: auth-orb-4 20s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-auth-orb-1,
+  .animate-auth-orb-2,
+  .animate-auth-orb-3,
+  .animate-auth-orb-4 {
+    animation: none;
+  }
+}
+
+/* ─── Auth card hover glow pulse ──────────────────────────────────────── */
+.auth-card-glow {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes auth-card-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.02); }
+}
+
+.group:hover .auth-card-glow {
+  opacity: 1;
+  animation: auth-card-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .auth-card-glow {
+    animation: none;
+  }
+}
+
 /* Custom scrollbar — ByteShelf dark theme + lime green accent */
 ::-webkit-scrollbar {
   width: 8px;

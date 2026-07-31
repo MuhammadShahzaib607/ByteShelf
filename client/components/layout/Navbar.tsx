@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Menu,
@@ -329,11 +330,7 @@ const Navbar: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 pt-4">
         <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-[#0D0F0A]/80 border border-lime-500/20 backdrop-blur-md">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12140E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-            </div>
+            <Image src="/logo.png" alt="ByteShelf Logo" width={32} height={32} className="object-contain" />
             <span className="font-heading text-lg font-semibold text-white tracking-tight">
               ByteShelf
             </span>
@@ -357,11 +354,14 @@ const Navbar: React.FC = () => {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(208,242,25,0.5)] transition-shadow duration-300">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12140E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="ByteShelf Logo"
+            width={32}
+            height={32}
+            priority
+            className="object-contain transition-[filter] duration-300 group-hover:drop-shadow-[0_0_12px_rgba(208,242,25,0.5)]"
+          />
           <span className="font-heading text-lg font-semibold text-white tracking-tight">
             ByteShelf
           </span>

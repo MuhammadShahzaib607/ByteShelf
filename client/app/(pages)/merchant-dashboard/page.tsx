@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -113,9 +114,13 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose }: {
     <div className="flex flex-col h-full bg-slate-900">
       <div className="shrink-0 px-5 pt-6 pb-5 border-b border-white/10">
         <Link href="/" className="inline-flex items-center gap-2.5 group mb-4">
-          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="ByteShelf Logo"
+            width={32}
+            height={32}
+            className="object-contain transition-opacity duration-200 group-hover:opacity-90"
+          />
           <span className="font-heading text-lg font-semibold text-white tracking-tight">ByteShelf</span>
         </Link>
         <a href="/" className="inline-flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors font-body"><ArrowLeft size={13} /> Back to Main Site</a>

@@ -68,6 +68,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
   useEffect(() => {
     const firstEmpty = digitArray.findIndex((d) => !d);
     if (firstEmpty >= 0) focusInput(firstEmpty);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -79,18 +80,18 @@ const OtpInput: React.FC<OtpInputProps> = ({
             <div
               key={index}
               className={`
-                relative w-11 h-12 sm:w-12 sm:h-14 rounded-xl border-2 bg-white
+                relative w-11 h-12 sm:w-12 sm:h-14 rounded-xl border-2 bg-slate-950
                 flex items-center justify-center transition-all duration-150
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-                ${error ? "bg-red-50/30" : ""}
+                ${error ? "bg-red-950/20" : ""}
                 ${
                   isFocused
-                    ? "border-[#0284C7] shadow-[0_0_0_2px_#0284C7_inset]"
+                    ? "border-[#ccff00] shadow-[0_0_0_2px_#ccff00_inset,0_0_20px_rgba(204,255,0,0.15)]"
                     : digit
-                    ? "border-[#1E293B]"
+                    ? "border-[#ccff00]/50"
                     : error
                     ? "border-red-500"
-                    : "border-[#E5D9D0]"
+                    : "border-slate-800"
                 }
               `}
             >
@@ -114,7 +115,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
               />
               <span
                 className={`font-heading text-xl sm:text-2xl font-semibold select-none ${
-                  digit ? "text-[#1E293B]" : "text-[#0284C7]/30"
+                  digit ? "text-white" : "text-[#ccff00]/30"
                 }`}
               >
                 {digit || "•"}
@@ -124,7 +125,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
         })}
       </div>
       {error && (
-        <p className="text-red-500 text-xs mt-2 text-center font-body">{error}</p>
+        <p className="text-red-400 text-xs mt-2 text-center font-body">{error}</p>
       )}
     </div>
   );

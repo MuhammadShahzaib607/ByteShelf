@@ -10,19 +10,17 @@ import {
   AlertCircle,
   Camera,
   Video,
-  Image as ImageIcon,
   CheckCircle,
   Upload,
   ChevronLeft,
-  ChevronRight,
   Shield,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { signupUser, clearError } from "@/redux/slices/authSlice";
 import { uploadToCloudinary, uploadVideoToCloudinary } from "@/lib/cloudinary";
 import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
 import RoleSelector from "@/components/ui/RoleSelector";
+import AuthShell from "@/components/layout/AuthShell";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -56,17 +54,17 @@ function StepIndicator({ current, stepKey }: { current: Step; stepKey: Step }) {
   const isActive = curIdx === idx;
 
   return (
-    <div className={`flex items-center gap-2 ${isDone ? "text-emerald-500" : isActive ? "text-[#1E293B]" : "text-[#0F172A]/30"}`}>
+    <div className={`flex items-center gap-2 ${isDone ? "text-[#ccff00]" : isActive ? "text-[#ccff00]" : "text-slate-600"}`}>
       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold font-body transition-all duration-300 ${
         isDone
-          ? "bg-emerald-100 text-emerald-600"
+          ? "bg-[#ccff00] text-black"
           : isActive
-          ? "bg-[#1E293B] text-white shadow-sm"
-          : "bg-[#F8FAFC] text-[#0F172A]/30"
+          ? "bg-[#ccff00] text-black shadow-[0_0_15px_rgba(204,255,0,0.35)]"
+          : "bg-slate-800 text-slate-500"
       }`}>
         {isDone ? <CheckCircle size={14} /> : idx + 1}
       </div>
-      <span className={`text-xs font-medium font-body ${isActive ? "text-[#1E293B]" : ""}`}>{stepConfig?.label || stepKey}</span>
+      <span className={`text-xs font-medium font-body ${isActive ? "text-white" : "text-slate-500"}`}>{stepConfig?.label || stepKey}</span>
     </div>
   );
 }
@@ -113,7 +111,8 @@ export default function SignupPage() {
   useEffect(() => {
     if (tempEmail && !isLoading) {
       router.push("/verify-otp");
-    }    }, [tempEmail, isLoading, router]);
+    }
+  }, [tempEmail, isLoading, router]);
 
   // ─── Cleanup camera on unmount ───────────────────────────────────────────
   useEffect(() => {
@@ -202,7 +201,6 @@ export default function SignupPage() {
   }, [stopCamera]);
 
   // ─── Upload KYC file to Cloudinary ───────────────────────────────────────
-  // ─── Upload image to Cloudinary ────────────────────────────────────────
   const uploadImageFile = useCallback(async (file: File): Promise<string> => {
     setUploading(true);
     try {
@@ -355,16 +353,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="w-full max-w-lg p-8 md:p-10 bg-white rounded-3xl shadow-xl border border-[#0284C7]/15 flex flex-col gap-6">
+    <AuthShell>
       {/* Header */}
       <div className="text-center">
-        <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-3">
-          <Shield size={22} className="text-[#0284C7]" />
+        <div className="w-12 h-12 rounded-2xl bg-[#ccff00]/10 border border-[#ccff00]/25 flex items-center justify-center mx-auto mb-3">
+          <Shield size={22} className="text-[#ccff00]" />
         </div>
-        <h1 className="font-heading text-3xl text-[#1E293B] font-bold">
+        <h1 className="font-heading text-3xl text-white font-bold">
           Create Account
         </h1>
-        <p className="mt-1 text-sm text-[#0F172A]/50 font-body">
+        <p className="mt-1 text-sm text-slate-400 font-body">
           Join ByteShelf — KYC verification required
         </p>
       </div>
@@ -376,7 +374,7 @@ export default function SignupPage() {
             <StepIndicator current={step} stepKey={s.key} />
             {i < STEPS.length - 1 && (
               <div className={`w-8 sm:w-12 h-px mx-2 transition-colors duration-300 ${
-                STEPS.findIndex((x) => x.key === step) > i ? "bg-emerald-300" : "bg-[#E2E8F0]"
+                STEPS.findIndex((x) => x.key === step) > i ? "bg-[#ccff00]/60" : "bg-slate-800"
               }`} />
             )}
           </div>
@@ -385,9 +383,9 @@ export default function SignupPage() {
 
       {/* Error */}
       {error && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-          <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-red-600 font-body">{error}</p>
+        <div className="p-3 rounded-xl bg-red-950/30 border border-red-500/25 flex items-start gap-2.5">
+          <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-red-300 font-body">{error}</p>
         </div>
       )}
 
@@ -402,6 +400,7 @@ export default function SignupPage() {
             onChange={(e) => setName(e.target.value)}
             error={errors.name}
             autoComplete="name"
+            dark
           />
           <Input
             label="Email Address"
@@ -412,6 +411,7 @@ export default function SignupPage() {
             onChange={(e) => setEmail(e.target.value)}
             error={errors.email}
             autoComplete="email"
+            dark
           />
           <Input
             label="Password"
@@ -423,6 +423,7 @@ export default function SignupPage() {
             onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
             autoComplete="new-password"
+            dark
           />
           <RoleSelector value={role} onChange={setRole} error={errors.role} />
         </div>
@@ -433,28 +434,28 @@ export default function SignupPage() {
         <div className="flex flex-col gap-5">
           {/* NIC Front */}
           <div>
-            <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-2 block font-body">
+            <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase mb-2 block font-body">
               NIC Front Image
             </label>
             <div
               onClick={() => document.getElementById("nic-front-input")?.click()}
               className={`relative w-full h-36 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
                 nicFrontPreview
-                  ? "border-emerald-300 bg-emerald-50/30"
-                  : "border-[#0284C7]/30 hover:border-[#0284C7]/60 bg-[#F8FAFC]/20 hover:bg-[#F8FAFC]/40"
+                  ? "border-[#ccff00]/50 bg-[#ccff00]/5"
+                  : "border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 hover:bg-slate-950/60"
               }`}
             >
               {nicFrontPreview ? (
                 <>
                   <img src={nicFrontPreview} alt="NIC Front" className="absolute inset-0 w-full h-full object-contain p-2" />
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold font-body">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">
                     Uploaded
                   </div>
                 </>
               ) : (
                 <>
-                  <Upload size={24} className="text-[#0284C7]/40 mb-1" />
-                  <span className="text-xs text-[#0F172A]/40 font-body">Tap to upload NIC front</span>
+                  <Upload size={24} className="text-[#ccff00]/40 mb-1" />
+                  <span className="text-xs text-slate-500 font-body">Tap to upload NIC front</span>
                 </>
               )}
               <input
@@ -473,26 +474,26 @@ export default function SignupPage() {
 
           {/* NIC Back */}
           <div>
-            <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-2 block font-body">
+            <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase mb-2 block font-body">
               NIC Back Image
             </label>
             <div
               onClick={() => document.getElementById("nic-back-input")?.click()}
               className={`relative w-full h-36 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
                 nicBackPreview
-                  ? "border-emerald-300 bg-emerald-50/30"
-                  : "border-[#0284C7]/30 hover:border-[#0284C7]/60 bg-[#F8FAFC]/20 hover:bg-[#F8FAFC]/40"
+                  ? "border-[#ccff00]/50 bg-[#ccff00]/5"
+                  : "border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 hover:bg-slate-950/60"
               }`}
             >
               {nicBackPreview ? (
                 <>
                   <img src={nicBackPreview} alt="NIC Back" className="absolute inset-0 w-full h-full object-contain p-2" />
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold font-body">Uploaded</div>
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">Uploaded</div>
                 </>
               ) : (
                 <>
-                  <Upload size={24} className="text-[#0284C7]/40 mb-1" />
-                  <span className="text-xs text-[#0F172A]/40 font-body">Tap to upload NIC back</span>
+                  <Upload size={24} className="text-[#ccff00]/40 mb-1" />
+                  <span className="text-xs text-slate-500 font-body">Tap to upload NIC back</span>
                 </>
               )}
               <input
@@ -514,29 +515,29 @@ export default function SignupPage() {
       {/* ═══ STEP 3: LIVE PHOTO ═══ */}
       {step === "photo" && (
         <div className="flex flex-col gap-5">
-          <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase font-body">
+          <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase font-body">
             Live Photo (Selfie)
           </label>
-          <p className="text-xs text-[#0F172A]/50 font-body -mt-3">
+          <p className="text-xs text-slate-500 font-body -mt-3">
             Take a real-time selfie for identity verification
           </p>
 
           {!cameraActive && !livePhoto && (
             <div
               onClick={() => startCamera("photo")}
-              className="w-full h-44 rounded-2xl border-2 border-dashed border-[#0284C7]/30 hover:border-[#0284C7]/60 bg-[#F8FAFC]/20 flex flex-col items-center justify-center cursor-pointer transition-all"
+              className="w-full h-44 rounded-2xl border-2 border-dashed border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 flex flex-col items-center justify-center cursor-pointer transition-all"
             >
-              <Camera size={32} className="text-[#0284C7]/40 mb-2" />
-              <span className="text-xs text-[#0F172A]/40 font-body">Open Camera</span>
+              <Camera size={32} className="text-[#ccff00]/40 mb-2" />
+              <span className="text-xs text-slate-500 font-body">Open Camera</span>
             </div>
           )}
 
           {cameraActive && cameraMode === "photo" && (
-            <div className="relative rounded-2xl overflow-hidden bg-black border border-[#E2E8F0]">
+            <div className="relative rounded-2xl overflow-hidden bg-black border border-slate-800">
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-48 object-cover rounded-xl bg-slate-950" />
               <button
                 onClick={capturePhoto}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-white text-[#1E293B] rounded-full text-xs font-semibold font-body shadow-lg hover:bg-[#F8FAFC] active:scale-95 transition-all"
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-[#ccff00] text-black rounded-full text-xs font-semibold font-body shadow-lg hover:bg-[#b8e600] active:scale-95 transition-all"
               >
                 <Camera size={16} className="inline mr-1.5" />
                 Take Snapshot
@@ -545,14 +546,14 @@ export default function SignupPage() {
           )}
 
           {livePhoto && !cameraActive && (
-            <div className="relative rounded-2xl overflow-hidden border border-emerald-200">
+            <div className="relative rounded-2xl overflow-hidden border border-[#ccff00]/40">
               <img src={livePhoto} alt="Captured selfie" className="w-full h-44 object-cover" />
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold font-body">
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">
                 Captured
               </div>
               <button
                 onClick={() => { setLivePhoto(null); startCamera("photo"); }}
-                className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-white/90 backdrop-blur-sm text-[#1E293B] rounded-full text-[10px] font-semibold font-body shadow-sm hover:bg-white transition-all"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-slate-900/90 backdrop-blur-sm text-white rounded-full text-[10px] font-semibold font-body shadow-sm hover:bg-slate-800 transition-all"
               >
                 Retake
               </button>
@@ -565,25 +566,25 @@ export default function SignupPage() {
       {/* ═══ STEP 4: VIDEO RECORDING ═══ */}
       {step === "video" && (
         <div className="flex flex-col gap-5">
-          <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase font-body">
+          <label className="text-xs font-semibold tracking-wider text-slate-300 uppercase font-body">
             5-Second Live Video
           </label>
-          <p className="text-xs text-[#0F172A]/50 font-body -mt-3">
+          <p className="text-xs text-slate-500 font-body -mt-3">
             Record a short video to verify your identity
           </p>
 
           {!cameraActive && !liveVideo && (
             <div
               onClick={() => startCamera("video")}
-              className="w-full h-44 rounded-2xl border-2 border-dashed border-[#0284C7]/30 hover:border-[#0284C7]/60 bg-[#F8FAFC]/20 flex flex-col items-center justify-center cursor-pointer transition-all"
+              className="w-full h-44 rounded-2xl border-2 border-dashed border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 flex flex-col items-center justify-center cursor-pointer transition-all"
             >
-              <Video size={32} className="text-[#0284C7]/40 mb-2" />
-              <span className="text-xs text-[#0F172A]/40 font-body">Open Camera</span>
+              <Video size={32} className="text-[#ccff00]/40 mb-2" />
+              <span className="text-xs text-slate-500 font-body">Open Camera</span>
             </div>
           )}
 
           {cameraActive && cameraMode === "video" && (
-            <div className="relative rounded-2xl overflow-hidden bg-black border border-[#E2E8F0]">
+            <div className="relative rounded-2xl overflow-hidden bg-black border border-slate-800">
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-48 object-cover rounded-xl bg-slate-950" />
               {!recording ? (
                 <button
@@ -603,14 +604,14 @@ export default function SignupPage() {
           )}
 
           {liveVideo && !cameraActive && (
-            <div className="relative rounded-2xl overflow-hidden border border-emerald-200 bg-black">
+            <div className="relative rounded-2xl overflow-hidden border border-[#ccff00]/40 bg-black">
               <video src={liveVideo} controls className="w-full h-44 object-cover" />
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold font-body">
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">
                 Recorded
               </div>
               <button
                 onClick={() => { setLiveVideo(null); startCamera("video"); }}
-                className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-white/90 backdrop-blur-sm text-[#1E293B] rounded-full text-[10px] font-semibold font-body shadow-sm hover:bg-white transition-all"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-slate-900/90 backdrop-blur-sm text-white rounded-full text-[10px] font-semibold font-body shadow-sm hover:bg-slate-800 transition-all"
               >
                 Re-record
               </button>
@@ -621,12 +622,12 @@ export default function SignupPage() {
       )}
 
       {/* ═══ NAVIGATION BUTTONS ═══ */}
-      <div className="flex items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-100">
+      <div className="flex items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-800">
         {step !== "info" ? (
           <button
             type="button"
             onClick={prevStep}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 text-sm font-medium transition-all"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 text-sm font-medium transition-all"
           >
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
@@ -637,7 +638,7 @@ export default function SignupPage() {
           type="button"
           onClick={nextStep}
           disabled={isLoading || uploading}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white bg-[#1E293B] hover:bg-slate-800 text-sm font-medium shadow-md shadow-slate-900/10 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-black bg-[#ccff00] hover:bg-[#b8e600] text-sm font-semibold shadow-md shadow-[#ccff00]/10 active:scale-[0.98] transition-all disabled:opacity-50"
         >
           {isLoading || uploading ? (
             <span>Processing...</span>
@@ -651,16 +652,16 @@ export default function SignupPage() {
 
       {/* Footer link */}
       <div className="text-center">
-        <p className="text-xs text-[#0F172A]/50 font-body">
+        <p className="text-xs text-slate-500 font-body">
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-[#1E293B] font-medium hover:text-[#0284C7] transition-colors underline underline-offset-2"
+            className="text-[#ccff00] font-medium hover:text-lime-300 transition-colors underline underline-offset-2"
           >
             Sign In
           </Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

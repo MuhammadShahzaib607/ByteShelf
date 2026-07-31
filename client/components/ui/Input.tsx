@@ -8,10 +8,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   icon?: LucideIcon;
   showPasswordToggle?: boolean;
+  /** Dark glass variant for ByteShelf auth pages (light default preserved for dashboard/warehouse forms) */
+  dark?: boolean;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon: Icon, showPasswordToggle, type, className = "", ...props }, ref) => {
+  ({ label, error, icon: Icon, showPasswordToggle, type, dark = false, className = "", ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
     const inputType = isPassword && showPassword ? "text" : type;
@@ -19,13 +21,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block">
+          <label className={`text-xs font-semibold tracking-wider uppercase mb-1.5 block ${
+            dark ? "text-slate-300" : "text-[#1E293B]"
+          }`}>
             {label}
           </label>
         )}
         <div className="relative flex items-center w-full">
           {Icon && (
-            <div className="absolute left-4 text-[#0284C7] pointer-events-none z-10">
+            <div className={`absolute left-4 pointer-events-none z-10 ${
+              dark ? "text-[#ccff00]/70" : "text-[#0284C7]"
+            }`}>
               <Icon size={18} />
             </div>
           )}
@@ -33,12 +39,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={inputType}
             className={`
-              w-full pl-11 pr-4 py-3.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20
-              rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/40
-              focus:outline-none focus:border-[#0284C7] focus:bg-white
+              w-full pl-11 pr-4 py-3.5 rounded-xl
               transition-all text-sm font-body
               ${isPassword && showPasswordToggle ? "pr-12" : ""}
-              ${error ? "border-red-500 bg-red-50/50" : ""}
+              ${
+                dark
+                  ? "dark-input bg-slate-950/70 border border-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]"
+                  : "bg-[#F8FAFC]/40 border border-[#0284C7]/20 text-[#0F172A] placeholder:text-[#0F172A]/40 focus:outline-none focus:border-[#0284C7] focus:bg-white"
+              }
+              ${error ? "border-red-500 bg-red-50/50 dark:bg-red-950/20" : ""}
               ${className}
             `}
             {...props}
@@ -47,7 +56,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 text-[#0284C7]/50 hover:text-[#0284C7] transition-colors z-10"
+              className={`absolute right-4 transition-colors z-10 ${
+                dark
+                  ? "text-slate-500 hover:text-[#ccff00]"
+                  : "text-[#0284C7]/50 hover:text-[#0284C7]"
+              }`}
               tabIndex={-1}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >

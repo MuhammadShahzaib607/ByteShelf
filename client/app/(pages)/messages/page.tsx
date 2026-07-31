@@ -109,30 +109,30 @@ function ConversationItem({
       onClick={onClick}
       className={`w-full text-left px-4 py-3.5 rounded-xl transition-all duration-200 flex items-start gap-3 ${
         isActive
-          ? "bg-[#0284C7]/10 border border-[#0284C7]/20"
-          : "bg-white border border-transparent hover:bg-[#F8FAFC]/60"
+          ? "bg-[#D0F219]/10 border-l-4 border-l-[#D0F219] border border-lime-500/20"
+          : "bg-transparent border border-transparent hover:bg-white/[0.03]"
       }`}
     >
-      <div className="w-10 h-10 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0 mt-0.5">
-        <span className="text-xs font-semibold text-white font-body">{initials}</span>
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center shrink-0 mt-0.5">
+        <span className="text-xs font-semibold text-[#12140E] font-body">{initials}</span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-semibold text-[#1E293B] font-body truncate">
+          <span className="text-sm font-semibold text-white font-body truncate">
             {name}
           </span>
           {conv.lastMessageAt && (
-            <span className="text-[10px] text-[#0F172A]/40 font-body shrink-0">
+            <span className="text-[10px] text-slate-500 font-body shrink-0">
               {formatTime(conv.lastMessageAt)}
             </span>
           )}
         </div>
-        <p className="text-xs text-[#0F172A]/50 font-body truncate mt-0.5">
+        <p className="text-xs text-slate-400 font-body truncate mt-0.5">
           {conv.lastMessage || "No messages yet"}
         </p>
       </div>
       {conv.unreadCount > 0 && (
-        <span className="w-5 h-5 rounded-full bg-[#0284C7] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-1 font-body">
+        <span className="w-5 h-5 rounded-full bg-[#D0F219] text-[#12140E] text-[10px] font-bold flex items-center justify-center shrink-0 mt-1 font-body shadow-[0_0_12px_rgba(208,242,25,0.4)]">
           {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
         </span>
       )}
@@ -150,18 +150,22 @@ function MessageBubble({ message, isOwn }: { message: MessageData; isOwn: boolea
       <div
         className={`max-w-[75%] sm:max-w-[65%] px-4 py-2.5 rounded-2xl ${
           isOwn
-            ? "bg-[#0284C7] text-white rounded-br-lg"
-            : "bg-[#F8FAFC] border border-[#E2E8F0] text-[#1E293B] rounded-bl-lg"
+            ? "bg-[#D0F219] text-slate-950 rounded-br-lg shadow-[0_4px_20px_rgba(208,242,25,0.2)]"
+            : "bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-lg"
         }`}
       >
-        <p className="text-sm font-body leading-relaxed whitespace-pre-wrap break-words">
+        <p
+          className={`text-sm font-body leading-relaxed whitespace-pre-wrap break-words ${
+            isOwn ? "font-semibold" : ""
+          }`}
+        >
           {message.text}
         </p>
         <div className={`flex items-center gap-1 mt-1 ${isOwn ? "justify-end" : "justify-start"}`}>
-          <span className={`text-[10px] ${isOwn ? "text-white/60" : "text-[#0F172A]/40"} font-body`}>
+          <span className={`text-[10px] ${isOwn ? "text-slate-900/80" : "text-slate-400"} font-body`}>
             {formatTime(message.createdAt)}
           </span>
-          {isOwn && <CheckCheck size={12} className={message.isRead ? "text-white" : "text-white/40"} />}
+          {isOwn && <CheckCheck size={12} className={message.isRead ? "text-slate-900" : "text-slate-900/50"} />}
         </div>
       </div>
     </div>
@@ -175,9 +179,9 @@ function MessageBubble({ message, isOwn }: { message: MessageData; isOwn: boolea
 export default function MessagesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F8FAFC] pt-24 pb-6 px-4 sm:px-6">
+      <div className="min-h-screen bg-[#0D0F0A] pt-24 pb-6 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto h-[calc(100vh-8rem)] flex items-center justify-center">
-          <Loader2 size={28} className="animate-spin text-[#0284C7]" />
+          <Loader2 size={28} className="animate-spin text-[#D0F219]" />
         </div>
       </div>
     }>
@@ -575,13 +579,13 @@ function MessagesContent() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pt-24 pb-6 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#0D0F0A] pt-24 pb-6 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto h-[calc(100vh-8rem)]">
         {/* Mobile back to sidebar button */}
         {!showSidebar && activeConvId && (
           <button
             onClick={() => setShowSidebar(true)}
-            className="sm:hidden flex items-center gap-1.5 text-sm text-[#0F172A]/50 hover:text-[#1E293B] font-body mb-3"
+            className="sm:hidden flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#D0F219] font-body mb-3"
           >
             <ChevronLeft size={16} />
             All Conversations
@@ -589,19 +593,19 @@ function MessagesContent() {
         )}
 
         {/* Main Chat Container */}
-        <div className="h-full bg-white rounded-3xl shadow-sm border border-[#E2E8F0] overflow-hidden flex flex-col sm:flex-row">
+        <div className="h-full bg-[#11140C]/90 rounded-3xl shadow-2xl shadow-black/40 border border-lime-500/15 overflow-hidden flex flex-col sm:flex-row">
           {/* ═══ SIDEBAR ═══ */}
           <div
             className={`${
               showSidebar || !activeConvId ? "flex" : "hidden"
-            } sm:flex flex-col w-full sm:w-80 lg:w-96 border-r border-[#E2E8F0] bg-white`}
+            } sm:flex flex-col w-full sm:w-80 lg:w-96 border-r border-lime-500/10 bg-[#11140C]/40`}
           >
             {/* Sidebar Header */}
-            <div className="p-4 border-b border-[#E2E8F0]">
-              <h2 className="font-heading text-lg font-semibold text-[#1E293B]">
+            <div className="p-4 border-b border-lime-500/10">
+              <h2 className="font-heading text-lg font-semibold text-white">
                 Messages
               </h2>
-              <p className="text-xs text-[#0F172A]/50 font-body mt-0.5">
+              <p className="text-xs text-slate-400 font-body mt-0.5">
                 Your conversations
               </p>
             </div>
@@ -610,22 +614,22 @@ function MessagesContent() {
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {convLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 size={20} className="animate-spin text-[#0284C7]" />
+                  <Loader2 size={20} className="animate-spin text-[#D0F219]" />
                 </div>
               ) : convError ? (
                 <div className="text-center py-12">
-                  <MessageCircle size={28} className="mx-auto text-[#0284C7]/30 mb-2" />
-                  <p className="text-xs text-[#0F172A]/50 font-body">
+                  <MessageCircle size={28} className="mx-auto text-lime-400/30 mb-2" />
+                  <p className="text-xs text-slate-400 font-body">
                     Failed to load conversations.
                   </p>
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="text-center py-12">
-                  <MessageCircle size={28} className="mx-auto text-[#0284C7]/30 mb-2" />
-                  <p className="text-xs text-[#0F172A]/50 font-body">
+                  <MessageCircle size={28} className="mx-auto text-lime-400/30 mb-2" />
+                  <p className="text-xs text-slate-400 font-body">
                     No conversations yet.
                   </p>
-                  <p className="text-[10px] text-[#0F172A]/30 font-body mt-1">
+                  <p className="text-[10px] text-slate-500 font-body mt-1">
                     Chat with a warehouse owner from a booking to get started.
                   </p>
                 </div>
@@ -647,19 +651,19 @@ function MessagesContent() {
           <div
             className={`${
               !showSidebar && activeConvId ? "flex" : "hidden"
-            } sm:flex flex-col flex-1 bg-white relative`}
+            } sm:flex flex-col flex-1 bg-[#11140C]/40 relative`}
           >
             {!activeConvId ? (
               /* Empty State */
               <div className="flex-1 flex items-center justify-center p-8">
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mx-auto mb-4">
-                    <MessageCircle size={32} className="text-[#0284C7]/40" />
+                  <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-lime-500/15 flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle size={32} className="text-lime-400/40" />
                   </div>
-                  <h3 className="font-heading text-lg font-semibold text-[#1E293B] mb-2">
+                  <h3 className="font-heading text-lg font-semibold text-white mb-2">
                     Select a conversation
                   </h3>
-                  <p className="text-sm text-[#0F172A]/50 font-body max-w-sm">
+                  <p className="text-sm text-slate-400 font-body max-w-sm">
                     Choose a conversation from the sidebar to start chatting, or
                     chat with a warehouse owner from one of your bookings.
                   </p>
@@ -668,34 +672,34 @@ function MessagesContent() {
             ) : (
               <>
                 {/* Chat Header */}
-                <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center gap-3 shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0 relative">
-                    <span className="text-xs font-semibold text-white font-body">
+                <div className="px-5 py-4 border-b border-lime-500/10 flex items-center gap-3 shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center shrink-0 relative">
+                    <span className="text-xs font-semibold text-[#12140E] font-body">
                       {otherParticipant
                         ? getInitials(otherParticipant.name)
                         : "?"}
                     </span>
                     {/* Online indicator dot */}
                     {otherParticipant && onlineStatus[otherParticipant._id]?.isOnline && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#D0F219] border-2 border-[#11140C]" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-[#1E293B] font-body truncate">
+                      <p className="text-sm font-semibold text-white font-body truncate">
                         {otherParticipant?.name || "Unknown User"}
                       </p>
                       {/* Online / Last Seen status */}
                       {otherParticipant && onlineStatus[otherParticipant._id]?.isOnline ? (
-                        <span className="text-[10px] text-emerald-600 font-body font-medium shrink-0">Online</span>
+                        <span className="text-[10px] text-[#D0F219] font-body font-medium shrink-0">Online</span>
                       ) : otherParticipant && onlineStatus[otherParticipant._id]?.lastSeen ? (
-                        <span className="text-[10px] text-[#0F172A]/40 font-body shrink-0">
+                        <span className="text-[10px] text-slate-500 font-body shrink-0">
                           Last seen {formatTime(onlineStatus[otherParticipant._id].lastSeen!)}
                         </span>
                       ) : null}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-[11px] text-[#0F172A]/40 font-body capitalize">
+                      <p className="text-[11px] text-slate-400 font-body capitalize">
                         {otherParticipant?.role === "warehouseOwner"
                           ? "Warehouse Owner"
                           : otherParticipant?.role === "merchant"
@@ -711,7 +715,7 @@ function MessagesContent() {
                 <div
                   ref={chatContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 overflow-y-auto px-5 py-4 bg-white"
+                  className="flex-1 overflow-y-auto px-5 py-4 bg-[#0D0F0A]/60"
                 >
                   {/* Load More */}
                   {hasMore && (
@@ -719,7 +723,7 @@ function MessagesContent() {
                       <button
                         onClick={loadMore}
                         disabled={msgLoading}
-                        className="text-xs text-[#0284C7] font-medium hover:underline font-body disabled:opacity-50"
+                        className="text-xs text-[#D0F219] font-medium hover:underline font-body disabled:opacity-50"
                       >
                         {msgLoading ? "Loading..." : "Load earlier messages"}
                       </button>
@@ -729,14 +733,14 @@ function MessagesContent() {
                   {/* Message Loading */}
                   {msgLoading && page === 1 && (
                     <div className="flex items-center justify-center py-12">
-                      <Loader2 size={20} className="animate-spin text-[#0284C7]" />
+                      <Loader2 size={20} className="animate-spin text-[#D0F219]" />
                     </div>
                   )}
 
                   {/* Message Error */}
                   {msgError && (
                     <div className="text-center py-8">
-                      <p className="text-xs text-red-500 font-body">
+                      <p className="text-xs text-red-400 font-body">
                         Failed to load messages.
                       </p>
                     </div>
@@ -745,11 +749,11 @@ function MessagesContent() {
                   {/* No Messages */}
                   {!msgLoading && !msgError && messages.length === 0 && (
                     <div className="text-center py-12">
-                      <MessageCircle size={28} className="mx-auto text-[#0284C7]/30 mb-2" />
-                      <p className="text-sm text-[#0F172A]/50 font-body">
+                      <MessageCircle size={28} className="mx-auto text-lime-400/30 mb-2" />
+                      <p className="text-sm text-slate-400 font-body">
                         No messages yet.
                       </p>
-                      <p className="text-xs text-[#0F172A]/30 font-body mt-1">
+                      <p className="text-xs text-slate-500 font-body mt-1">
                         Send a message to start the conversation.
                       </p>
                     </div>
@@ -783,7 +787,7 @@ function MessagesContent() {
                             <div key={msg._id}>
                               {showDateSep && (
                                 <div className="text-center my-4">
-                                  <span className="text-[10px] text-[#0F172A]/30 font-body bg-white px-3 py-1 rounded-full">
+                                  <span className="text-[10px] text-slate-300 font-body bg-slate-900/80 border border-slate-800 px-3 py-1 rounded-full">
                                     {formatDate(msg.createdAt)}
                                   </span>
                                 </div>
@@ -798,10 +802,10 @@ function MessagesContent() {
                   {/* ─── Animated Typing Bubble (in message flow) ──────────── */}
                   {otherTyping && (
                     <div className="flex justify-start mb-3">
-                      <div className="px-5 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#1E293B] rounded-bl-lg inline-flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-[#0F172A]/30 animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-2 h-2 rounded-full bg-[#0F172A]/30 animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-2 h-2 rounded-full bg-[#0F172A]/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <div className="px-5 py-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-lg inline-flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-lime-400/70 animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-lime-400/70 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-lime-400/70 animate-bounce" style={{ animationDelay: "300ms" }} />
                       </div>
                     </div>
                   )}
@@ -814,14 +818,14 @@ function MessagesContent() {
                 {showScrollBottomBtn && (
                   <button
                     onClick={scrollToBottom}
-                    className="absolute bottom-20 right-6 w-10 h-10 rounded-full bg-white border border-[#E2E8F0] shadow-lg flex items-center justify-center text-[#0F172A]/60 hover:text-[#0284C7] hover:border-[#0284C7]/30 hover:shadow-xl transition-all duration-200 z-10"
+                    className="absolute bottom-20 right-6 w-10 h-10 rounded-full bg-[#12150E] border border-slate-700 shadow-lg flex items-center justify-center text-slate-400 hover:text-[#D0F219] hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(208,242,25,0.2)] transition-all duration-200 z-10"
                   >
                     <ChevronDown size={18} />
                   </button>
                 )}
 
                 {/* Message Input */}
-                <div className="px-5 py-4 border-t border-[#E2E8F0] shrink-0">
+                <div className="px-5 py-4 border-t border-lime-500/10 shrink-0">
                   <div className="flex items-end gap-3">
                     <div className="flex-1 relative">
                       <textarea
@@ -830,14 +834,14 @@ function MessagesContent() {
                         onKeyDown={handleKeyDown}
                         placeholder="Type your message..."
                         rows={1}
-                        className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body resize-none"
+                        className="w-full px-4 py-3 bg-[#0A0C07] border border-slate-800 rounded-2xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D0F219] focus:ring-1 focus:ring-[#D0F219]/50 transition-all font-body resize-none"
                         style={{ minHeight: 44, maxHeight: 120 }}
                       />
                     </div>
                     <button
                       onClick={handleSend}
                       disabled={!inputText.trim() || sending}
-                      className="w-11 h-11 rounded-full bg-[#0284C7] text-white flex items-center justify-center hover:bg-[#0284C7]/90 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-sm shrink-0"
+                      className="w-11 h-11 rounded-full bg-[#D0F219] text-[#12140E] flex items-center justify-center hover:bg-lime-300 hover:shadow-[0_0_20px_rgba(208,242,25,0.3)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-sm shrink-0"
                     >
                       {sending ? (
                         <Loader2 size={18} className="animate-spin" />

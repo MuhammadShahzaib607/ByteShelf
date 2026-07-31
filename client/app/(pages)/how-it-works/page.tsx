@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
   Search,
   Layers,
@@ -74,13 +74,14 @@ const ownerSteps = [
 
 // ─── Directional zig-zag variant ──────────────────────────────────────────────
 // Even steps (left side) slide in from the left (x: -40), odd steps (right
-// side) slide in from the right (x: 40).
-const zigzagFromLeft = {
+// side) slide in from the right (x: 40). Typed as Variants so the easing
+// string stays a literal (avoiding string-widening type errors).
+const zigzagFromLeft: Variants = {
   hidden: { opacity: 0, x: -40 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-const zigzagFromRight = {
+const zigzagFromRight: Variants = {
   hidden: { opacity: 0, x: 40 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
@@ -164,7 +165,7 @@ export default function HowItWorksPage() {
                 whileInView={{ scaleY: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.9, ease: "easeOut" }}
-                className="absolute left-[27px] top-3 bottom-3 w-px -translate-x-1/2 bg-gradient-to-b from-[#D0F219]/60 via-lime-500/30 to-emerald-500/20 origin-top md:left-1/2"
+                className="absolute left-7 top-3 bottom-3 w-px -translate-x-1/2 bg-gradient-to-b from-[#D0F219]/60 via-lime-500/30 to-emerald-500/20 origin-top md:left-1/2"
               />
 
               <div className="space-y-10 md:space-y-12">
@@ -186,7 +187,7 @@ export default function HowItWorksPage() {
                           className="relative flex items-center gap-6 md:gap-0"
                         >
                           {/* Node — in-flow on mobile (left-aligned), absolutely centered on desktop */}
-                          <div className="relative z-10 shrink-0 md:absolute md:left-1/2 md:-translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D0F219] to-emerald-400 flex items-center justify-center shadow-[0_0_25px_rgba(208,242,25,0.35)]">
+                          <div className="relative z-10 shrink-0 md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D0F219] to-emerald-400 flex items-center justify-center shadow-[0_0_25px_rgba(208,242,25,0.35)]">
                             <Icon size={22} className="text-[#12140E]" />
                             <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#12140E] border border-lime-500/40 text-[10px] font-bold text-[#D0F219] flex items-center justify-center font-body">
                               {item.step}
