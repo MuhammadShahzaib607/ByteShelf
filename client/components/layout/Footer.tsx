@@ -34,12 +34,12 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand Statement */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2.5 group mb-4">
+            <Link href="/" className="inline-flex items-center group mb-4">
               <Image
                 src="/logo.png"
                 alt="ByteShelf Logo"
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="object-contain transition-[filter] group-hover:drop-shadow-[0_0_12px_rgba(208,242,25,0.4)]"
               />
               <span className="font-heading text-lg font-semibold text-white tracking-tight">

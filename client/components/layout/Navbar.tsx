@@ -329,8 +329,8 @@ const Navbar: React.FC = () => {
     return (
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 pt-4">
         <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-[#0D0F0A]/80 border border-lime-500/20 backdrop-blur-md">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <Image src="/logo.png" alt="ByteShelf Logo" width={32} height={32} className="object-contain" />
+          <Link href="/" className="flex items-center group">
+            <Image src="/logo.png" alt="ByteShelf Logo" width={40} height={40} className="object-contain" />
             <span className="font-heading text-lg font-semibold text-white tracking-tight">
               ByteShelf
             </span>
@@ -353,12 +353,12 @@ const Navbar: React.FC = () => {
         }`}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center group">
           <Image
             src="/logo.png"
             alt="ByteShelf Logo"
-            width={32}
-            height={32}
+            width={40}
+            height={40}
             priority
             className="object-contain transition-[filter] duration-300 group-hover:drop-shadow-[0_0_12px_rgba(208,242,25,0.5)]"
           />

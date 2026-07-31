@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Mail,
   Lock,
@@ -13,7 +14,6 @@ import {
   CheckCircle,
   Upload,
   ChevronLeft,
-  Shield,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { signupUser, clearError } from "@/redux/slices/authSlice";
@@ -356,9 +356,13 @@ export default function SignupPage() {
     <AuthShell>
       {/* Header */}
       <div className="text-center">
-        <div className="w-12 h-12 rounded-2xl bg-[#ccff00]/10 border border-[#ccff00]/25 flex items-center justify-center mx-auto mb-3">
-          <Shield size={22} className="text-[#ccff00]" />
-        </div>
+        <Image
+          src="/logo.png"
+          alt="ByteShelf Logo"
+          width={56}
+          height={56}
+          className="object-contain drop-shadow-[0_0_12px_rgba(204,255,0,0.3)] block mx-auto mb-4"
+        />
         <h1 className="font-heading text-3xl text-white font-bold">
           Create Account
         </h1>

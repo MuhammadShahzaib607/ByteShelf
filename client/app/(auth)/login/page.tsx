@@ -80,8 +80,8 @@ export default function LoginPage() {
         <Image
           src="/logo.png"
           alt="ByteShelf Logo"
-          width={48}
-          height={48}
+          width={56}
+          height={56}
           className="object-contain drop-shadow-[0_0_12px_rgba(204,255,0,0.3)] block mx-auto mb-4"
         />
         <h1 className="font-heading text-3xl text-white font-bold">
