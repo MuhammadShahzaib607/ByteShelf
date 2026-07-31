@@ -14,6 +14,7 @@ import {
   CalendarDays,
   Eye,
   ChevronLeft,
+  ChevronRight,
   Plus,
   ArrowRight,
   Package,
@@ -278,7 +279,7 @@ export default function WarehouseDetailPage() {
         endDate,
       });
       setBookingSuccess(true);
-      setTimeout(() => router.push("/my-bookings"), 1500);
+      setTimeout(() => router.push("/"), 1500);
     } catch (err: any) {
       setBookingError(
         err.response?.data?.message || "Booking failed. Please try again."
@@ -516,61 +517,97 @@ export default function WarehouseDetailPage() {
         </motion.button>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            HERO GALLERY SECTION (Compact & Pixel-Free)
+            TWO-COLUMN LAYOUT — Showcase + Info + Shelf Selector | Sticky Summary
         ════════════════════════════════════════════════════════════════════ */}
-        <div className="w-full max-w-5xl mx-auto mb-6">
-          {/* Compact Image Container */}
-          <div className="relative w-full h-56 sm:h-64 md:h-72 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
-            {images.length > 0 ? (
-              <img
-                src={images[currentImageIndex]}
-                alt={w.name}
-                className="w-full h-full object-cover object-center"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                <div className="text-center">
-                  <Image size={48} className="mx-auto text-gray-300 mb-2" />
-                  <p className="text-xs text-gray-400 font-body">No images available</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* ─── LEFT COLUMN (lg:col-span-7) ─────────────────────────────── */}
+          <div className="lg:col-span-7 space-y-8">
+
+            {/* ═══ IMAGE SHOWCASE (Blurred Backdrop) ═══ */}
+            <div className="relative w-full h-[480px] rounded-3xl overflow-hidden bg-slate-950 border border-[#E2E8F0] shadow-xl">
+              {images.length > 0 ? (
+                <>
+                  {/* Blurred backdrop */}
+                  <img
+                    src={images[currentImageIndex]}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60 dark:opacity-40 brightness-75"
+                  />
+
+                  {/* Foreground main image */}
+                  <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                    <img
+                      src={images[currentImageIndex]}
+                      alt={w.name}
+                      className="object-contain max-h-full max-w-full"
+                    />
+                  </div>
+
+                  {/* Navigation arrows */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentImageIndex((currentImageIndex - 1 + images.length) % images.length)}
+                        aria-label="Previous image"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/25 text-white flex items-center justify-center hover:bg-white/25 hover:scale-110 active:scale-95 transition-all duration-200"
+                      >
+                        <ChevronLeft size={18} />
+                      </button>
+                      <button
+                        onClick={() => setCurrentImageIndex((currentImageIndex + 1) % images.length)}
+                        aria-label="Next image"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/25 text-white flex items-center justify-center hover:bg-white/25 hover:scale-110 active:scale-95 transition-all duration-200"
+                      >
+                        <ChevronRight size={18} />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Thumbnail selectors (bottom overlay) */}
+                  {images.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 max-w-[90%] overflow-x-auto px-3 py-2 rounded-full bg-black/50 backdrop-blur-md">
+                      {images.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`w-12 h-12 shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                            idx === currentImageIndex
+                              ? "border-white ring-1 ring-white/50 scale-105"
+                              : "border-white/20 opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <Image size={48} className="mx-auto text-slate-500 mb-2" />
+                    <p className="text-xs text-slate-400 font-body">No images available</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Owner badge */}
-            {isOwnWarehouse && (
-              <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full bg-amber-500/80 backdrop-blur-md text-white text-[11px] font-body font-medium flex items-center gap-1.5">
-                <Warehouse size={12} />
-                Your Warehouse
-              </div>
-            )}
+              {/* Owner badge */}
+              {isOwnWarehouse && (
+                <div className="absolute top-4 right-4 z-30 px-2.5 py-1 rounded-full bg-amber-500/90 backdrop-blur-md text-white text-[11px] font-body font-medium flex items-center gap-1.5">
+                  <Warehouse size={12} />
+                  Your Warehouse
+                </div>
+              )}
 
-            {/* Image Counter Badge */}
-            {images.length > 1 && (
-              <span className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-md">
-                {currentImageIndex + 1} / {images.length}
-              </span>
-            )}
-          </div>
-
-          {/* Compact Thumbnails directly below */}
-          {images.length > 1 && (
-            <div className="flex gap-2 mt-3 overflow-x-auto">
-              {images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 hover:opacity-100 ${
-                    idx === currentImageIndex
-                      ? "border-[#0284C7] ring-1 ring-[#0284C7]/30 shadow-md scale-[1.02]"
-                      : "border-transparent opacity-60"
-                  }`}
-                >
-                  <img src={img} className="w-full h-full object-cover" />
-                </button>
-              ))}
+              {/* Image Counter Badge */}
+              {images.length > 1 && (
+                <span className="absolute top-4 left-4 z-20 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-md">
+                  {currentImageIndex + 1} / {images.length}
+                </span>
+              )}
             </div>
-          )}
-        </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
             WAREHOUSE IDENTITY HEADER + METRICS
@@ -783,13 +820,7 @@ export default function WarehouseDetailPage() {
           </motion.div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            TWO-COLUMN: SHELF GRID + BOOKING SUMMARY
-        ════════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-
-          {/* ─── LEFT COLUMN: Shelf Selector ─────────────────────────────────── */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* ─── SHELF SELECTOR (inside left column) ─────────────────────────── */}
 
             {/* Shelf section card */}
             <motion.div
@@ -843,7 +874,7 @@ export default function WarehouseDetailPage() {
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 mb-5">
                   <CheckCircle size={20} className="text-emerald-500 shrink-0" />
                   <p className="text-sm text-emerald-700 font-body">
-                    Booking confirmed! Redirecting to your bookings...
+                    Booking confirmed! Redirecting to home...
                   </p>
                 </div>
               )}
@@ -1104,7 +1135,7 @@ export default function WarehouseDetailPage() {
           </div>
 
           {/* ─── RIGHT COLUMN: Sticky Booking Summary ──────────────────────── */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-6">
               {isMerchantOrWorker && selectedCount > 0 && !bookingSuccess ? (
                 /* Booking Summary Card */
