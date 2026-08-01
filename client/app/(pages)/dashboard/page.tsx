@@ -971,19 +971,22 @@ function AddWarehouseTab() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}
-          <Input label="Warehouse Name" placeholder="e.g. Downtown Storage Hub" icon={Warehouse}
-            value={name} onChange={(e) => setName(e.target.value)} error={errors.name} />
+          <Input dark label="Warehouse Name" placeholder="e.g. Downtown Storage Hub" icon={Warehouse}
+            value={name} onChange={(e) => setName(e.target.value)} error={errors.name}
+            className={`bg-neutral-800/80! ${errors.name ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/50!`} />
 
           {/* Location */}
-          <Input label="Address / Area" placeholder="e.g. Gulistan-e-Johar, Karachi" icon={MapPin}
-            value={location} onChange={(e) => setLocation(e.target.value)} error={errors.location} />
+          <Input dark label="Address / Area" placeholder="e.g. Gulistan-e-Johar, Karachi" icon={MapPin}
+            value={location} onChange={(e) => setLocation(e.target.value)} error={errors.location}
+            className={`bg-neutral-800/80! ${errors.location ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/50!`} />
 
           {/* Price */}
-          <Input label="Price Per Shelf (Rs.)" type="number" placeholder="e.g. 1500" icon={DollarSign}
-            value={pricePerShelf} onChange={(e) => setPricePerShelf(e.target.value)} error={errors.pricePerShelf} min={0} step={100} />
+          <Input dark label="Price Per Shelf (Rs.)" type="number" placeholder="e.g. 1500" icon={DollarSign}
+            value={pricePerShelf} onChange={(e) => setPricePerShelf(e.target.value)} error={errors.pricePerShelf} min={0} step={100}
+            className={`bg-neutral-800/80! ${errors.pricePerShelf ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/50!`} />
 
           {/* Map Picker */}
-          <MapPicker latitude={latitude} longitude={longitude} onChange={(lat, lng) => { setLatitude(lat); setLongitude(lng); }} />
+          <MapPicker dark latitude={latitude} longitude={longitude} onChange={(lat, lng) => { setLatitude(lat); setLongitude(lng); }} />
           {errors.coordinates && <p className="text-red-400 text-xs mt-1 ml-1 font-body">{errors.coordinates}</p>}
 
           {/* Image Upload */}
