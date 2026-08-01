@@ -6,7 +6,7 @@
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "demo";
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "";
 const MAX_FILE_SIZE_MB = 5;
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "application/pdf"];
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ export async function uploadToCloudinary(
   // Validate
   if (!ACCEPTED_TYPES.includes(file.type)) {
     throw new Error(
-      `Unsupported file type "${file.type}". Accepted: JPEG, PNG, WebP, AVIF.`
+      `Unsupported file type "${file.type}". Accepted: JPEG, PNG, WebP, AVIF, PDF.`
     );
   }
   if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
@@ -94,7 +94,7 @@ export async function uploadMultipleToCloudinary(
   maxCount: number = 5
 ): Promise<UploadResult[]> {
   if (files.length > maxCount) {
-    throw new Error(`Maximum ${maxCount} images allowed.`);
+    throw new Error(`Maximum ${maxCount} files allowed.`);
   }
 
   const results: UploadResult[] = [];

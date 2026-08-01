@@ -2,10 +2,11 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, MessageCircle, ChevronLeft, Send, CheckCheck, ChevronDown } from "lucide-react";
+import { Loader2, MessageCircle, ChevronLeft, ChevronRight, Send, CheckCheck, ChevronDown, Paperclip, X, FileText, Download, ZoomIn, ZoomOut, Maximize2, AlertCircle } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 import { getSocket, disconnectSocket } from "@/lib/socket";
+import { uploadMultipleToCloudinary } from "@/lib/cloudinary";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,13 @@ interface Conversation {
   createdAt: string;
 }
 
+interface Attachment {
+  url: string;
+  fileType: "image" | "pdf" | "document";
+  fileName: string;
+  fileSize: number | string;
+}
+
 interface MessageData {
   _id: string;
   conversation: string;
@@ -38,6 +46,12 @@ interface MessageData {
   text: string;
   isRead: boolean;
   createdAt: string;
+  attachments?: Attachment[];
+}
+
+interface SelectedFile {
+  file: File;
+  previewUrl: string;
 }
 
 interface PaginatedMessages {
@@ -69,6 +83,15 @@ function formatDate(dateStr: string) {
     month: "long",
     year: "numeric",
   });
+}
+
+function formatFileSize(size?: number | string) {
+  if (size === undefined || size === null || size === "") return "File";
+  const bytes = typeof size === "string" ? parseFloat(size) : size;
+  if (isNaN(bytes) || bytes < 0) return "File";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function getOtherParticipant(conv: Conversation, userId: string | null): Participant | null {
@@ -144,7 +167,20 @@ function ConversationItem({
 // MESSAGE BUBBLE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function MessageBubble({ message, isOwn }: { message: MessageData; isOwn: boolean }) {
+function MessageBubble({
+  message,
+  isOwn,
+  onOpenAttachment,
+}: {
+  message: MessageData;
+  isOwn: boolean;
+  onOpenAttachment: (attachments: Attachment[], index: number) => void;
+}) {
+  const attachments = message.attachments || [];
+  const images = attachments.filter((a) => a.fileType === "image");
+  const pdfs = attachments.filter((a) => a.fileType !== "image");
+  const hasAttachments = attachments.length > 0;
+
   return (
     <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-3`}>
       <div
@@ -154,20 +190,276 @@ function MessageBubble({ message, isOwn }: { message: MessageData; isOwn: boolea
             : "bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-lg"
         }`}
       >
-        <p
-          className={`text-sm font-body leading-relaxed whitespace-pre-wrap break-words ${
-            isOwn ? "font-semibold" : ""
+        {message.text && (
+          <p
+            className={`text-sm font-body leading-relaxed whitespace-pre-wrap break-words ${
+              isOwn ? "font-semibold" : ""
+            }`}
+          >
+            {message.text}
+          </p>
+        )}
+
+        {/* Image attachments — clean grid inside the bubble */}
+        {images.length > 0 && (
+          <div
+            className={`${message.text ? "mt-2" : ""} ${
+              images.length === 1 ? "" : "grid grid-cols-2 gap-1.5"
+            }`}
+          >
+            {images.map((att, i) => (
+              <img
+                key={`${att.url}-${i}`}
+                src={att.url}
+                alt={att.fileName || "Attachment"}
+                loading="lazy"
+                onClick={() => onOpenAttachment(attachments, attachments.indexOf(att))}
+                className={`rounded-xl hover:opacity-80 transition-opacity duration-200 cursor-pointer object-cover bg-black/20 ${
+                  images.length === 1 ? "w-full max-h-64" : "w-full h-32 sm:h-36"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* PDF / document attachments — styled doc cards */}
+        {pdfs.map((att, i) => (
+          <div
+            key={`${att.url}-${i}`}
+            onClick={() => onOpenAttachment(attachments, attachments.indexOf(att))}
+            className="bg-neutral-800/90 p-3 rounded-xl flex items-center gap-3 border border-neutral-700/60 w-full min-w-[220px] cursor-pointer hover:bg-neutral-800 transition-colors mt-2"
+          >
+            <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
+              <FileText size={18} className="text-red-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white font-body truncate">
+                {att.fileName || "Document"}
+              </p>
+              <p className="text-[11px] text-slate-400 font-body">
+                {formatFileSize(att.fileSize)}
+              </p>
+            </div>
+            <a
+              href={att.url}
+              download={att.fileName || "document.pdf"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#D0F219] hover:bg-white/5 transition-colors shrink-0"
+            >
+              <Download size={15} />
+            </a>
+          </div>
+        ))}
+
+        <div
+          className={`flex items-center gap-1 ${hasAttachments ? "mt-2" : "mt-1"} ${
+            isOwn ? "justify-end" : "justify-start"
           }`}
         >
-          {message.text}
-        </p>
-        <div className={`flex items-center gap-1 mt-1 ${isOwn ? "justify-end" : "justify-start"}`}>
           <span className={`text-[10px] ${isOwn ? "text-slate-900/80" : "text-slate-400"} font-body`}>
             {formatTime(message.createdAt)}
           </span>
           {isOwn && <CheckCheck size={12} className={message.isRead ? "text-slate-900" : "text-slate-900/50"} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FULL-SCREEN ATTACHMENT VIEWER (WhatsApp-style lightbox / carousel)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function AttachmentViewer({
+  attachments,
+  initialIndex,
+  onClose,
+}: {
+  attachments: Attachment[];
+  initialIndex: number;
+  onClose: () => void;
+}) {
+  const [index, setIndex] = useState(initialIndex);
+  const [scale, setScale] = useState(1);
+  const count = attachments.length;
+  const current = attachments[index] || attachments[0];
+  const isPdf = current?.fileType !== "image";
+
+  // Navigate to a specific attachment (also resets zoom)
+  const goTo = useCallback(
+    (i: number) => {
+      setIndex(((i % count) + count) % count);
+      setScale(1);
+    },
+    [count]
+  );
+
+  // Keyboard navigation: Escape closes, arrows cycle
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") goTo(index + 1);
+      if (e.key === "ArrowLeft") goTo(index - 1);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [count, onClose, goTo, index]);
+
+  if (!current) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col"
+      onClick={onClose}
+    >
+      {/* Top bar: name, zoom, download, close */}
+      <div
+        className="flex items-center gap-3 px-5 py-4 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-white font-body truncate">
+            {current.fileName || "Attachment"}
+          </p>
+          <p className="text-[11px] text-slate-400 font-body">
+            {formatFileSize(current.fileSize)}
+          </p>
+        </div>
+
+        {/* Zoom controls (images only) */}
+        {!isPdf && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setScale((s) => Math.min(4, +(s * 1.25).toFixed(2)))}
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-colors"
+              title="Zoom in"
+            >
+              <ZoomIn size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setScale((s) => Math.max(0.5, +(s / 1.25).toFixed(2)))}
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-colors"
+              title="Zoom out"
+            >
+              <ZoomOut size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setScale(1)}
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-colors"
+              title="Reset zoom / fit"
+            >
+              <Maximize2 size={16} />
+            </button>
+            <span className="text-[11px] text-slate-400 w-10 text-center font-body">
+              {Math.round(scale * 100)}%
+            </span>
+          </div>
+        )}
+
+        <a
+          href={current.url}
+          download={current.fileName || "attachment"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-colors"
+          title="Download"
+        >
+          <Download size={18} />
+        </a>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-colors"
+          title="Close"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Main content */}
+      <div
+        className="flex-1 relative flex items-center justify-center px-4 pb-24 min-h-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {isPdf ? (
+          <iframe
+            src={current.url}
+            title={current.fileName || "PDF"}
+            className="w-full h-full max-w-4xl rounded-xl bg-white/5 border border-slate-800"
+          />
+        ) : (
+          <img
+            src={current.url}
+            alt={current.fileName || "Image"}
+            style={{ transform: `scale(${scale})` }}
+            className="max-w-full max-h-full object-contain transition-transform duration-200 select-none"
+          />
+        )}
+
+        {/* Prev / Next arrows */}
+        {count > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                goTo(index - 1);
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105"
+              title="Previous"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                goTo(index + 1);
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105"
+              title="Next"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnail filmstrip */}
+      {count > 1 && (
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[92vw] overflow-x-auto px-2 pb-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex gap-2">
+            {attachments.map((att, i) => (
+              <button
+                type="button"
+                key={`${att.url}-${i}`}
+                onClick={() => goTo(i)}
+                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                  i === index
+                    ? "border-[#D0F219] opacity-100"
+                    : "border-transparent opacity-50 hover:opacity-80"
+                }`}
+              >
+                {att.fileType === "image" ? (
+                  <img src={att.url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+                    <FileText size={18} className="text-red-400" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -218,6 +510,15 @@ function MessagesContent() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
 
+  // ─── Attachments state ────────────────────────────────────────────────────
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ─── Attachment viewer state ──────────────────────────────────────────────
+  const [viewer, setViewer] = useState<{ attachments: Attachment[]; index: number } | null>(null);
+
   // ─── Typing indicator state ───────────────────────────────────────────────
   const [otherTyping, setOtherTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -234,6 +535,20 @@ function MessagesContent() {
   // ─── Refs ─────────────────────────────────────────────────────────────────
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const selectedFilesRef = useRef<SelectedFile[]>([]);
+
+  useEffect(() => {
+    selectedFilesRef.current = selectedFiles;
+  }, [selectedFiles]);
+
+  // Revoke attachment preview object URLs on unmount
+  useEffect(() => {
+    return () => {
+      selectedFilesRef.current.forEach((sf) => {
+        if (sf.previewUrl) URL.revokeObjectURL(sf.previewUrl);
+      });
+    };
+  }, []);
 
   // ─── Active conversation (derived) ────────────────────────────────────────
   const activeConv = conversations.find((c) => c._id === activeConvId) || null;
@@ -379,7 +694,7 @@ function MessagesContent() {
           c._id === message.conversation
             ? {
                 ...c,
-                lastMessage: message.text,
+                lastMessage: message.text || (message.attachments?.length ? "📎 Attachment" : ""),
                 lastMessageAt: message.createdAt,
                 // Increment unreadCount for background messages from other users
                 unreadCount:
@@ -530,10 +845,57 @@ function MessagesContent() {
     }, 2500);
   }, [emitTypingStart, emitTypingStop]);
 
+  // ─── Handle file selection (max 5, images + PDFs) ────────────────────────
+  const handleFilesSelected = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = ""; // allow re-selecting the same file
+
+      const MAX_FILES = 5;
+      const ACCEPTED = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
+
+      if (files.length === 0) return;
+
+      const remaining = MAX_FILES - selectedFiles.length;
+      if (files.length > remaining) {
+        setUploadError(
+          `You can attach up to ${MAX_FILES} files (${remaining} slot${remaining === 1 ? "" : "s"} remaining).`
+        );
+        return;
+      }
+
+      const invalid = files.find((f) => !ACCEPTED.includes(f.type));
+      if (invalid) {
+        setUploadError("Only PNG, JPG, WEBP images and PDF files are allowed.");
+        return;
+      }
+
+      setUploadError(null);
+      setSelectedFiles((prev) => [
+        ...prev,
+        ...files.map((f) => ({
+          file: f,
+          previewUrl: f.type.startsWith("image/") ? URL.createObjectURL(f) : "",
+        })),
+      ]);
+    },
+    [selectedFiles.length]
+  );
+
+  const removeFile = useCallback((index: number) => {
+    setSelectedFiles((prev) => {
+      const target = prev[index];
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
+    setUploadError(null);
+  }, []);
+
   // ─── Send message ─────────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
-    if (!text || !activeConvId || sending) return;
+    const hasAttachments = selectedFiles.length > 0;
+    if ((!text && !hasAttachments) || !activeConvId || sending || uploading) return;
 
     // Stop typing indicator
     if (typingTimeoutRef.current) {
@@ -543,13 +905,39 @@ function MessagesContent() {
     emitTypingStop();
 
     setSending(true);
-    const socket = getSocket();
-    if (socket?.connected) {
-      socket.emit("send_message", { conversationId: activeConvId, text });
+    try {
+      // Upload attachments to Cloudinary before sending (max 5 files)
+      let attachments: Attachment[] = [];
+      if (hasAttachments) {
+        setUploading(true);
+        const results = await uploadMultipleToCloudinary(
+          selectedFiles.map((sf) => sf.file),
+          5
+        );
+        attachments = results.map((r, i) => ({
+          url: r.secure_url,
+          fileType: selectedFiles[i].file.type === "application/pdf" ? "pdf" : "image",
+          fileName: selectedFiles[i].file.name,
+          fileSize: selectedFiles[i].file.size,
+        }));
+      }
+
+      const socket = getSocket();
+      if (socket?.connected) {
+        socket.emit("send_message", { conversationId: activeConvId, text, attachments });
+      }
+      setInputText("");
+      selectedFiles.forEach((sf) => {
+        if (sf.previewUrl) URL.revokeObjectURL(sf.previewUrl);
+      });
+      setSelectedFiles([]);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Failed to upload attachment(s).");
+    } finally {
+      setUploading(false);
+      setSending(false);
     }
-    setInputText("");
-    setSending(false);
-  }, [inputText, activeConvId, sending, emitTypingStop]);
+  }, [inputText, activeConvId, sending, uploading, selectedFiles, emitTypingStop]);
 
   // ─── Load more (pagination) ───────────────────────────────────────────────
   const loadMore = useCallback(() => {
@@ -792,7 +1180,13 @@ function MessagesContent() {
                                   </span>
                                 </div>
                               )}
-                              <MessageBubble message={msg} isOwn={isOwn} />
+                              <MessageBubble
+                                message={msg}
+                                isOwn={isOwn}
+                                onOpenAttachment={(attachments, index) =>
+                                  setViewer({ attachments, index })
+                                }
+                              />
                             </div>
                           );
                         })}
@@ -826,7 +1220,70 @@ function MessagesContent() {
 
                 {/* Message Input */}
                 <div className="px-5 py-4 border-t border-lime-500/10 shrink-0">
+                  {/* Attachment preview bar (pre-send) */}
+                  {selectedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {selectedFiles.map((sel, i) => (
+                        <div key={`${sel.file.name}-${i}`} className="group relative">
+                          {sel.previewUrl ? (
+                            <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-700 shadow-lg shadow-black/30">
+                              <img
+                                src={sel.previewUrl}
+                                alt={sel.file.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeFile(i)}
+                                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 border border-white/10 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                              >
+                                <X size={11} className="text-white" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 bg-neutral-800/80 border border-slate-700 rounded-xl pl-3 pr-2 py-2 max-w-[220px]">
+                              <FileText size={15} className="text-red-400 shrink-0" />
+                              <span className="text-xs text-white font-body truncate">
+                                {sel.file.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => removeFile(i)}
+                                className="text-slate-400 hover:text-red-400 transition-colors shrink-0"
+                              >
+                                <X size={13} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload / validation error */}
+                  {uploadError && (
+                    <p className="text-[11px] text-red-400 font-body mb-2 flex items-center gap-1.5">
+                      <AlertCircle size={12} className="shrink-0" />
+                      {uploadError}
+                    </p>
+                  )}
+
                   <div className="flex items-end gap-3">
+                    {/* Attachment picker */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={sending || uploading}
+                      title="Attach files (PNG, JPG, WEBP, PDF — max 5)"
+                      className="w-11 h-11 rounded-full border border-slate-700 text-slate-400 hover:text-[#D0F219] hover:border-lime-500/40 flex items-center justify-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    >
+                      {uploading ? (
+                        <Loader2 size={18} className="animate-spin text-[#D0F219]" />
+                      ) : (
+                        <Paperclip size={18} />
+                      )}
+                    </button>
+
                     <div className="flex-1 relative">
                       <textarea
                         value={inputText}
@@ -840,7 +1297,9 @@ function MessagesContent() {
                     </div>
                     <button
                       onClick={handleSend}
-                      disabled={!inputText.trim() || sending}
+                      disabled={
+                        (!inputText.trim() && selectedFiles.length === 0) || sending || uploading
+                      }
                       className="w-11 h-11 rounded-full bg-[#D0F219] text-[#12140E] flex items-center justify-center hover:bg-lime-300 hover:shadow-[0_0_20px_rgba(208,242,25,0.3)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-sm shrink-0"
                     >
                       {sending ? (
@@ -850,12 +1309,31 @@ function MessagesContent() {
                       )}
                     </button>
                   </div>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/png,image/jpeg,image/webp,application/pdf,.png,.jpg,.jpeg,.webp,.pdf"
+                    onChange={handleFilesSelected}
+                    className="hidden"
+                  />
                 </div>
               </>
             )}
           </div>
         </div>
       </div>
+
+      {/* Full-screen attachment viewer */}
+      {viewer && (
+        <AttachmentViewer
+          attachments={viewer.attachments}
+          initialIndex={viewer.index}
+          onClose={() => setViewer(null)}
+        />
+      )}
     </div>
   );
 }

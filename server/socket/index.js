@@ -53,16 +53,17 @@ export const initializeSocket = (server) => {
       socket.join(conversationId);
     });
 
-    socket.on("send_message", async ({ conversationId, text }) => {
+    socket.on("send_message", async ({ conversationId, text, attachments }) => {
       try {
         const message = await Message.create({
           conversation: conversationId,
           sender: socket.userId,
-          text,
+          text: text || "",
+          attachments: attachments || [],
         });
 
         await Conversation.findByIdAndUpdate(conversationId, {
-          lastMessage: text,
+          lastMessage: text || (attachments?.length ? "📎 Attachment" : ""),
           lastMessageAt: new Date(),
         });
 
