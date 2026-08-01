@@ -25,6 +25,7 @@ import MapPicker from "@/components/ui/MapPicker";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import EditWarehouseModal from "@/components/ui/EditWarehouseModal";
+import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -790,9 +791,10 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
 
 // ─── Warehouses List Tab ────────────────────────────────────────────────────────
 
-function WarehousesTab({ onViewWarehouse, onEditWarehouse, refreshKey = 0 }: {
+function WarehousesTab({ onViewWarehouse, onEditWarehouse, onManageShelves, refreshKey = 0 }: {
   onViewWarehouse: (id: string) => void;
   onEditWarehouse: (w: WarehouseData) => void;
+  onManageShelves: (w: WarehouseData) => void;
   refreshKey?: number;
 }) {
   const { accessToken } = useAppSelector((s) => s.auth);
@@ -820,11 +822,19 @@ function WarehousesTab({ onViewWarehouse, onEditWarehouse, refreshKey = 0 }: {
             <h3 className="font-heading text-lg font-semibold text-white mb-1">{w.name}</h3>
             <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body mb-3"><MapPin size={12} /><span className="truncate">{w.location}</span></div>
             <div className="flex items-center justify-between text-xs text-neutral-400 font-body mb-4">
-              <span><strong className="text-white numeric">{w.totalShelves}</strong> shelves</span>
+              <button
+                onClick={() => onManageShelves(w)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 -ml-2.5 rounded-full hover:bg-[#ccff00]/10 transition-colors group"
+                title="Manage shelves"
+              >
+                <strong className="text-white numeric group-hover:text-[#ccff00] transition-colors">{w.totalShelves}</strong>
+                shelves
+              </button>
               <span><strong className="text-white numeric">Rs. {w.pricePerShelf}</strong>/shelf/mo</span>
             </div>
             <div className="mt-auto flex items-center gap-2 pt-3 border-t border-neutral-800">
               <button onClick={() => onViewWarehouse(w._id)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors"><Eye size={14} /> View</button>
+              <button onClick={() => onManageShelves(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-neutral-700 text-neutral-300 rounded-full text-xs font-medium hover:border-[#ccff00]/40 hover:text-[#ccff00] hover:bg-[#ccff00]/5 transition-all"><Layers size={14} /> Shelves</button>
               <button onClick={() => onEditWarehouse(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] transition-all"><Edit3 size={14} /> Edit</button>
             </div>
           </div>
@@ -1411,6 +1421,7 @@ export default function DashboardPage() {
 
   // ─── Edit Warehouse modal state ─────────────────────────────────────────
   const [editingWarehouse, setEditingWarehouse] = useState<WarehouseData | null>(null);
+  const [managingShelvesWarehouse, setManagingShelvesWarehouse] = useState<WarehouseData | null>(null);
   const [warehousesRefreshKey, setWarehousesRefreshKey] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -1468,7 +1479,12 @@ export default function DashboardPage() {
               selectedWarehouseId ? (
                 <WarehouseDetailView warehouseId={selectedWarehouseId} onBack={() => setSelectedWarehouseId(null)} />
               ) : (
-                <WarehousesTab onViewWarehouse={(id) => setSelectedWarehouseId(id)} onEditWarehouse={(w) => setEditingWarehouse(w)} refreshKey={warehousesRefreshKey} />
+                <WarehousesTab
+                  onViewWarehouse={(id) => setSelectedWarehouseId(id)}
+                  onEditWarehouse={(w) => setEditingWarehouse(w)}
+                  onManageShelves={(w) => setManagingShelvesWarehouse(w)}
+                  refreshKey={warehousesRefreshKey}
+                />
               )
             )}
             {activeTab === "add-warehouse" && <AddWarehouseTab />}
@@ -1516,6 +1532,19 @@ export default function DashboardPage() {
             warehouseName={editingWarehouse.name}
             onClose={() => setEditingWarehouse(null)}
             onSaved={handleWarehouseSaved}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Manage Shelves Modal ═══ */}
+      <AnimatePresence>
+        {managingShelvesWarehouse && (
+          <ManageShelvesModal
+            warehouseId={managingShelvesWarehouse._id}
+            warehouseName={managingShelvesWarehouse.name}
+            pricePerShelf={managingShelvesWarehouse.pricePerShelf}
+            onClose={() => setManagingShelvesWarehouse(null)}
+            onUpdated={() => setWarehousesRefreshKey((k) => k + 1)}
           />
         )}
       </AnimatePresence>

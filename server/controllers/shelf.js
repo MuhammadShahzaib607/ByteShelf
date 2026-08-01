@@ -37,6 +37,116 @@ export const addShelves = async (req, res) => {
   }
 };
 
+export const createShelf = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+    const { shelfNumber, pricePerMonth, dimensions, capacity, status } = req.body;
+
+    if (!pricePerMonth || pricePerMonth <= 0) {
+      return sendRes(res, 400, false, "Price per month is required");
+    }
+
+    const warehouse = await Warehouse.findOne({ _id: warehouseId, owner: req.user.id });
+    if (!warehouse) {
+      return sendRes(res, 404, false, "Warehouse not found");
+    }
+
+    const nextCounter = warehouse.shelfCounter + 1;
+    const shelf = await Shelf.create({
+      warehouse: warehouseId,
+      shelfNumber: shelfNumber && shelfNumber.trim()
+        ? shelfNumber.trim()
+        : `${warehouse.name}-S${nextCounter}`,
+      pricePerMonth,
+      dimensions: dimensions && dimensions.trim() ? dimensions.trim() : "",
+      capacity: capacity && capacity > 0 ? capacity : null,
+      status: status && status === "maintenance" ? "maintenance" : "available",
+    });
+
+    warehouse.totalShelves += 1;
+    warehouse.shelfCounter = nextCounter;
+    await warehouse.save();
+
+    return sendRes(res, 201, true, "Shelf created successfully", shelf);
+  } catch (error) {
+    console.log(error.message);
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
+export const updateShelf = async (req, res) => {
+  try {
+    const { shelfId } = req.params;
+    const { shelfNumber, pricePerMonth, dimensions, capacity, status } = req.body;
+
+    const shelf = await Shelf.findById(shelfId);
+    if (!shelf) {
+      return sendRes(res, 404, false, "Shelf not found");
+    }
+
+    const warehouse = await Warehouse.findOne({ _id: shelf.warehouse, owner: req.user.id });
+    if (!warehouse) {
+      return sendRes(res, 401, false, "Unauthorized");
+    }
+
+    // Booked shelves cannot be edited into available/maintenance (booking integrity)
+    if (shelf.status === "booked" && status && status !== "booked") {
+      return sendRes(res, 400, false, "Booked shelves cannot change status until the booking ends");
+    }
+
+    if (shelfNumber !== undefined && shelfNumber.trim()) {
+      shelf.shelfNumber = shelfNumber.trim();
+    }
+    if (pricePerMonth !== undefined && pricePerMonth > 0) {
+      shelf.pricePerMonth = pricePerMonth;
+    }
+    if (dimensions !== undefined) {
+      shelf.dimensions = dimensions.trim();
+    }
+    if (capacity !== undefined) {
+      shelf.capacity = capacity && capacity > 0 ? capacity : null;
+    }
+    if (status !== undefined) {
+      shelf.status = status;
+    }
+
+    await shelf.save();
+
+    return sendRes(res, 200, true, "Shelf updated successfully", shelf);
+  } catch (error) {
+    console.log(error.message);
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
+export const deleteShelf = async (req, res) => {
+  try {
+    const { shelfId } = req.params;
+
+    const shelf = await Shelf.findById(shelfId);
+    if (!shelf) {
+      return sendRes(res, 404, false, "Shelf not found");
+    }
+
+    const warehouse = await Warehouse.findOne({ _id: shelf.warehouse, owner: req.user.id });
+    if (!warehouse) {
+      return sendRes(res, 401, false, "Unauthorized");
+    }
+
+    if (shelf.status === "booked") {
+      return sendRes(res, 400, false, "Booked shelves cannot be deleted");
+    }
+
+    await Shelf.deleteOne({ _id: shelfId });
+    await Warehouse.findByIdAndUpdate(warehouse._id, { $inc: { totalShelves: -1 } });
+
+    return sendRes(res, 200, true, "Shelf deleted successfully");
+  } catch (error) {
+    console.log(error.message);
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
 export const getWarehouseShelves = async (req, res) => {
   try {
     const { warehouseId } = req.params;

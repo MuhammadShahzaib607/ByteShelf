@@ -13,12 +13,20 @@ const shelfSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["available", "booked"],
+      enum: ["available", "booked", "maintenance"],
       default: "available",
     },
     pricePerMonth: {
       type: Number,
       required: true,
+    },
+    dimensions: {
+      type: String,
+      default: "",
+    },
+    capacity: {
+      type: Number,
+      default: null,
     },
     currentBooking: {
       type: mongoose.Schema.Types.ObjectId,
