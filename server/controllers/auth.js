@@ -99,11 +99,13 @@ export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    if (!email || !otp) {
+    if (!email || typeof email !== "string" || !otp || typeof otp !== "string") {
       return sendRes(res, 400, false, "Email and OTP are required");
     }
 
-    const user = await User.findOne({ email });
+    // Normalize email to match stored format (keeps resend → verify consistent)
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return sendRes(res, 404, false, "User not found");
     }
@@ -135,11 +137,12 @@ export const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
+    if (!email || typeof email !== "string" || !email.trim()) {
       return sendRes(res, 400, false, "Email is required");
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return sendRes(res, 404, false, "User not found");
     }
@@ -148,6 +151,7 @@ export const resendOtp = async (req, res) => {
       return sendRes(res, 400, false, "User already verified");
     }
 
+    // ─── Generate a fresh OTP and extend its expiry ────────────────────────
     const otp = generateOtp();
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -155,9 +159,17 @@ export const resendOtp = async (req, res) => {
     user.otpExpiry = otpExpiry;
     await user.save();
 
+    // ─── Dispatch the fresh OTP via email (critical for resend to work) ────
+    await sendEmail(
+      normalizedEmail,
+      "Verify your ByteShelf account",
+      otpEmailTemplate(otp)
+    );
+
     return sendRes(res, 200, true, "OTP resent successfully");
   } catch (error) {
-    return sendRes(res, 500, false, error.message);
+    console.error("Resend OTP error:", error.message);
+    return sendRes(res, 500, false, "Something went wrong");
   }
 };
 

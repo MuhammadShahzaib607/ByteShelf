@@ -74,9 +74,9 @@ export const getMyWarehouses = async (req, res) => {
 export const editWarehouse = async (req, res) => {
   try {
     const { warehouseId } = req.params;
-    const { location, latitude, longitude, pricePerShelf } = req.body;
+    const { name, location, latitude, longitude, pricePerShelf, images } = req.body;
  
-    if (!location && !latitude && !longitude && !pricePerShelf) {
+    if (!name && !location && !latitude && !longitude && !pricePerShelf && !images) {
       return sendRes(res, 400, false, "At least one field is required to update");
     }
  
@@ -85,9 +85,11 @@ export const editWarehouse = async (req, res) => {
       return sendRes(res, 404, false, "Warehouse not found");
     }
  
+    if (name) warehouse.name = name.trim();
     if (location) warehouse.location = location.trim();
     if (latitude) warehouse.latitude = latitude;
     if (longitude) warehouse.longitude = longitude;
+    if (Array.isArray(images)) warehouse.images = images;
  
     // ─── Price update with shelf sync ──────────────────────────────────────
     if (pricePerShelf) {

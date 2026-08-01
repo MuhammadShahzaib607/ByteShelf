@@ -24,6 +24,7 @@ import Input from "@/components/ui/Input";
 import MapPicker from "@/components/ui/MapPicker";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import EditWarehouseModal from "@/components/ui/EditWarehouseModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -789,12 +790,16 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
 
 // ─── Warehouses List Tab ────────────────────────────────────────────────────────
 
-function WarehousesTab({ onViewWarehouse }: { onViewWarehouse: (id: string) => void }) {
+function WarehousesTab({ onViewWarehouse, onEditWarehouse, refreshKey = 0 }: {
+  onViewWarehouse: (id: string) => void;
+  onEditWarehouse: (w: WarehouseData) => void;
+  refreshKey?: number;
+}) {
   const { accessToken } = useAppSelector((s) => s.auth);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/warehouse/my-warehouses"); const d = r.data.data; if (!c) setWarehouses(d.warehouses || []); } catch {} finally { if (!c) setLoading(false); } })(); return () => { c = true; }; }, [accessToken]);
+  useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/warehouse/my-warehouses"); const d = r.data.data; if (!c) setWarehouses(d.warehouses || []); } catch {} finally { if (!c) setLoading(false); } })(); return () => { c = true; }; }, [accessToken, refreshKey]);
 
   if (loading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{[...Array(3)].map((_, i) => <div key={i} className="bg-[#111614] rounded-2xl h-52 border border-neutral-800/80 animate-pulse" />)}</div>;
   if (warehouses.length === 0) return (
@@ -820,7 +825,7 @@ function WarehousesTab({ onViewWarehouse }: { onViewWarehouse: (id: string) => v
             </div>
             <div className="mt-auto flex items-center gap-2 pt-3 border-t border-neutral-800">
               <button onClick={() => onViewWarehouse(w._id)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors"><Eye size={14} /> View</button>
-              <Link href={`/warehouses/${w._id}/edit`} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] transition-all"><Edit3 size={14} /> Edit</Link>
+              <button onClick={() => onEditWarehouse(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] transition-all"><Edit3 size={14} /> Edit</button>
             </div>
           </div>
         </div>
@@ -1404,6 +1409,25 @@ export default function DashboardPage() {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
   const isAdmin = !!(user?.isAdmin || user?.role === "admin");
 
+  // ─── Edit Warehouse modal state ─────────────────────────────────────────
+  const [editingWarehouse, setEditingWarehouse] = useState<WarehouseData | null>(null);
+  const [warehousesRefreshKey, setWarehousesRefreshKey] = useState(0);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // ─── Auto-clear toast ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // ─── Handle warehouse saved: refetch + toast ───────────────────────────
+  const handleWarehouseSaved = useCallback(() => {
+    setEditingWarehouse(null);
+    setWarehousesRefreshKey((k) => k + 1);
+    setToast({ message: "Warehouse updated successfully", type: "success" });
+  }, []);
+
   // When switching away from warehouses tab, reset selected warehouse
   useEffect(() => {
     if (activeTab !== "warehouses") setSelectedWarehouseId(null);
@@ -1444,7 +1468,7 @@ export default function DashboardPage() {
               selectedWarehouseId ? (
                 <WarehouseDetailView warehouseId={selectedWarehouseId} onBack={() => setSelectedWarehouseId(null)} />
               ) : (
-                <WarehousesTab onViewWarehouse={(id) => setSelectedWarehouseId(id)} />
+                <WarehousesTab onViewWarehouse={(id) => setSelectedWarehouseId(id)} onEditWarehouse={(w) => setEditingWarehouse(w)} refreshKey={warehousesRefreshKey} />
               )
             )}
             {activeTab === "add-warehouse" && <AddWarehouseTab />}
@@ -1453,6 +1477,48 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </main>
+
+      {/* ═══ Success / Error Toast ═══ */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25 }}
+            className={`fixed top-20 right-6 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md ${
+              toast.type === "success"
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                : "bg-red-500/10 border-red-500/20 text-red-300"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle size={18} className="shrink-0 text-emerald-500" />
+            ) : (
+              <AlertCircle size={18} className="shrink-0 text-red-500" />
+            )}
+            <span className="text-sm font-body font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-1 p-1 rounded-full hover:bg-white/10 transition-colors"
+            >
+              <X size={14} className="opacity-50" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Edit Warehouse Modal ═══ */}
+      <AnimatePresence>
+        {editingWarehouse && (
+          <EditWarehouseModal
+            warehouseId={editingWarehouse._id}
+            warehouseName={editingWarehouse.name}
+            onClose={() => setEditingWarehouse(null)}
+            onSaved={handleWarehouseSaved}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
