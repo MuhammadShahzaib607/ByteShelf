@@ -86,9 +86,9 @@ const OtpInput: React.FC<OtpInputProps> = ({
                 ${error ? "bg-red-950/20" : ""}
                 ${
                   isFocused
-                    ? "border-[#ccff00] shadow-[0_0_0_2px_#ccff00_inset,0_0_20px_rgba(204,255,0,0.15)]"
+                    ? "border-[#84cc16] shadow-[0_0_0_2px_#84cc16_inset,0_0_20px_rgba(132,204,22,0.10)]"
                     : digit
-                    ? "border-[#ccff00]/50"
+                    ? "border-[#84cc16]/40"
                     : error
                     ? "border-red-500"
                     : "border-slate-800"
@@ -115,7 +115,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
               />
               <span
                 className={`font-heading text-xl sm:text-2xl font-semibold select-none ${
-                  digit ? "text-white" : "text-[#ccff00]/30"
+                  digit ? "text-white" : "text-[#84cc16]/30"
                 }`}
               >
                 {digit || "•"}

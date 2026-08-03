@@ -130,8 +130,8 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose }: {
           const Icon = tab.icon; const isActive = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => { onTabChange(tab.id); onClose(); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
-              <Icon size={18} className={isActive ? "text-black" : "text-white/40"} />{tab.label}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${isActive ? "bg-neutral-800/90 text-[#84cc16] font-semibold border-l-2 border-[#84cc16]" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
+              <Icon className={isActive ? "text-[#84cc16] w-5 h-5" : "text-neutral-400 w-5 h-5"} />{tab.label}
             </button>
           );
         })}
@@ -180,7 +180,7 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
             {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
           </Link>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
-            <div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center">
               <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
             <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
@@ -244,10 +244,10 @@ function OverviewTab() {
             { icon: DollarSign, label: "Total Spend", value: `Rs. ${stats.totalSpend.toLocaleString("en-PK")}`, sub: "Across all bookings", delay: 0.2 },
           ].map((k) => (
             <motion.div key={k.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: k.delay }}
-              className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-5 border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#ccff00]/40 hover:-translate-y-1 transition-all duration-300">
+              className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-5 border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#84cc16]/40 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center shadow-sm shadow-black/20">
-                  <k.icon size={20} className="text-[#ccff00]" />
+                  <k.icon size={20} className="text-[#84cc16]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-heading text-2xl font-bold text-white numeric tracking-tight">{k.value}</p>
@@ -269,7 +269,7 @@ function OverviewTab() {
           <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-8 animate-pulse space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-10 bg-neutral-800/60 rounded-xl" />)}</div>
         ) : recentBookings.length === 0 ? (
           <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#ccff00]/40" /></div>
+            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#84cc16]/40" /></div>
             <h3 className="font-heading text-lg font-semibold text-white mb-2">No bookings yet</h3>
             <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">Explore warehouses and book shelf space to get started.</p>
           </div>
@@ -281,7 +281,7 @@ function OverviewTab() {
                   className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors duration-200">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-8 h-8 rounded-lg bg-neutral-800/60 flex items-center justify-center shrink-0">
-                      <Store size={16} className="text-[#ccff00]" />
+                      <Store size={16} className="text-[#84cc16]" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white font-body truncate">{b.warehouse?.name || b.warehouseName || "Warehouse"}</p>
@@ -354,7 +354,7 @@ function ExploreTab() {
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by name or location..."
-          className="w-full pl-11 pr-4 py-3 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:ring-2 focus:ring-[#ccff00]/10 focus:bg-neutral-900 transition-all text-sm font-body shadow-sm shadow-black/20" />
+          className="w-full pl-11 pr-4 py-3 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:ring-2 focus:ring-[#84cc16]/10 focus:bg-neutral-900 transition-all text-sm font-body shadow-sm shadow-black/20" />
       </div>
 
       {!loading && <div className="flex items-center gap-2 mb-6 text-sm text-neutral-400 font-body">
@@ -369,7 +369,7 @@ function ExploreTab() {
 
       {!loading && warehouses.length === 0 && (
         <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
-          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Warehouse size={28} className="text-[#ccff00]/40" /></div>
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Warehouse size={28} className="text-[#84cc16]/40" /></div>
           <h3 className="font-heading text-lg font-semibold text-white mb-2">No warehouses found</h3>
           <p className="text-sm text-neutral-400 font-body">Check back later!</p>
         </div>
@@ -380,7 +380,7 @@ function ExploreTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredWarehouses.map((w, i) => (
               <motion.div key={w._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#ccff00]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
+                className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#84cc16]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
                 <ImageCarousel images={w.images || []} alt={w.name} aspectRatio="h-48" />
                 <div className="p-5 flex flex-col flex-1">
                   <h3 className="font-heading text-lg font-semibold text-white">{w.name}</h3>
@@ -388,11 +388,11 @@ function ExploreTab() {
                     <MapPin size={12} /><span className="truncate">{w.location}</span>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <div><span className="font-heading text-xl font-bold text-[#ccff00] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</span><span className="text-xs text-neutral-400 font-body ml-1">/shelf/mo</span></div>
+                    <div><span className="font-heading text-xl font-bold text-[#84cc16] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</span><span className="text-xs text-neutral-400 font-body ml-1">/shelf/mo</span></div>
                     <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body"><Layers size={13} /><span>{w.totalShelves} shelves</span></div>
                   </div>
                   <button onClick={() => setSelectedWhId(w._id)}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ccff00] text-black text-sm font-body font-semibold rounded-full hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 text-sm font-body font-semibold rounded-full hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
                     <Eye size={15} /> View Details & Shelves
                   </button>
                 </div>
@@ -403,7 +403,7 @@ function ExploreTab() {
           {hasMore && (
             <div className="mt-10 text-center">
               <button onClick={handleLoadMore} disabled={loadingMore}
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#111614]/90 border border-neutral-800 text-white rounded-full font-body font-medium text-sm hover:bg-neutral-800/80 hover:border-[#ccff00]/40 transition-all duration-300 shadow-sm shadow-black/20 hover:shadow-md active:scale-[0.98] disabled:opacity-60">
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#111614]/90 border border-neutral-800 text-white rounded-full font-body font-medium text-sm hover:bg-neutral-800/80 hover:border-[#84cc16]/40 transition-all duration-300 shadow-sm shadow-black/20 hover:shadow-md active:scale-[0.98] disabled:opacity-60">
                 {loadingMore ? <><Loader2 size={18} className="animate-spin" /> Loading...</> : <><ChevronDown size={18} /> Load More</>}
               </button>
               <p className="mt-3 text-xs text-neutral-500 font-body">Showing {warehouses.length} of {totalWarehouses} warehouses</p>
@@ -587,9 +587,9 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
                     <button key={shelf._id} onClick={() => toggleShelf(shelf._id)}
                       disabled={shelf.status !== "available"}
                       className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${isSelected
-                        ? "bg-[#ccff00] border-[#ccff00] text-black shadow-md shadow-[#ccff00]/20"
+                        ? "bg-[#1a231d] border-2 border-[#84cc16] text-[#84cc16] shadow-md shadow-[#84cc16]/10"
                         : shelf.status === "available"
-                          ? "bg-neutral-900/60 border-neutral-800 text-white hover:border-[#ccff00]/40 hover:shadow-sm"
+                          ? "bg-neutral-900/60 border-neutral-800 text-white hover:border-[#84cc16]/40 hover:shadow-sm"
                           : "bg-white/5 border-neutral-800 text-neutral-600 cursor-not-allowed"
                       }`}>
                       <p className="text-xs font-semibold font-body">Shelf {shelf.shelfNumber}</p>
@@ -614,13 +614,13 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
                     <label className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 block font-body">Start Date</label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
                       min={toDateInputValue(new Date())}
-                      className="w-full px-3 py-2.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] transition-all font-body" />
+                      className="w-full px-3 py-2.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] transition-all font-body" />
                   </div>
                   <div>
                     <label className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 block font-body">End Date</label>
                     <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
                       min={startDate}
-                      className="w-full px-3 py-2.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] transition-all font-body" />
+                      className="w-full px-3 py-2.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] transition-all font-body" />
                   </div>
                 </div>
 
@@ -649,7 +649,7 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
                   </div>
                 ) : (
                   <button onClick={handleBooking} disabled={selectedCount === 0 || isBooking}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                     {isBooking ? <><Loader2 size={16} className="animate-spin" />Booking...</> : <><Eye size={16} />Book {selectedCount > 0 ? `${selectedCount} Shelf${selectedCount > 1 ? "s" : ""}` : "Shelves"}</>}
                   </button>
                 )}
@@ -769,7 +769,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
           const isActive = filterStatus === tab;
           return (
             <button key={tab} onClick={() => setFilterStatus(tab)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#ccff00]/40"}`}>
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}>
               {tab === "all" ? "All" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           );
@@ -782,7 +782,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         </div>
       ) : filteredBookings.length === 0 ? (
         <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#ccff00]/40" /></div>
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#84cc16]/40" /></div>
           <h3 className="font-heading text-lg font-semibold text-white mb-2">No {filterStatus !== "all" ? filterStatus : ""} bookings found</h3>
           <p className="text-sm text-neutral-400 font-body mb-6">Browse available warehouses to book shelf space.</p>
         </div>
@@ -792,7 +792,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
             const canCancel = b.status !== "cancelled";
             return (
               <motion.div key={b._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}
-                className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 hover:border-[#ccff00]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
+                className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 hover:border-[#84cc16]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     {statusBadge(b.status)}
@@ -813,12 +813,12 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button onClick={() => setSelectedBooking(b)}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors">
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors">
                       <Eye size={13} /> View Details
                     </button>
                     {b.status === "confirmed" && (
                       <button onClick={() => openInboundModal(b)}
-                        className="flex-[1.5] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
+                        className="flex-[1.5] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
                         <Package size={13} /> Create Inbound
                       </button>
                     )}
@@ -847,7 +847,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               <button onClick={() => setSelectedBooking(null)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 border border-neutral-800 flex items-center justify-center text-neutral-400 hover:bg-white/20 hover:text-white transition-all z-10"><X size={16} /></button>
               <div className="p-6 sm:p-8">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-2xl bg-[#ccff00] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-[#84cc16] flex items-center justify-center shrink-0">
                     <Store size={20} className="text-black" />
                   </div>
                   <div className="min-w-0">
@@ -878,7 +878,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Booked Shelves</p>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedBooking.shelves.map((shelf) => (
-                        <span key={shelf._id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body"><Layers size={11} className="text-[#ccff00]" /><span className="font-medium text-white">{shelf.shelfNumber}</span></span>
+                        <span key={shelf._id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body"><Layers size={11} className="text-[#84cc16]" /><span className="font-medium text-white">{shelf.shelfNumber}</span></span>
                       ))}
                     </div>
                   </div>
@@ -913,21 +913,21 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Batch Name</label>
                     <input type="text" value={inboundBatchName} onChange={(e) => setInboundBatchName(e.target.value)}
                       placeholder="e.g. Q4 Inventory Restock"
-                      className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                      className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Total Cartons</label>
                       <input type="number" min={1} value={inboundCartons}
                         onChange={(e) => setInboundCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
                     </div>
                     <div>
                       <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Arrival Date</label>
                       <input type="date" value={inboundArrivalDate}
                         onChange={(e) => setInboundArrivalDate(e.target.value)}
                         min={new Date().toISOString().split("T")[0]}
-                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
                     </div>
                   </div>
 
@@ -941,7 +941,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                   <div className="flex items-center gap-3 pt-2">
                     <button onClick={handleCreateInboundFromBooking}
                       disabled={creatingInbound || !inboundBatchName.trim() || !inboundArrivalDate}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                       {creatingInbound ? <><Loader2 size={16} className="animate-spin" />Creating...</> : <><Send size={16} />Create Shipment</>}
                     </button>
                     <button onClick={() => { setShowInboundModal(false); setInboundBooking(null); }}
@@ -978,7 +978,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
 
               <div className="flex gap-3">
                 <button onClick={() => { setShowInboundSuccess(false); onTabChange("inbounds"); }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
                   <Package size={16} /> View Inbounds
                 </button>
                 <button onClick={() => setShowInboundSuccess(false)}
@@ -1139,7 +1139,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         ].map((k) => (
           <div key={k.label} className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-4 border border-neutral-800/80 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><k.icon size={18} className="text-[#ccff00]" /></div>
+              <div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><k.icon size={18} className="text-[#84cc16]" /></div>
               <div><p className="font-heading text-xl font-bold text-white numeric">{k.value}</p><p className="text-[11px] text-neutral-400 font-body">{k.label}</p></div>
             </div>
           </div>
@@ -1151,7 +1151,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
         <input type="text" value={inboundSearch} onChange={(e) => setInboundSearch(e.target.value)}
           placeholder="Search by Plan ID, Warehouse Name, or Batch Name..."
-          className="w-full pl-10 pr-4 py-2.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:ring-2 focus:ring-[#ccff00]/10 focus:bg-neutral-900 transition-all font-body shadow-sm shadow-black/20" />
+          className="w-full pl-10 pr-4 py-2.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:ring-2 focus:ring-[#84cc16]/10 focus:bg-neutral-900 transition-all font-body shadow-sm shadow-black/20" />
       </div>
 
       {/* Create Button & results count */}
@@ -1164,7 +1164,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
           </p>
         </div>
         {/* <button onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#ccff00] text-black rounded-full text-xs font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200">
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
           <Plus size={14} /> New Inbound Plan
         </button> */}
       </div>
@@ -1179,7 +1179,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       {/* Empty state when no plans at all */}
       {!loading && plans.length === 0 && !showCreateForm && (
         <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Package size={28} className="text-[#ccff00]/40" /></div>
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Package size={28} className="text-[#84cc16]/40" /></div>
           <h3 className="font-heading text-lg font-semibold text-white mb-2">No inbound plans yet</h3>
           <p className="text-sm text-neutral-400 font-body mb-6">Create your first inbound shipment plan to start tracking inventory.</p>
         </div>
@@ -1188,9 +1188,9 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       {/* Empty search results */}
       {!loading && plans.length > 0 && filteredPlans.length === 0 && (
         <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
-          <Search size={28} className="mx-auto text-[#ccff00]/30 mb-3" />
+          <Search size={28} className="mx-auto text-[#84cc16]/30 mb-3" />
           <p className="text-sm text-neutral-400 font-body">No inbound plans match your search.</p>
-          <button onClick={() => setInboundSearch("")} className="mt-3 text-xs text-[#ccff00] font-body hover:underline">Clear search</button>
+          <button onClick={() => setInboundSearch("")} className="mt-3 text-xs text-[#84cc16] font-body hover:underline">Clear search</button>
         </div>
       )}
 
@@ -1234,7 +1234,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                         </button>
                       )}
                       <button onClick={() => handleViewPlan(plan._id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors">
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors">
                         <Eye size={13} /> View
                       </button>
                     </div>
@@ -1256,7 +1256,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               <div>
                 <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Active Booking</label>
                 <select value={selectedBookingId} onChange={(e) => setSelectedBookingId(e.target.value)}
-                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body">
+                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body">
                   <option value="">Select a booking...</option>
                   {activeBookings.map((b) => (
                     <option key={b._id} value={b._id}>{b.warehouseName || b.warehouse?.name || "Warehouse"} – {formatDate(b.startDate)}</option>
@@ -1267,24 +1267,24 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               <div>
                 <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Batch Name</label>
                 <input type="text" value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="e.g. Q4 Inventory Restock"
-                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Total Cartons</label>
                   <input type="number" min={1} value={totalCartons} onChange={(e) => setTotalCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Expected Date</label>
                   <input type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
-                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
                 </div>
               </div>
               {createError && <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5"><AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" /><p className="text-xs text-red-400 font-body">{createError}</p></div>}
               <div className="flex items-center gap-3 pt-2">
                 <button onClick={handleCreateInbound} disabled={creating || !batchName.trim() || !expectedDate || !selectedBookingId}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                   {creating ? <><Loader2 size={16} className="animate-spin" />Creating...</> : <><Send size={16} />Create Inbound Plan</>}
                 </button>
                 <button onClick={() => setShowCreateForm(false)} className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
@@ -1330,7 +1330,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                 <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Number of Cartons to Add</label>
                 <input type="number" min={1} value={addCartonsCount}
                   onChange={(e) => setAddCartonsCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all font-body" />
+                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
               </div>
               {addCartonsError && (
                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
@@ -1340,7 +1340,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               )}
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleAddCartons} disabled={isAddingCartons || addCartonsCount < 1}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                   {isAddingCartons ? <><Loader2 size={16} className="animate-spin" />Adding...</> : <><PlusCircle size={16} />Add Cartons</>}
                 </button>
                 <button onClick={() => setAddCartonsPlan(null)}
@@ -1460,7 +1460,7 @@ function PlanDetailModal({ plan, onClose }: { plan: PlanDetail; onClose: () => v
         <div className="absolute top-5 right-5 flex items-center gap-2 z-10">
           {cartons.length > 0 && (
             <button onClick={handleDownloadPDF} disabled={pdfGenerating}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ccff00] text-black rounded-full text-[11px] font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 whitespace-nowrap">
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-[11px] font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 whitespace-nowrap">
               {pdfGenerating ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               QR Labels (PDF)
             </button>
@@ -1469,7 +1469,7 @@ function PlanDetailModal({ plan, onClose }: { plan: PlanDetail; onClose: () => v
         </div>
         <div className="p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-800/60 flex items-center justify-center"><Package size={24} className="text-[#ccff00]" /></div>
+            <div className="w-12 h-12 rounded-2xl bg-neutral-800/60 flex items-center justify-center"><Package size={24} className="text-[#84cc16]" /></div>
             <div>
               <h2 className="font-heading text-xl font-bold text-white">{p.batchName}</h2>
               <p className="text-sm text-neutral-400 font-body">Inbound Plan Details</p>
@@ -1526,7 +1526,7 @@ function PlanDetailModal({ plan, onClose }: { plan: PlanDetail; onClose: () => v
                 {cartons.map((carton) => (
                   <div key={carton._id} className="grid grid-cols-[1fr_100px_110px] gap-3 items-center px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800/60 transition-colors">
                     <div className="flex items-center gap-2 min-w-0">
-                      <Box size={13} className="text-[#ccff00] shrink-0" />
+                      <Box size={13} className="text-[#84cc16] shrink-0" />
                       <span className="text-sm font-medium text-white font-body truncate">{carton.cartonCode}</span>
                     </div>
                     <div><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${carton.status === "in-transit" ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : carton.status === "arrived" ? "bg-sky-500/10 border-sky-500/20 text-sky-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"}`}>{carton.status === "in-transit" ? "In Transit" : carton.status === "arrived" ? "Arrived" : "Stored"}</span></div>
@@ -1627,14 +1627,14 @@ function AccountTab() {
       ) : (
         <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-neutral-800/80 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center"><User size={20} className="text-[#ccff00]" /></div>
+            <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center"><User size={20} className="text-[#84cc16]" /></div>
             <h2 className="font-heading text-xl font-bold text-white">My Profile</h2>
           </div>
 
           {user && (
             <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-[#ccff00]/10 flex items-center justify-center shrink-0">
-                <User size={28} className="text-[#ccff00]" />
+              <div className="w-14 h-14 rounded-2xl bg-[#84cc16]/10 flex items-center justify-center shrink-0">
+                <User size={28} className="text-[#84cc16]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
@@ -1660,9 +1660,9 @@ function AccountTab() {
             <div>
               <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Phone Number</label>
               <div className="relative">
-                <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/60 pointer-events-none" />
+                <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/60 pointer-events-none" />
                 <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000"
-                  className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all text-sm font-body" />
+                  className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all text-sm font-body" />
               </div>
             </div>
 
@@ -1673,7 +1673,8 @@ function AccountTab() {
                   const isActive = role === opt.value;
                   return (
                     <button key={opt.value} type="button" onClick={() => setRole(opt.value)}
-                      className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black border-[#ccff00] shadow-lg shadow-[#ccff00]/20" : "bg-transparent text-neutral-400 border-neutral-800 hover:border-[#ccff00]/50 hover:bg-white/5"}`}>
+                      className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${                      isActive
+                        ? "bg-[#1a231d] text-[#84cc16] border-2 border-[#84cc16] shadow-lg shadow-[#84cc16]/10" : "bg-transparent text-neutral-400 border-neutral-800 hover:border-[#84cc16]/40 hover:bg-white/5"}`}>
                       <opt.icon size={20} /><span className="text-[11px] leading-tight text-center">{opt.label}</span>
                     </button>
                   );
@@ -1682,7 +1683,7 @@ function AccountTab() {
             </div>
 
             <button onClick={handleSubmit} disabled={isUpdating}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body font-semibold text-sm hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
               {isUpdating ? <><Loader2 size={18} className="animate-spin" />Updating...</> : <><Save size={18} />Save Changes</>}
             </button>
           </div>
@@ -1713,7 +1714,7 @@ export default function MerchantDashboardPage() {
   if (isCheckingAuth) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#0a0d0c]">
-        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
+        <Loader2 size={32} className="animate-spin text-[#84cc16]" />
       </div>
     );
   }
@@ -1748,7 +1749,7 @@ export default function MerchantDashboardPage() {
   return (
     <div className="relative overflow-hidden min-h-screen bg-[#0a0d0c]">
       {/* Ambient smoky radial glows */}
-      <div className="pointer-events-none fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#ccff00]/10 blur-[130px] z-0" />
+      <div className="pointer-events-none fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#84cc16]/10 blur-[130px] z-0" />
       <div className="pointer-events-none fixed bottom-[5%] right-[-5%] w-[450px] h-[450px] rounded-full bg-emerald-500/10 blur-[150px] z-0" />
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <TopHeader onMenuToggle={() => setSidebarOpen(true)} unread={unread} />

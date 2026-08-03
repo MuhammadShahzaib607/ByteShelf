@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -196,7 +196,7 @@ function WarehouseCard({ warehouse }: { warehouse: WarehouseData }) {
   return (
     <motion.div
       variants={scaleIn}
-      className="group bg-white/[0.04] backdrop-blur-xl rounded-2xl overflow-hidden border border-lime-500/15 hover:border-lime-400/40 shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_20px_50px_rgba(208,242,25,0.12)] hover:-translate-y-1.5 transition-all duration-500 flex flex-col"
+      className="group bg-white/[0.04] backdrop-blur-xl rounded-2xl overflow-hidden border border-[#84cc16]/15 hover:border-[#84cc16]/40 shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_20px_50px_rgba(132,204,22,0.12)] hover:-translate-y-1.5 transition-all duration-500 flex flex-col"
     >
       {/* Image Carousel (shared component) */}
       <ImageCarousel images={warehouse.images || []} alt={warehouse.name} aspectRatio="h-52" />
@@ -207,13 +207,13 @@ function WarehouseCard({ warehouse }: { warehouse: WarehouseData }) {
           {warehouse.name}
         </h3>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400 font-body">
-          <MapPin size={12} className="text-lime-400" />
+          <MapPin size={12} className="text-[#84cc16]" />
           <span>{warehouse.location}</span>
         </div>
 
         <div className="mt-4 flex items-center justify-between">
           <div>
-            <span className="font-heading text-xl font-bold text-[#D0F219] numeric">
+            <span className="font-heading text-xl font-bold text-[#84cc16] numeric">
               Rs. {warehouse.pricePerShelf.toLocaleString("en-PK")}
             </span>
             <span className="text-xs text-slate-400 font-body ml-1">
@@ -221,14 +221,14 @@ function WarehouseCard({ warehouse }: { warehouse: WarehouseData }) {
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-slate-400 font-body">
-            <Layers size={13} className="text-lime-400" />
+            <Layers size={13} className="text-[#84cc16]" />
             <span>{warehouse.totalShelves} shelves</span>
           </div>
         </div>
 
         <Link
           href={`/warehouses/${warehouse._id}`}
-          className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#D0F219] text-[#12140E] text-sm font-body font-semibold rounded-full hover:bg-lime-300 hover:shadow-[0_0_30px_rgba(208,242,25,0.35)] active:scale-95 transition-all duration-200"
+          className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 text-sm font-body font-semibold rounded-full hover:bg-neutral-800 hover:shadow-[0_0_30px_rgba(132,204,22,0.15)] active:scale-95 transition-all duration-200"
         >
           View Details & Book
           <ArrowRight size={15} />
@@ -242,7 +242,7 @@ function WarehouseCard({ warehouse }: { warehouse: WarehouseData }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white/[0.04] rounded-2xl overflow-hidden border border-lime-500/10 animate-pulse">
+    <div className="bg-white/[0.04] rounded-2xl overflow-hidden border border-[#84cc16]/10 animate-pulse">
       <div className="h-52 bg-white/[0.06]" />
       <div className="p-5 space-y-3">
         <div className="h-5 bg-white/[0.08] rounded w-3/4" />
@@ -251,104 +251,8 @@ function SkeletonCard() {
           <div className="h-6 bg-white/[0.08] rounded w-1/3" />
           <div className="h-4 bg-white/[0.06] rounded w-1/4" />
         </div>
-        <div className="h-10 bg-[#D0F219]/20 rounded-full w-full mt-2" />
+        <div className="h-10 bg-[#84cc16]/20 rounded-full w-full mt-2" />
       </div>
-    </div>
-  );
-}
-
-// ─── Hero Cursor Glow (spotlight + subtle particle trail) ─────────────────────
-// Lightweight: rAF-throttled lerp updates CSS vars; glow sits behind content.
-
-function HeroCursorGlow() {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number>(0);
-  const targetRef = useRef({ x: 0, y: 0 });
-  const spotlightRef = useRef({ x: 0, y: 0 });
-  const dotRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-
-    // Only enable on hover-capable devices (skip touch-only mobile)
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-
-    // The glow root is pointer-events-none, so listen on the hero <section>
-    // (its nearest section ancestor) which actually receives pointer events.
-    const hero = root.closest("section") as HTMLElement | null;
-    if (!hero) return;
-
-    let rect = hero.getBoundingClientRect();
-    const refreshRect = () => {
-      rect = hero.getBoundingClientRect();
-    };
-    // Keep the cached rect accurate if the hero resizes for content-driven reasons
-    // (font swap, carousel images loading, etc.)
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(refreshRect)
-        : null;
-    resizeObserver?.observe(hero);
-
-    const onMove = (e: MouseEvent) => {
-      targetRef.current.x = e.clientX - rect.left;
-      targetRef.current.y = e.clientY - rect.top;
-      if (!rafRef.current) {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    const tick = () => {
-      rafRef.current = 0;
-      const { x: tx, y: ty } = targetRef.current;
-      const sp = spotlightRef.current;
-      const dt = dotRef.current;
-
-      // Soft follow for the glow; slightly laggier for the particle dot
-      sp.x += (tx - sp.x) * 0.16;
-      sp.y += (ty - sp.y) * 0.16;
-      dt.x += (tx - dt.x) * 0.28;
-      dt.y += (ty - dt.y) * 0.28;
-
-      root.style.setProperty("--mouse-x", `${sp.x}px`);
-      root.style.setProperty("--mouse-y", `${sp.y}px`);
-      root.style.setProperty("--dot-x", `${dt.x}px`);
-      root.style.setProperty("--dot-y", `${dt.y}px`);
-
-      if (Math.abs(tx - sp.x) > 0.5 || Math.abs(ty - sp.y) > 0.5) {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    // Fade the glow in/out as the cursor enters/leaves the hero
-    const onEnter = () => {
-      root.style.opacity = "1";
-    };
-    const onLeave = () => {
-      root.style.opacity = "0";
-    };
-
-    hero.addEventListener("mousemove", onMove);
-    hero.addEventListener("mouseenter", onEnter);
-    hero.addEventListener("mouseleave", onLeave);
-    window.addEventListener("resize", refreshRect);
-    window.addEventListener("scroll", refreshRect, { passive: true });
-    return () => {
-      hero.removeEventListener("mousemove", onMove);
-      hero.removeEventListener("mouseenter", onEnter);
-      hero.removeEventListener("mouseleave", onLeave);
-      window.removeEventListener("resize", refreshRect);
-      window.removeEventListener("scroll", refreshRect);
-      resizeObserver?.disconnect();
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  return (
-    <div ref={rootRef} aria-hidden className="hero-cursor-glow absolute inset-0 z-0 pointer-events-none" style={{ opacity: 0, transition: "opacity 0.4s ease" }}>
-      <div className="hero-cursor-spotlight" />
-      <div className="hero-cursor-dot" />
     </div>
   );
 }
@@ -367,7 +271,7 @@ function FaqItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-lime-500/10 last:border-0">
+    <div className="border-b border-[#84cc16]/10 last:border-0">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between gap-4 py-5 text-left"
@@ -378,9 +282,9 @@ function FaqItem({
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="shrink-0 w-6 h-6 rounded-full bg-lime-400/10 border border-lime-500/20 flex items-center justify-center"
+          className="shrink-0 w-6 h-6 rounded-full bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center"
         >
-          <ChevronDown size={14} className="text-[#D0F219]" />
+          <ChevronDown size={14} className="text-[#84cc16]" />
         </motion.div>
       </button>
       <AnimatePresence initial={false}>
@@ -496,10 +400,6 @@ export default function Home() {
       <main className="flex-1">
         {/* ═══ 2. HERO SECTION ═══ */}
         <section className="relative pt-32 sm:pt-40 pb-20 sm:pb-28 overflow-hidden bg-gradient-to-b from-[#0F1209] via-[#14180C] to-[#0A0D07]">
-          {/* Custom cursor glow (behind content) — decorative static blobs removed */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <HeroCursorGlow />
-          </div>
 
           <div className="relative max-w-5xl mx-auto px-4 sm:px-8 lg:px-16 text-center">
             {/* Pill tag — glass chip */}
@@ -507,9 +407,9 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-lime-500/25 backdrop-blur-md text-sm font-body mb-8 shadow-[0_0_30px_rgba(208,242,25,0.08)]"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-[#84cc16]/25 backdrop-blur-md text-sm font-body mb-8 shadow-[0_0_30px_rgba(132,204,22,0.08)]"
             >
-              <CheckCircle size={14} className="text-[#D0F219]" />
+              <CheckCircle size={14} className="text-[#84cc16]" />
               <span className="text-slate-300">Trusted by 500+ warehouse owners</span>
             </motion.div>
 
@@ -522,7 +422,7 @@ export default function Home() {
             >
               Micro Warehousing
               <br />
-              <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                 Built for Growing Brands
               </span>
             </motion.h1>
@@ -548,14 +448,14 @@ export default function Home() {
             >
               <button
                 onClick={() => scrollTo(SECTION_IDS.warehouses)}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#D0F219] text-[#12140E] rounded-full font-body font-semibold text-base hover:bg-lime-300 hover:shadow-[0_0_40px_rgba(208,242,25,0.4)] active:scale-95 transition-all duration-200"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 rounded-full font-body font-semibold text-base hover:bg-neutral-800 hover:shadow-[0_0_40px_rgba(132,204,22,0.2)] active:scale-95 transition-all duration-200"
               >
                 Explore Shelves
                 <ArrowRight size={18} />
               </button>
               <button
                 onClick={() => scrollTo(SECTION_IDS.howItWorks)}
-                className="inline-flex items-center gap-2 px-8 py-3.5 border border-lime-500/30 text-lime-200 rounded-full font-body font-medium text-base hover:bg-lime-400/10 hover:border-lime-400/50 active:scale-95 transition-all duration-200"
+                className="inline-flex items-center gap-2 px-8 py-3.5 border border-[#84cc16]/30 text-[#84cc16] rounded-full font-body font-medium text-base hover:bg-[#84cc16]/10 hover:border-[#84cc16]/50 active:scale-95 transition-all duration-200"
               >
                 See How It Works
               </button>
@@ -575,15 +475,15 @@ export default function Home() {
               className="relative mt-16 max-w-3xl mx-auto"
             >
               {/* Glow behind card */}
-              <div className="absolute -inset-8 bg-[#D0F219]/10 blur-3xl rounded-full pointer-events-none" />
+              <div className="absolute -inset-8 bg-[#84cc16]/10 blur-3xl rounded-full pointer-events-none" />
 
               {/* Floating chip — left */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                className="absolute -left-4 sm:-left-8 -top-8 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#12140E]/90 border border-lime-500/25 backdrop-blur-md shadow-xl shadow-lime-950/30"
+                className="absolute -left-4 sm:-left-8 -top-8 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#12140E]/90 border border-[#84cc16]/25 backdrop-blur-md shadow-xl shadow-black/40"
               >
-                <Layers size={14} className="text-[#D0F219]" />
+                <Layers size={14} className="text-[#84cc16]" />
                 <span className="text-xs text-slate-200 font-body font-medium">Live Dashboard</span>
               </motion.div>
 
@@ -591,38 +491,38 @@ export default function Home() {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.6 }}
-                className="absolute -right-4 sm:-right-8 -bottom-6 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#12140E]/90 border border-lime-500/25 backdrop-blur-md shadow-xl shadow-lime-950/30"
+                className="absolute -right-4 sm:-right-8 -bottom-6 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#12140E]/90 border border-[#84cc16]/25 backdrop-blur-md shadow-xl shadow-black/40"
               >
-                <Shield size={14} className="text-[#D0F219]" />
+                <Shield size={14} className="text-[#84cc16]" />
                 <span className="text-xs text-slate-200 font-body font-medium">Verified Network</span>
               </motion.div>
 
               {/* Main preview card */}
-              <div className="relative rounded-3xl bg-[#12150E]/90 border border-lime-500/30 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-lime-950/40">
+              <div className="relative rounded-3xl bg-[#12150E]/90 border border-[#84cc16]/30 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-black/50">
                 {/* Preview header */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#D0F219]" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-lime-400/40" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-lime-400/20" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#84cc16]" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#84cc16]/40" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#84cc16]/20" />
                     </div>
                     <span className="ml-2 text-xs text-slate-400 font-body">Owner Dashboard</span>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D0F219]/10 border border-lime-500/25 text-[10px] font-semibold text-[#D0F219] font-body uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D0F219] animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#84cc16]/10 border border-[#84cc16]/25 text-[10px] font-semibold text-[#84cc16] font-body uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#84cc16] animate-pulse" />
                     Live
                   </span>
                 </div>
 
                 {/* Animated glowing utilization bars — abstract showcase */}
-                <div className="rounded-xl bg-white/[0.03] border border-lime-500/15 p-4 mb-6">
+                <div className="rounded-xl bg-white/[0.03] border border-[#84cc16]/15 p-4 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-[11px] text-slate-400 font-body uppercase tracking-wider">
                       Shelf Utilization
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-[10px] text-[#D0F219] font-body font-semibold uppercase tracking-wider">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D0F219] animate-pulse" />
+                    <span className="inline-flex items-center gap-1.5 text-[10px] text-[#84cc16] font-body font-semibold uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#84cc16] animate-pulse" />
                       Live
                     </span>
                   </div>
@@ -635,8 +535,8 @@ export default function Home() {
                         transition={{ duration: 1.2, delay: i * 0.07, ease: "easeOut" }}
                         className={`flex-1 rounded-t-md ${
                           i === 10
-                            ? "bg-gradient-to-t from-[#C0E70B] to-[#D0F219] shadow-[0_0_16px_rgba(208,242,25,0.6)]"
-                            : "bg-gradient-to-t from-lime-500/20 to-lime-400/50"
+                            ? "bg-gradient-to-t from-[#84cc16] to-emerald-500 shadow-[0_0_16px_rgba(132,204,22,0.25)]"
+                            : "bg-gradient-to-t from-[#84cc16]/20 to-[#84cc16]/50"
                         }`}
                       />
                     ))}
@@ -654,9 +554,9 @@ export default function Home() {
                     return (
                       <div
                         key={b.label}
-                        className="rounded-xl bg-white/[0.04] border border-lime-500/20 p-3 flex flex-col items-center gap-2"
+                        className="rounded-xl bg-white/[0.04] border border-[#84cc16]/20 p-3 flex flex-col items-center gap-2"
                       >
-                        <BIcon size={18} className="text-[#D0F219]" />
+                        <BIcon size={18} className="text-[#84cc16]" />
                         <span className="text-[10px] text-slate-300 font-body font-medium text-center leading-tight">
                           {b.label}
                         </span>
@@ -670,7 +570,7 @@ export default function Home() {
         </section>
 
         {/* ═══ 2.5 BRAND TRUST / STATS TICKER ═══ */}
-        <section className="relative py-8 border-y border-lime-500/10 bg-[#0A0D07] overflow-hidden">
+        <section className="relative py-8 border-y border-[#84cc16]/10 bg-[#0A0D07] overflow-hidden">
           <div className="marquee-mask flex overflow-hidden">
             <div className="animate-marquee flex shrink-0 items-center">
               {/* Two identical halves — each half owns its trailing gap so the -50% loop is seamless */}
@@ -685,7 +585,7 @@ export default function Home() {
                       <span className="text-sm sm:text-base font-heading font-semibold text-slate-300 uppercase tracking-widest">
                         {item}
                       </span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D0F219]/60" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#84cc16]/60" />
                     </span>
                   ))}
                 </div>
@@ -710,7 +610,7 @@ export default function Home() {
               </div>
               <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                 Storage That{" "}
-                <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                   Scales With You
                 </span>
               </h2>
@@ -731,13 +631,13 @@ export default function Home() {
               {/* Large card — col-span-2, row-span-2 */}
               <motion.div
                 variants={fadeUp}
-                className="group md:col-span-2 lg:row-span-2 relative bg-white/[0.04] backdrop-blur-xl border border-lime-500/15 hover:border-lime-400/40 rounded-3xl p-6 sm:p-8 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_60px_rgba(208,242,25,0.10)]"
+                className="group md:col-span-2 lg:row-span-2 relative bg-white/[0.04] backdrop-blur-xl border border-[#84cc16]/15 hover:border-[#84cc16]/40 rounded-3xl p-6 sm:p-8 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_60px_rgba(132,204,22,0.10)]"
               >
-                <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-[#D0F219]/[0.06] blur-3xl pointer-events-none" />
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#D0F219] to-emerald-400 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(208,242,25,0.35)]">
-                  <Layers size={22} className="text-[#12140E]" />
+                <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-[#84cc16]/[0.06] blur-3xl pointer-events-none" />
+                <div className="w-12 h-12 rounded-xl bg-[#1a231d] border border-[#84cc16]/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(132,204,22,0.15)]">
+                  <Layers size={22} className="text-[#84cc16]" />
                 </div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D0F219]/10 border border-lime-500/25 text-[11px] font-semibold text-[#D0F219] font-body uppercase tracking-wider mb-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#84cc16]/10 border border-[#84cc16]/25 text-[11px] font-semibold text-[#84cc16] font-body uppercase tracking-wider mb-4">
                   {bentoFeatures[0].badge}
                 </span>
                 <h3 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
@@ -749,18 +649,18 @@ export default function Home() {
 
                 {/* Mini metric visual */}
                 <div className="mt-6 grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-white/[0.03] border border-lime-500/10 p-4">
+                  <div className="rounded-2xl bg-white/[0.03] border border-[#84cc16]/10 p-4">
                     <div className="text-[10px] text-slate-400 font-body uppercase tracking-wider">
                       Avg. monthly cost
                     </div>
-                    <div className="mt-1 font-heading text-lg font-bold text-[#D0F219] numeric">
+                    <div className="mt-1 font-heading text-lg font-bold text-[#84cc16] numeric">
                       Rs 8,500
                     </div>
                     <div className="mt-2 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
-                      <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-[#D0F219] to-emerald-400" />
+                      <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-[#84cc16] to-emerald-400" />
                     </div>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.03] border border-lime-500/10 p-4">
+                  <div className="rounded-2xl bg-white/[0.03] border border-[#84cc16]/10 p-4">
                     <div className="text-[10px] text-slate-400 font-body uppercase tracking-wider">
                       Vs. traditional lease
                     </div>
@@ -777,10 +677,10 @@ export default function Home() {
               {/* Stacked card 1 */}
               <motion.div
                 variants={fadeUp}
-                className="group bg-white/[0.04] backdrop-blur-xl border border-lime-500/15 hover:border-lime-400/40 rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(208,242,25,0.08)]"
+                className="group bg-white/[0.04] backdrop-blur-xl border border-[#84cc16]/15 hover:border-[#84cc16]/40 rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(132,204,22,0.08)]"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#D0F219]/10 border border-lime-500/20 flex items-center justify-center mb-5 group-hover:bg-[#D0F219]/20 transition-colors">
-                  <Package size={22} className="text-[#D0F219] group-hover:scale-110 transition-transform duration-300" />
+                <div className="w-12 h-12 rounded-xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center mb-5 group-hover:bg-[#84cc16]/20 transition-colors">
+                  <Package size={22} className="text-[#84cc16] group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <h3 className="font-heading text-lg font-semibold text-white mb-3">
                   {bentoFeatures[1].title}
@@ -793,10 +693,10 @@ export default function Home() {
               {/* Stacked card 2 */}
               <motion.div
                 variants={fadeUp}
-                className="group bg-white/[0.04] backdrop-blur-xl border border-lime-500/15 hover:border-lime-400/40 rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(208,242,25,0.08)]"
+                className="group bg-white/[0.04] backdrop-blur-xl border border-[#84cc16]/15 hover:border-[#84cc16]/40 rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(132,204,22,0.08)]"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#D0F219]/10 border border-lime-500/20 flex items-center justify-center mb-5 group-hover:bg-[#D0F219]/20 transition-colors">
-                  <MessageCircle size={22} className="text-[#D0F219] group-hover:scale-110 transition-transform duration-300" />
+                <div className="w-12 h-12 rounded-xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center mb-5 group-hover:bg-[#84cc16]/20 transition-colors">
+                  <MessageCircle size={22} className="text-[#84cc16] group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <h3 className="font-heading text-lg font-semibold text-white mb-3">
                   {bentoFeatures[2].title}
@@ -809,10 +709,10 @@ export default function Home() {
               {/* Horizontal card 1 */}
               <motion.div
                 variants={fadeUp}
-                className="group md:col-span-2 lg:col-span-3 bg-white/[0.04] backdrop-blur-xl border border-lime-500/15 hover:border-lime-400/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(208,242,25,0.08)]"
+                className="group md:col-span-2 lg:col-span-3 bg-white/[0.04] backdrop-blur-xl border border-[#84cc16]/15 hover:border-[#84cc16]/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(132,204,22,0.08)]"
               >
-                <div className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-[#D0F219]/20 to-emerald-400/10 border border-lime-500/25 flex items-center justify-center">
-                  <Shield size={24} className="text-[#D0F219]" />
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-[#84cc16]/20 to-emerald-400/10 border border-[#84cc16]/25 flex items-center justify-center">
+                  <Shield size={24} className="text-[#84cc16]" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-heading text-lg font-semibold text-white mb-1.5">
@@ -822,7 +722,7 @@ export default function Home() {
                     {bentoFeatures[3].description}
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D0F219]/10 border border-lime-500/25 text-[11px] font-semibold text-[#D0F219] font-body uppercase tracking-wider shrink-0">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#84cc16]/10 border border-[#84cc16]/25 text-[11px] font-semibold text-[#84cc16] font-body uppercase tracking-wider shrink-0">
                   <CheckCircle size={12} />
                   500+ owners
                 </span>
@@ -831,10 +731,10 @@ export default function Home() {
               {/* Horizontal card 2 */}
               <motion.div
                 variants={fadeUp}
-                className="group md:col-span-2 lg:col-span-3 bg-white/[0.04] backdrop-blur-xl border border-lime-500/15 hover:border-lime-400/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(208,242,25,0.08)]"
+                className="group md:col-span-2 lg:col-span-3 bg-white/[0.04] backdrop-blur-xl border border-[#84cc16]/15 hover:border-[#84cc16]/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(132,204,22,0.08)]"
               >
-                <div className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-[#D0F219]/20 to-emerald-400/10 border border-lime-500/25 flex items-center justify-center">
-                  <LayoutDashboard size={24} className="text-[#D0F219]" />
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-[#84cc16]/20 to-emerald-400/10 border border-[#84cc16]/25 flex items-center justify-center">
+                  <LayoutDashboard size={24} className="text-[#84cc16]" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-heading text-lg font-semibold text-white mb-1.5">
@@ -869,7 +769,7 @@ export default function Home() {
               </div>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white tracking-tight">
                 Featured{" "}
-                <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                   Micro-Warehouses
                 </span>
               </h2>
@@ -894,8 +794,8 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 className="text-center py-16"
               >
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-lime-500/15 flex items-center justify-center mx-auto mb-4">
-                  <Warehouse size={28} className="text-lime-400/40" />
+                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-[#84cc16]/15 flex items-center justify-center mx-auto mb-4">
+                  <Warehouse size={28} className="text-[#84cc16]/40" />
                 </div>
                 <h3 className="font-heading text-lg font-semibold text-white mb-2">
                   Sign in to explore warehouses
@@ -905,7 +805,7 @@ export default function Home() {
                 </p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D0F219] text-[#12140E] rounded-full font-body text-sm font-semibold hover:bg-lime-300 hover:shadow-[0_0_30px_rgba(208,242,25,0.35)] active:scale-95 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 rounded-full font-body text-sm font-semibold hover:bg-neutral-800 hover:shadow-[0_0_30px_rgba(132,204,22,0.15)] active:scale-95 transition-all duration-200"
                 >
                   Get Started Free
                   <ArrowRight size={16} />
@@ -935,8 +835,8 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 className="text-center py-16"
               >
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-lime-500/15 flex items-center justify-center mx-auto mb-4">
-                  <Warehouse size={28} className="text-lime-400/40" />
+                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-[#84cc16]/15 flex items-center justify-center mx-auto mb-4">
+                  <Warehouse size={28} className="text-[#84cc16]/40" />
                 </div>
                 <h3 className="font-heading text-lg font-semibold text-white mb-2">
                   No warehouses listed yet
@@ -946,7 +846,7 @@ export default function Home() {
                 </p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D0F219] text-[#12140E] rounded-full font-body text-sm font-semibold hover:bg-lime-300 hover:shadow-[0_0_30px_rgba(208,242,25,0.35)] active:scale-95 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 rounded-full font-body text-sm font-semibold hover:bg-neutral-800 hover:shadow-[0_0_30px_rgba(132,204,22,0.15)] active:scale-95 transition-all duration-200"
                 >
                   List Your Warehouse
                   <ArrowRight size={16} />
@@ -972,7 +872,7 @@ export default function Home() {
               </div>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white tracking-tight">
                 How{" "}
-                <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                   It Works
                 </span>
               </h2>
@@ -983,12 +883,12 @@ export default function Home() {
 
             {/* Tab switcher */}
             <div className="flex items-center justify-center mb-10">
-              <div className="inline-flex p-1.5 rounded-full bg-[#12140E] border border-lime-500/15 shadow-lg shadow-lime-950/20">
+              <div className="inline-flex p-1.5 rounded-full bg-[#12140E] border border-[#84cc16]/15 shadow-lg shadow-black/40">
                 <button
                   onClick={() => setActiveTab("merchant")}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-300 ${
                     activeTab === "merchant"
-                      ? "bg-[#D0F219] text-[#12140E] shadow-[0_0_20px_rgba(208,242,25,0.3)]"
+                      ? "bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 shadow-[0_0_20px_rgba(132,204,22,0.15)]"
                       : "text-slate-400 hover:text-white"
                   }`}
                 >
@@ -999,7 +899,7 @@ export default function Home() {
                   onClick={() => setActiveTab("owner")}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-300 ${
                     activeTab === "owner"
-                      ? "bg-[#D0F219] text-[#12140E] shadow-[0_0_20px_rgba(208,242,25,0.3)]"
+                      ? "bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 shadow-[0_0_20px_rgba(132,204,22,0.15)]"
                       : "text-slate-400 hover:text-white"
                   }`}
                 >
@@ -1018,7 +918,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-lime-500/15"
+                  className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-[#84cc16]/15"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {[
@@ -1048,10 +948,10 @@ export default function Home() {
                       },
                     ].map((item) => (
                       <div key={item.step} className="text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-[#D0F219]/10 border border-lime-500/20 flex items-center justify-center mx-auto mb-4">
-                          <item.icon size={24} className="text-[#D0F219]" />
+                        <div className="w-14 h-14 rounded-2xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center mx-auto mb-4">
+                          <item.icon size={24} className="text-[#84cc16]" />
                         </div>
-                        <span className="text-xs font-semibold tracking-wider text-[#D0F219] uppercase font-body">
+                        <span className="text-xs font-semibold tracking-wider text-[#84cc16] uppercase font-body">
                           Step {item.step}
                         </span>
                         <h4 className="font-heading text-base font-semibold text-white mt-1 mb-2">
@@ -1071,7 +971,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-lime-500/15"
+                  className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-[#84cc16]/15"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {[
@@ -1101,10 +1001,10 @@ export default function Home() {
                       },
                     ].map((item) => (
                       <div key={item.step} className="text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-[#D0F219]/10 border border-lime-500/20 flex items-center justify-center mx-auto mb-4">
-                          <item.icon size={24} className="text-[#D0F219]" />
+                        <div className="w-14 h-14 rounded-2xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center mx-auto mb-4">
+                          <item.icon size={24} className="text-[#84cc16]" />
                         </div>
-                        <span className="text-xs font-semibold tracking-wider text-[#D0F219] uppercase font-body">
+                        <span className="text-xs font-semibold tracking-wider text-[#84cc16] uppercase font-body">
                           Step {item.step}
                         </span>
                         <h4 className="font-heading text-base font-semibold text-white mt-1 mb-2">
@@ -1130,9 +1030,9 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative overflow-hidden bg-gradient-to-br from-[#12140E] via-[#1A1D16] to-[#0D0F0A] rounded-3xl p-8 sm:p-12 md:p-16 shadow-2xl shadow-lime-950/30 border border-lime-500/15"
+              className="relative overflow-hidden bg-gradient-to-br from-[#12140E] via-[#1A1D16] to-[#0D0F0A] rounded-3xl p-8 sm:p-12 md:p-16 shadow-2xl shadow-black/40 border border-[#84cc16]/15"
             >
-              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-[#D0F219]/[0.06] blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-[#84cc16]/[0.06] blur-3xl pointer-events-none" />
               <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-emerald-500/[0.05] blur-3xl pointer-events-none" />
 
               <div className="relative text-center mb-10">
@@ -1160,10 +1060,10 @@ export default function Home() {
                       transition={{ duration: 0.4 }}
                       className="text-center group"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-[#D0F219]/10 border border-lime-500/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-[#D0F219]/20 transition-all duration-300">
-                        <IconComponent size={22} className="text-[#D0F219]" />
+                      <div className="w-12 h-12 rounded-xl bg-[#84cc16]/10 border border-[#84cc16]/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-[#84cc16]/20 transition-all duration-300">
+                        <IconComponent size={22} className="text-[#84cc16]" />
                       </div>
-                      <div className="font-heading text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                      <div className="font-heading text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                         {stat.value}
                       </div>
                       <div className="mt-1 text-xs text-slate-400 font-body uppercase tracking-wider">
@@ -1193,7 +1093,7 @@ export default function Home() {
               </div>
               <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                 Tailored for{" "}
-                <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                   Every Sector
                 </span>
               </h2>
@@ -1216,11 +1116,11 @@ export default function Home() {
                   <motion.div
                     key={sector.title}
                     variants={fadeUp}
-                    className="group relative overflow-hidden rounded-3xl bg-[#12140E]/80 border border-lime-500/10 hover:border-lime-400/40 p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#1A1D16] hover:shadow-[0_20px_50px_rgba(208,242,25,0.08)]"
+                    className="group relative overflow-hidden rounded-3xl bg-[#12140E]/80 border border-[#84cc16]/10 hover:border-[#84cc16]/40 p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#1A1D16] hover:shadow-[0_20px_50px_rgba(132,204,22,0.08)]"
                   >
-                    <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#D0F219]/[0.04] blur-2xl group-hover:bg-[#D0F219]/[0.10] transition-all duration-500 pointer-events-none" />
-                    <div className="w-12 h-12 rounded-xl bg-[#D0F219]/10 border border-lime-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                      <IconComponent size={22} className="text-[#D0F219]" />
+                    <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#84cc16]/[0.04] blur-2xl group-hover:bg-[#84cc16]/[0.10] transition-all duration-500 pointer-events-none" />
+                    <div className="w-12 h-12 rounded-xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                      <IconComponent size={22} className="text-[#84cc16]" />
                     </div>
                     <h3 className="font-heading text-lg font-semibold text-white mb-2">
                       {sector.title}
@@ -1228,7 +1128,7 @@ export default function Home() {
                     <p className="text-sm text-slate-400 font-body leading-relaxed">
                       {sector.description}
                     </p>
-                    <div className="mt-4 h-px w-full bg-gradient-to-r from-[#D0F219]/30 via-lime-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="mt-4 h-px w-full bg-gradient-to-r from-[#84cc16]/30 via-[#84cc16]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </motion.div>
                 );
               })}
@@ -1252,7 +1152,7 @@ export default function Home() {
               </div>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white tracking-tight">
                 Frequently Asked{" "}
-                <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                   Questions
                 </span>
               </h2>
@@ -1266,7 +1166,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-lime-500/15"
+              className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-[#84cc16]/15"
             >
               {faqs.map((faq, i) => (
                 <FaqItem
@@ -1289,9 +1189,9 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="relative overflow-hidden bg-gradient-to-br from-[#D0F219]/[0.12] via-[#12140E] to-[#0D0F0A] rounded-3xl p-8 sm:p-12 text-center shadow-2xl shadow-lime-950/30 border border-lime-500/20"
+              className="relative overflow-hidden bg-gradient-to-br from-[#84cc16]/[0.12] via-[#12140E] to-[#0D0F0A] rounded-3xl p-8 sm:p-12 text-center shadow-2xl shadow-black/40 border border-[#84cc16]/20"
             >
-              <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full bg-[#D0F219]/10 blur-3xl pointer-events-none" />
+              <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full bg-[#84cc16]/10 blur-3xl pointer-events-none" />
 
               <div className="relative">
                 <div className="section-badge-lime inline-flex mx-auto mb-4">
@@ -1300,7 +1200,7 @@ export default function Home() {
                 </div>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white">
                   Ready to streamline your{" "}
-                  <span className="bg-gradient-to-r from-[#D0F219] via-lime-200 to-emerald-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#84cc16] via-[#84cc16] to-emerald-400 bg-clip-text text-transparent">
                     storage?
                   </span>
                 </h2>
@@ -1312,7 +1212,7 @@ export default function Home() {
                   {isLoggedIn ? (
                     <Link
                       href="/explore"
-                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#D0F219] text-[#12140E] rounded-full font-body font-semibold text-base hover:bg-lime-300 hover:shadow-[0_0_40px_rgba(208,242,25,0.4)] active:scale-95 transition-all duration-200"
+                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 rounded-full font-body font-semibold text-base hover:bg-neutral-800 hover:shadow-[0_0_40px_rgba(132,204,22,0.2)] active:scale-95 transition-all duration-200"
                     >
                       <LayoutDashboard size={18} />
                       Explore Warehouses
@@ -1322,14 +1222,14 @@ export default function Home() {
                     <>
                       <Link
                         href="/signup"
-                        className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#D0F219] text-[#12140E] rounded-full font-body font-semibold text-base hover:bg-lime-300 hover:shadow-[0_0_40px_rgba(208,242,25,0.4)] active:scale-95 transition-all duration-200"
+                        className="inline-flex items-center gap-2 px-8 py-3.5 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 rounded-full font-body font-semibold text-base hover:bg-neutral-800 hover:shadow-[0_0_40px_rgba(132,204,22,0.2)] active:scale-95 transition-all duration-200"
                       >
                         Create Free Account
                         <ArrowRight size={18} />
                       </Link>
                       <Link
                         href="/login"
-                        className="inline-flex items-center gap-2 px-8 py-3.5 border border-lime-500/30 text-lime-200 rounded-full font-body font-medium text-base hover:bg-lime-400/10 hover:border-lime-400/50 active:scale-95 transition-all duration-200"
+                        className="inline-flex items-center gap-2 px-8 py-3.5 border border-[#84cc16]/30 text-[#84cc16] rounded-full font-body font-medium text-base hover:bg-[#84cc16]/10 hover:border-[#84cc16]/50 active:scale-95 transition-all duration-200"
                       >
                         Sign In
                       </Link>

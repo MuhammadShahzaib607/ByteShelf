@@ -143,11 +143,11 @@ function PendingOverlay({ email, userId }: { email: string | null; userId: strin
                       title="Copy User ID"
                       className={`p-1.5 rounded-lg border transition-all duration-200 shrink-0 ${
                         copied
-                          ? "bg-[#ccff00]/15 border-[#ccff00]/40 text-[#ccff00]"
-                          : "bg-white/[0.04] border-slate-700/70 text-slate-400 hover:text-[#ccff00] hover:bg-lime-400/10 hover:border-lime-500/40"
+                          ? "bg-[#99cc00]/15 border-[#99cc00]/40 text-[#99cc00]"
+                          : "bg-white/[0.04] border-slate-700/70 text-slate-400 hover:text-[#99cc00] hover:bg-lime-400/10 hover:border-lime-500/40"
                       }`}
                     >
-                      {copied ? <Check size={16} className="text-[#ccff00]" /> : <Copy size={16} />}
+                      {copied ? <Check size={16} className="text-[#99cc00]" /> : <Copy size={16} />}
                     </button>
                   </div>
                   <p className="text-[11px] text-slate-500 font-body mt-2 text-center">
@@ -161,7 +161,7 @@ function PendingOverlay({ email, userId }: { email: string | null; userId: strin
               <button
                 onClick={handleChatWithAdmin}
                 disabled={chatLoading}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#ccff00] text-black rounded-xl text-sm font-body font-semibold hover:bg-[#b8e600] shadow-[0_0_20px_rgba(204,255,0,0.15)] hover:shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95 transition-all duration-200 disabled:opacity-60"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#99cc00] text-black rounded-xl text-sm font-body font-semibold hover:bg-[#8ab800] shadow-[0_0_20px_rgba(153,204,0,0.10)] hover:shadow-[0_0_30px_rgba(153,204,0,0.20)] active:scale-95 transition-all duration-200 disabled:opacity-60"
               >
                 {chatLoading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -301,7 +301,7 @@ export default function VerificationGuard({
   if (isCheckingAuth) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#05080e]">
-        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
+        <Loader2 size={32} className="animate-spin text-[#99cc00]" />
       </div>
     );
   }

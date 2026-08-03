@@ -66,8 +66,8 @@ function StatusBadge({
     { bg: string; text: string; icon: React.ReactNode; label: string }
   > = {
     confirmed: {
-      bg: "bg-emerald-50 border-emerald-200",
-      text: "text-emerald-700",
+      bg: "bg-[#84cc16]/10 border-[#84cc16]/30",
+      text: "text-[#84cc16]",
       icon: <CheckCircle size={12} />,
       label: "Confirmed",
     },
@@ -84,8 +84,8 @@ function StatusBadge({
       label: "Cancelled",
     },
     paid: {
-      bg: "bg-emerald-50 border-emerald-200",
-      text: "text-emerald-700",
+      bg: "bg-[#84cc16]/10 border-[#84cc16]/30",
+      text: "text-[#84cc16]",
       icon: <CheckCircle size={12} />,
       label: "Paid",
     },

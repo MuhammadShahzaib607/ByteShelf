@@ -16,10 +16,15 @@ export interface UploadResult {
   public_id: string;
 }
 
-// ─── Upload a single image to Cloudinary ───────────────────────────────────────
+// ─── Upload a single file to Cloudinary ────────────────────────────────────────
+// resourceType defaults to "image" for backwards compatibility. Non-image
+// documents/PDFs must use "raw" or "auto" — otherwise Cloudinary rejects them
+// (or serves 401 / CORS errors on the returned URL) when forced through the
+// image-only upload endpoint.
 
 export async function uploadToCloudinary(
-  file: File
+  file: File,
+  resourceType: "image" | "raw" | "auto" = "image"
 ): Promise<UploadResult> {
   // Validate
   if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -38,7 +43,7 @@ export async function uploadToCloudinary(
   formData.append("upload_preset", UPLOAD_PRESET);
 
   const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
     { method: "POST", body: formData }
   );
 
@@ -50,9 +55,16 @@ export async function uploadToCloudinary(
   }
 
   const data = await res.json();
+  // Verify Cloudinary returned a usable URL — otherwise fail loudly instead of
+  // letting an empty/malformed URL silently reach the attachments payload.
+  if (!data.secure_url && !data.url) {
+    throw new Error(
+      "Cloudinary did not return a valid file URL. Please try again."
+    );
+  }
   return {
-    url: data.url,
-    secure_url: data.secure_url,
+    url: data.url || data.secure_url,
+    secure_url: data.secure_url || data.url,
     public_id: data.public_id,
   };
 }
@@ -99,7 +111,7 @@ export async function uploadMultipleToCloudinary(
 
   const results: UploadResult[] = [];
   for (const file of files) {
-    const result = await uploadToCloudinary(file);
+    const result = await uploadToCloudinary(file, "image");
     results.push(result);
   }
   return results;

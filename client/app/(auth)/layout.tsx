@@ -24,7 +24,7 @@ export default function AuthLayout({
   if (isCheckingAuth) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#05080e]">
-        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
+        <Loader2 size={32} className="animate-spin text-[#84cc16]" />
       </div>
     );
   }

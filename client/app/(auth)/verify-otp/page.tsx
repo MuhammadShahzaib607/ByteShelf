@@ -96,8 +96,8 @@ export default function VerifyOtpPage() {
 
       {/* Header */}
       <div className="text-center">
-        <div className="w-12 h-12 rounded-2xl bg-[#ccff00]/10 border border-[#ccff00]/25 flex items-center justify-center mx-auto mb-3">
-          <Mail size={20} className="text-[#ccff00]" />
+        <div className="w-12 h-12 rounded-2xl bg-[#84cc16]/10 border border-[#84cc16]/25 flex items-center justify-center mx-auto mb-3">
+          <Mail size={20} className="text-[#84cc16]" />
         </div>
         <h1 className="font-heading text-2xl text-white font-bold">
           Verify Email
@@ -168,7 +168,7 @@ export default function VerifyOtpPage() {
             className={`inline-flex items-center gap-1.5 font-medium underline underline-offset-2 transition-colors ${
               resendLoading || verifyLoading || resendTimer > 0 || !!successMsg
                 ? "text-slate-600 cursor-not-allowed"
-                : "text-[#ccff00] hover:text-lime-300"
+                : "text-[#84cc16] hover:text-emerald-300"
             }`}
           >
             {resendLoading ? (

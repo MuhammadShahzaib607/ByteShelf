@@ -54,12 +54,12 @@ function StepIndicator({ current, stepKey }: { current: Step; stepKey: Step }) {
   const isActive = curIdx === idx;
 
   return (
-    <div className={`flex items-center gap-2 ${isDone ? "text-[#ccff00]" : isActive ? "text-[#ccff00]" : "text-slate-600"}`}>
+    <div className={`flex items-center gap-2 ${isDone ? "text-[#84cc16]" : isActive ? "text-[#84cc16]" : "text-slate-600"}`}>
       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold font-body transition-all duration-300 ${
         isDone
-          ? "bg-[#ccff00] text-black"
+          ? "bg-[#84cc16] text-black"
           : isActive
-          ? "bg-[#ccff00] text-black shadow-[0_0_15px_rgba(204,255,0,0.35)]"
+          ? "bg-[#84cc16] text-black shadow-[0_0_15px_rgba(132,204,22,0.20)]"
           : "bg-slate-800 text-slate-500"
       }`}>
         {isDone ? <CheckCircle size={14} /> : idx + 1}
@@ -361,7 +361,7 @@ export default function SignupPage() {
           alt="ByteShelf Logo"
           width={56}
           height={56}
-          className="object-contain drop-shadow-[0_0_12px_rgba(204,255,0,0.3)] block mx-auto mb-4"
+          className="object-contain drop-shadow-[0_0_12px_rgba(132,204,22,0.20)] block mx-auto mb-4"
         />
         <h1 className="font-heading text-3xl text-white font-bold">
           Create Account
@@ -378,7 +378,7 @@ export default function SignupPage() {
             <StepIndicator current={step} stepKey={s.key} />
             {i < STEPS.length - 1 && (
               <div className={`w-8 sm:w-12 h-px mx-2 transition-colors duration-300 ${
-                STEPS.findIndex((x) => x.key === step) > i ? "bg-[#ccff00]/60" : "bg-slate-800"
+                STEPS.findIndex((x) => x.key === step) > i ? "bg-[#84cc16]/60" : "bg-slate-800"
               }`} />
             )}
           </div>
@@ -445,20 +445,20 @@ export default function SignupPage() {
               onClick={() => document.getElementById("nic-front-input")?.click()}
               className={`relative w-full h-36 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
                 nicFrontPreview
-                  ? "border-[#ccff00]/50 bg-[#ccff00]/5"
-                  : "border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 hover:bg-slate-950/60"
+                  ? "border-[#84cc16]/40 bg-[#84cc16]/5"
+                  : "border-slate-700 hover:border-[#84cc16]/40 bg-slate-950/40 hover:bg-slate-950/60"
               }`}
             >
               {nicFrontPreview ? (
                 <>
                   <img src={nicFrontPreview} alt="NIC Front" className="absolute inset-0 w-full h-full object-contain p-2" />
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#84cc16]/15 text-[#84cc16] text-[10px] font-semibold font-body">
                     Uploaded
                   </div>
                 </>
               ) : (
                 <>
-                  <Upload size={24} className="text-[#ccff00]/40 mb-1" />
+                  <Upload size={24} className="text-[#84cc16]/40 mb-1" />
                   <span className="text-xs text-slate-500 font-body">Tap to upload NIC front</span>
                 </>
               )}
@@ -485,18 +485,18 @@ export default function SignupPage() {
               onClick={() => document.getElementById("nic-back-input")?.click()}
               className={`relative w-full h-36 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
                 nicBackPreview
-                  ? "border-[#ccff00]/50 bg-[#ccff00]/5"
-                  : "border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 hover:bg-slate-950/60"
+                  ? "border-[#84cc16]/40 bg-[#84cc16]/5"
+                  : "border-slate-700 hover:border-[#84cc16]/40 bg-slate-950/40 hover:bg-slate-950/60"
               }`}
             >
               {nicBackPreview ? (
                 <>
                   <img src={nicBackPreview} alt="NIC Back" className="absolute inset-0 w-full h-full object-contain p-2" />
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">Uploaded</div>
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#84cc16]/15 text-[#84cc16] text-[10px] font-semibold font-body">Uploaded</div>
                 </>
               ) : (
                 <>
-                  <Upload size={24} className="text-[#ccff00]/40 mb-1" />
+                  <Upload size={24} className="text-[#84cc16]/40 mb-1" />
                   <span className="text-xs text-slate-500 font-body">Tap to upload NIC back</span>
                 </>
               )}
@@ -529,9 +529,9 @@ export default function SignupPage() {
           {!cameraActive && !livePhoto && (
             <div
               onClick={() => startCamera("photo")}
-              className="w-full h-44 rounded-2xl border-2 border-dashed border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 flex flex-col items-center justify-center cursor-pointer transition-all"
+              className="w-full h-44 rounded-2xl border-2 border-dashed border-slate-700 hover:border-[#84cc16]/40 bg-slate-950/40 flex flex-col items-center justify-center cursor-pointer transition-all"
             >
-              <Camera size={32} className="text-[#ccff00]/40 mb-2" />
+              <Camera size={32} className="text-[#84cc16]/40 mb-2" />
               <span className="text-xs text-slate-500 font-body">Open Camera</span>
             </div>
           )}
@@ -541,7 +541,7 @@ export default function SignupPage() {
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-48 object-cover rounded-xl bg-slate-950" />
               <button
                 onClick={capturePhoto}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-[#ccff00] text-black rounded-full text-xs font-semibold font-body shadow-lg hover:bg-[#b8e600] active:scale-95 transition-all"
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 rounded-full text-xs font-semibold font-body shadow-lg shadow-black/40 hover:bg-[#84cc16] hover:text-black active:scale-95 transition-all"
               >
                 <Camera size={16} className="inline mr-1.5" />
                 Take Snapshot
@@ -550,9 +550,9 @@ export default function SignupPage() {
           )}
 
           {livePhoto && !cameraActive && (
-            <div className="relative rounded-2xl overflow-hidden border border-[#ccff00]/40">
+            <div className="relative rounded-2xl overflow-hidden border border-[#84cc16]/40">
               <img src={livePhoto} alt="Captured selfie" className="w-full h-44 object-cover" />
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#84cc16]/15 text-[#84cc16] text-[10px] font-semibold font-body">
                 Captured
               </div>
               <button
@@ -580,9 +580,9 @@ export default function SignupPage() {
           {!cameraActive && !liveVideo && (
             <div
               onClick={() => startCamera("video")}
-              className="w-full h-44 rounded-2xl border-2 border-dashed border-slate-700 hover:border-[#ccff00]/50 bg-slate-950/40 flex flex-col items-center justify-center cursor-pointer transition-all"
+              className="w-full h-44 rounded-2xl border-2 border-dashed border-slate-700 hover:border-[#84cc16]/40 bg-slate-950/40 flex flex-col items-center justify-center cursor-pointer transition-all"
             >
-              <Video size={32} className="text-[#ccff00]/40 mb-2" />
+              <Video size={32} className="text-[#84cc16]/40 mb-2" />
               <span className="text-xs text-slate-500 font-body">Open Camera</span>
             </div>
           )}
@@ -608,9 +608,9 @@ export default function SignupPage() {
           )}
 
           {liveVideo && !cameraActive && (
-            <div className="relative rounded-2xl overflow-hidden border border-[#ccff00]/40 bg-black">
+            <div className="relative rounded-2xl overflow-hidden border border-[#84cc16]/40 bg-black">
               <video src={liveVideo} controls className="w-full h-44 object-cover" />
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] text-[10px] font-semibold font-body">
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#84cc16]/15 text-[#84cc16] text-[10px] font-semibold font-body">
                 Recorded
               </div>
               <button
@@ -642,7 +642,7 @@ export default function SignupPage() {
           type="button"
           onClick={nextStep}
           disabled={isLoading || uploading}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-black bg-[#ccff00] hover:bg-[#b8e600] text-sm font-semibold shadow-md shadow-[#ccff00]/10 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 text-[#84cc16] border border-[#84cc16]/50 text-sm font-semibold shadow-md shadow-black/40 hover:bg-[#84cc16] hover:text-black hover:border-[#84cc16] active:scale-[0.98] transition-all disabled:opacity-50"
         >
           {isLoading || uploading ? (
             <span>Processing...</span>
@@ -660,7 +660,7 @@ export default function SignupPage() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-[#ccff00] font-medium hover:text-lime-300 transition-colors underline underline-offset-2"
+            className="text-[#84cc16] font-medium hover:text-emerald-300 transition-colors underline underline-offset-2"
           >
             Sign In
           </Link>

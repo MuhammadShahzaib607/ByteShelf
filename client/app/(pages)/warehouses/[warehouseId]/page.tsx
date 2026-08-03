@@ -485,7 +485,7 @@ export default function WarehouseDetailPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => router.push("/explore")}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/25 transition-all duration-200"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#99cc00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#8ab800] hover:shadow-lg hover:shadow-[#99cc00]/15 transition-all duration-200"
           >
             <ChevronLeft size={16} />
             Back to Explore
@@ -510,7 +510,7 @@ export default function WarehouseDetailPage() {
           onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white font-body transition-all duration-200 mb-6 group"
         >
-          <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#ccff00] group-hover:border-[#ccff00] group-hover:text-black transition-all duration-200">
+          <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#99cc00] group-hover:border-[#99cc00] group-hover:text-black transition-all duration-200">
             <ArrowLeft size={14} />
           </div>
           <span className="font-medium">Back to Dashboard</span>
@@ -595,7 +595,7 @@ export default function WarehouseDetailPage() {
 
               {/* Owner badge */}
               {isOwnWarehouse && (
-                <div className="absolute top-4 right-4 z-30 px-2.5 py-1 rounded-full bg-[#ccff00] text-black backdrop-blur-md text-[11px] font-body font-semibold flex items-center gap-1.5">
+                <div className="absolute top-4 right-4 z-30 px-2.5 py-1 rounded-full bg-[#99cc00] text-black backdrop-blur-md text-[11px] font-body font-semibold flex items-center gap-1.5">
                   <Warehouse size={12} />
                   Your Warehouse
                 </div>
@@ -624,15 +624,15 @@ export default function WarehouseDetailPage() {
                 {w.name}
               </h1>
               <div className="flex items-center gap-2 mt-2 text-sm text-neutral-400 font-body">
-                <div className="w-7 h-7 rounded-lg bg-[#ccff00]/10 flex items-center justify-center">
-                  <MapPin size={14} className="text-[#ccff00]" />
+                <div className="w-7 h-7 rounded-lg bg-[#99cc00]/10 flex items-center justify-center">
+                  <MapPin size={14} className="text-[#99cc00]" />
                 </div>
                 <span>{w.location}</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="font-heading text-xl sm:text-2xl font-bold text-[#ccff00] numeric tracking-tight">
+                <p className="font-heading text-xl sm:text-2xl font-bold text-[#99cc00] numeric tracking-tight">
                   Rs. {w.pricePerShelf.toLocaleString("en-PK")}
                 </p>
                 <p className="text-xs text-neutral-500 font-body">per shelf / month</p>
@@ -643,11 +643,11 @@ export default function WarehouseDetailPage() {
           {/* Metrics grid */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4">
             <motion.div
-              whileHover={{ y: -2, boxShadow: "0 8px 25px rgba(204,255,0,0.08)" }}
+              whileHover={{ y: -2, boxShadow: "0 8px 25px rgba(153,204,0,0.08)" }}
               className="p-3 sm:p-4 rounded-2xl bg-[#111614] border border-white/10 text-center transition-all duration-200"
             >
-              <div className="w-8 h-8 rounded-xl bg-[#ccff00]/10 flex items-center justify-center mx-auto">
-                <Package size={16} className="text-[#ccff00]" />
+              <div className="w-8 h-8 rounded-xl bg-[#99cc00]/10 flex items-center justify-center mx-auto">
+                <Package size={16} className="text-[#99cc00]" />
               </div>
               <p className="mt-1.5 font-heading text-lg sm:text-xl font-bold text-white numeric">
                 {w.totalShelves}
@@ -658,7 +658,7 @@ export default function WarehouseDetailPage() {
             </motion.div>
 
             <motion.div
-              whileHover={{ y: -2, boxShadow: "0 8px 25px rgba(204,255,0,0.08)" }}
+              whileHover={{ y: -2, boxShadow: "0 8px 25px rgba(153,204,0,0.08)" }}
               className="p-3 sm:p-4 rounded-2xl bg-[#111614] border border-white/10 text-center transition-all duration-200"
             >
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto">
@@ -673,7 +673,7 @@ export default function WarehouseDetailPage() {
             </motion.div>
 
             <motion.div
-              whileHover={{ y: -2, boxShadow: "0 8px 25px rgba(204,255,0,0.08)" }}
+              whileHover={{ y: -2, boxShadow: "0 8px 25px rgba(153,204,0,0.08)" }}
               className="p-3 sm:p-4 rounded-2xl bg-[#111614] border border-white/10 text-center transition-all duration-200"
             >
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto">
@@ -702,7 +702,7 @@ export default function WarehouseDetailPage() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                  <CalendarDays size={20} className="text-[#ccff00]" />
+                  <CalendarDays size={20} className="text-[#99cc00]" />
                 </div>
                 <div>
                   <h2 className="font-heading text-lg font-semibold text-white">
@@ -732,7 +732,7 @@ export default function WarehouseDetailPage() {
 
             {bookingsLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 size={24} className="animate-spin text-[#ccff00]" />
+                <Loader2 size={24} className="animate-spin text-[#99cc00]" />
               </div>
             ) : bookingsError ? (
               <div className="text-center py-8">
@@ -742,7 +742,7 @@ export default function WarehouseDetailPage() {
             ) : warehouseBookings.length === 0 ? (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                  <CalendarDays size={22} className="text-[#ccff00]/40" />
+                  <CalendarDays size={22} className="text-[#99cc00]/40" />
                 </div>
                 <p className="text-sm text-neutral-500 font-body">
                   No bookings yet for this warehouse.
@@ -753,7 +753,7 @@ export default function WarehouseDetailPage() {
                 {warehouseBookings.map((booking) => (
                   <div
                     key={booking._id}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#ccff00]/30 hover:bg-white/10 transition-all duration-200"
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#99cc00]/30 hover:bg-white/10 transition-all duration-200"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                       <div className="flex items-center gap-2.5 min-w-0 sm:w-48 shrink-0">
@@ -807,7 +807,7 @@ export default function WarehouseDetailPage() {
 
                       <button
                         onClick={() => handleViewBookingDetail(booking._id)}
-                        className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/5 border border-white/10 rounded-full text-[11px] font-body font-medium text-neutral-200 hover:border-[#ccff00]/40 hover:text-[#ccff00] transition-all duration-200 shrink-0"
+                        className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/5 border border-white/10 rounded-full text-[11px] font-body font-medium text-neutral-200 hover:border-[#99cc00]/40 hover:text-[#99cc00] transition-all duration-200 shrink-0"
                       >
                         <Eye size={13} />
                         View Details
@@ -833,7 +833,7 @@ export default function WarehouseDetailPage() {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                    <Layers size={20} className="text-[#ccff00]" />
+                    <Layers size={20} className="text-[#99cc00]" />
                   </div>
                   <h2 className="font-heading text-lg font-semibold text-white">
                     Select Shelves
@@ -844,14 +844,14 @@ export default function WarehouseDetailPage() {
                     <>
                       <button
                         onClick={selectAll}
-                        className="text-xs text-[#ccff00] font-medium hover:underline font-body"
+                        className="text-xs text-[#99cc00] font-medium hover:underline font-body"
                       >
                         Select All
                       </button>
-                      <span className="text-[#ccff00]/20 text-xs">|</span>
+                      <span className="text-[#99cc00]/20 text-xs">|</span>
                       <button
                         onClick={deselectAll}
-                        className="text-xs text-[#ccff00] font-medium hover:underline font-body"
+                        className="text-xs text-[#99cc00] font-medium hover:underline font-body"
                       >
                         Clear
                       </button>
@@ -860,7 +860,7 @@ export default function WarehouseDetailPage() {
                   {isOwnWarehouse && (
                     <button
                       onClick={() => setShowAddShelves(true)}
-                      className="ml-2 inline-flex items-center gap-1.5 px-4 py-2 bg-[#ccff00] text-black rounded-full text-xs font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/25 active:scale-95 transition-all duration-200"
+                      className="ml-2 inline-flex items-center gap-1.5 px-4 py-2 bg-[#99cc00] text-black rounded-full text-xs font-body font-semibold hover:bg-[#8ab800] hover:shadow-lg hover:shadow-[#99cc00]/15 active:scale-95 transition-all duration-200"
                     >
                       <Plus size={14} />
                       Add Shelves
@@ -898,12 +898,12 @@ export default function WarehouseDetailPage() {
                       min={1}
                       value={addCount}
                       onChange={(e) => setAddCount(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-24 px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-xl text-sm text-white focus:outline-none focus:border-[#ccff00] font-body"
+                      className="w-24 px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-xl text-sm text-white focus:outline-none focus:border-[#99cc00] font-body"
                     />
                     <button
                       onClick={handleAddShelves}
                       disabled={isAddingShelves}
-                      className="px-5 py-2 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/25 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                      className="px-5 py-2 bg-[#99cc00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#8ab800] hover:shadow-lg hover:shadow-[#99cc00]/15 active:scale-95 transition-all duration-200 disabled:opacity-50"
                     >
                       {isAddingShelves ? (
                         <><Loader2 size={14} className="animate-spin mr-1" />Adding...</>
@@ -935,8 +935,8 @@ export default function WarehouseDetailPage() {
                         onClick={() => setShelfFilter(tab as typeof shelfFilter)}
                         className={`px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${
                           isActive
-                            ? "bg-[#ccff00] text-black shadow-sm shadow-[#ccff00]/25"
-                            : "bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:border-[#ccff00]/40"
+                            ? "bg-[#99cc00] text-black shadow-sm shadow-[#99cc00]/15"
+                            : "bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:border-[#99cc00]/40"
                         }`}
                       >
                         {tab === "all" ? "All Shelves" : tab === "available" ? "Available" : "Booked"}
@@ -954,7 +954,7 @@ export default function WarehouseDetailPage() {
                     Available
                   </span>
                   <span className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-body">
-                    <span className="w-3 h-3 rounded-sm bg-[#ccff00]" />
+                    <span className="w-3 h-3 rounded-sm bg-[#99cc00]" />
                     Selected
                   </span>
                   <span className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-body">
@@ -967,12 +967,12 @@ export default function WarehouseDetailPage() {
               {/* ─── SHELF DISPLAY ──────────────────────────────────────────── */}
               {shelvesLoading || (isOwnWarehouse && shelfFilter === "booked" && bookedShelvesLoading) ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 size={24} className="animate-spin text-[#ccff00]" />
+                  <Loader2 size={24} className="animate-spin text-[#99cc00]" />
                 </div>
               ) : shelves.length === 0 && !(isOwnWarehouse && shelfFilter === "booked") ? (
                 <div className="text-center py-12">
                   <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                    <Layers size={28} className="text-[#ccff00]/30" />
+                    <Layers size={28} className="text-[#99cc00]/30" />
                   </div>
                   <p className="text-sm text-neutral-500 font-body">
                     No shelves available at this warehouse.
@@ -991,7 +991,7 @@ export default function WarehouseDetailPage() {
                   <div className="space-y-1">
                     {bookedShelves.length === 0 ? (
                       <div className="text-center py-10">
-                        <Layers size={24} className="mx-auto text-[#ccff00]/30 mb-2" />
+                        <Layers size={24} className="mx-auto text-[#99cc00]/30 mb-2" />
                         <p className="text-xs text-neutral-500 font-body">No booked shelves found.</p>
                       </div>
                     ) : (
@@ -1069,15 +1069,15 @@ export default function WarehouseDetailPage() {
                             !isAvailable
                               ? "bg-neutral-900 border-neutral-700 opacity-60 cursor-not-allowed"
                               : isSelected
-                              ? "bg-[#ccff00]/10 border-[#ccff00] shadow-[0_4px_20px_rgba(204,255,0,0.15)] cursor-pointer"
+                              ? "bg-[#99cc00]/10 border-[#99cc00] shadow-[0_4px_20px_rgba(153,204,0,0.10)] cursor-pointer"
                               : canInteract
-                              ? "bg-neutral-800 border-neutral-700 hover:border-[#ccff00]/60 hover:shadow-sm cursor-pointer hover:bg-neutral-700"
+                              ? "bg-neutral-800 border-neutral-700 hover:border-[#99cc00]/40 hover:shadow-sm cursor-pointer hover:bg-neutral-700"
                               : "bg-neutral-800 border-neutral-700 text-white"
                           }`}
                         >
                           {/* Shelf number */}
                           <div className={`text-sm font-bold font-body numeric ${
-                            isSelected ? "text-[#ccff00]" : isAvailable ? "text-white" : "text-neutral-500"
+                            isSelected ? "text-[#99cc00]" : isAvailable ? "text-white" : "text-neutral-500"
                           }`}>
                             #{shelf.shelfNumber}
                           </div>
@@ -1089,7 +1089,7 @@ export default function WarehouseDetailPage() {
                                 <Lock size={12} className="text-neutral-500" />
                               </div>
                             ) : isSelected ? (
-                              <div className="w-6 h-6 rounded-full bg-[#ccff00] flex items-center justify-center shadow-sm">
+                              <div className="w-6 h-6 rounded-full bg-[#99cc00] flex items-center justify-center shadow-sm">
                                 <Check size={12} className="text-black" />
                               </div>
                             ) : (
@@ -1106,7 +1106,7 @@ export default function WarehouseDetailPage() {
 
                           {/* Selected indicator dot */}
                           {isSelected && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#ccff00] flex items-center justify-center shadow-lg shadow-[#ccff00]/30">
+                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#99cc00] flex items-center justify-center shadow-lg shadow-[#99cc00]/20">
                               <Check size={10} className="text-black" />
                             </div>
                           )}
@@ -1122,7 +1122,7 @@ export default function WarehouseDetailPage() {
                         Showing {filteredShelves.length} of {shelves.length} shelf{filteredShelves.length !== 1 ? "es" : ""}
                       </span>
                       {isMerchantOrWorker && selectedCount > 0 && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ccff00]/10 text-[#ccff00] font-semibold text-[11px] font-body">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#99cc00]/10 text-[#99cc00] font-semibold text-[11px] font-body">
                           <Check size={11} />
                           {selectedCount} selected
                         </span>
@@ -1147,8 +1147,8 @@ export default function WarehouseDetailPage() {
                   {/* Card header */}
                   <div className="px-6 pt-6 pb-4 border-b border-white/10 bg-gradient-to-r from-white/10 to-transparent">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#ccff00]/10 flex items-center justify-center">
-                        <Tag size={18} className="text-[#ccff00]" />
+                      <div className="w-10 h-10 rounded-xl bg-[#99cc00]/10 flex items-center justify-center">
+                        <Tag size={18} className="text-[#99cc00]" />
                       </div>
                       <div>
                         <h3 className="font-heading text-base font-semibold text-white">
@@ -1185,26 +1185,26 @@ export default function WarehouseDetailPage() {
                         <div>
                           <label className="text-[10px] text-neutral-500 font-body mb-1.5 block">Start</label>
                           <div className="relative">
-                            <CalendarDays size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#ccff00]/50 pointer-events-none" />
+                            <CalendarDays size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#99cc00]/50 pointer-events-none" />
                             <input
                               type="date"
                               value={startDate}
                               onChange={(e) => setStartDate(e.target.value)}
                               min={toDateInputValue(new Date())}
-                              className="w-full pl-7 pr-2 py-2 bg-neutral-900 border border-neutral-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/20 transition-all font-body [color-scheme:dark]"
+                              className="w-full pl-7 pr-2 py-2 bg-neutral-900 border border-neutral-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#99cc00] focus:ring-1 focus:ring-[#99cc00]/20 transition-all font-body [color-scheme:dark]"
                             />
                           </div>
                         </div>
                         <div>
                           <label className="text-[10px] text-neutral-500 font-body mb-1.5 block">End</label>
                           <div className="relative">
-                            <CalendarDays size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#ccff00]/50 pointer-events-none" />
+                            <CalendarDays size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#99cc00]/50 pointer-events-none" />
                             <input
                               type="date"
                               value={endDate}
                               onChange={(e) => setEndDate(e.target.value)}
                               min={startDate}
-                              className="w-full pl-7 pr-2 py-2 bg-neutral-900 border border-neutral-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/20 transition-all font-body [color-scheme:dark]"
+                              className="w-full pl-7 pr-2 py-2 bg-neutral-900 border border-neutral-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#99cc00] focus:ring-1 focus:ring-[#99cc00]/20 transition-all font-body [color-scheme:dark]"
                             />
                           </div>
                         </div>
@@ -1221,7 +1221,7 @@ export default function WarehouseDetailPage() {
                     {/* Total amount */}
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-white font-body">Estimated Total</span>
-                      <span className="font-heading text-xl font-bold text-[#ccff00] numeric">
+                      <span className="font-heading text-xl font-bold text-[#99cc00] numeric">
                         Rs. {estimatedTotal.toLocaleString("en-PK")}
                       </span>
                     </div>
@@ -1236,7 +1236,7 @@ export default function WarehouseDetailPage() {
                       whileTap={{ scale: 0.98 }}
                       onClick={handleBooking}
                       disabled={isBooking}
-                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#ccff00] text-black rounded-2xl font-body text-sm font-semibold hover:bg-[#b8e600] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#ccff00]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#99cc00] text-black rounded-2xl font-body text-sm font-semibold hover:bg-[#8ab800] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#99cc00]/15 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isBooking ? (
                         <><Loader2 size={16} className="animate-spin" /> Processing...</>
@@ -1254,7 +1254,7 @@ export default function WarehouseDetailPage() {
                   className="bg-[#111614] rounded-3xl border border-white/10 shadow-sm p-6 text-center"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                    <Layers size={22} className="text-[#ccff00]/40" />
+                    <Layers size={22} className="text-[#99cc00]/40" />
                   </div>
                   <p className="text-sm font-medium text-white font-body mb-1">No shelves selected</p>
                   <p className="text-xs text-neutral-500 font-body leading-relaxed">
@@ -1304,7 +1304,7 @@ export default function WarehouseDetailPage() {
                   {/* Loading state */}
                   {selectedBookingLoading ? (
                     <div className="flex justify-center py-16">
-                      <Loader2 size={28} className="animate-spin text-[#ccff00]" />
+                      <Loader2 size={28} className="animate-spin text-[#99cc00]" />
                     </div>
                   ) : selectedBookingError ? (
                     <div className="text-center py-12">
@@ -1393,7 +1393,7 @@ export default function WarehouseDetailPage() {
                               key={s._id}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-neutral-200 font-body"
                             >
-                              <Layers size={12} className="text-[#ccff00]" />
+                              <Layers size={12} className="text-[#99cc00]" />
                               Shelf #{s.shelfNumber}
                             </span>
                           ))}
@@ -1401,10 +1401,10 @@ export default function WarehouseDetailPage() {
                       </div>
 
                       {/* Amount */}
-                      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#ccff00]/10 to-transparent border border-white/10">
+                      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#99cc00]/10 to-transparent border border-white/10">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-neutral-400 font-body">Total Amount</span>
-                          <span className="font-heading text-2xl font-bold text-[#ccff00] numeric">
+                          <span className="font-heading text-2xl font-bold text-[#99cc00] numeric">
                             Rs. {(selectedBooking.totalAmount || 0).toLocaleString("en-PK")}
                           </span>
                         </div>
@@ -1417,7 +1417,7 @@ export default function WarehouseDetailPage() {
                         </h4>
                         {bookingInbounds.length === 0 ? (
                           <div className="text-center py-6">
-                            <Package size={24} className="mx-auto text-[#ccff00]/30 mb-2" />
+                            <Package size={24} className="mx-auto text-[#99cc00]/30 mb-2" />
                             <p className="text-xs text-neutral-500 font-body">
                               No inbound shipments yet for this booking.
                             </p>
@@ -1428,10 +1428,10 @@ export default function WarehouseDetailPage() {
                               <Link
                                 key={inbound._id}
                                 href={`/inbounds/${inbound._id}`}
-                                className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-3 hover:border-[#ccff00]/40 hover:shadow-sm cursor-pointer transition-all duration-200 group"
+                                className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-3 hover:border-[#99cc00]/40 hover:shadow-sm cursor-pointer transition-all duration-200 group"
                               >
                                 <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-white font-body truncate group-hover:text-[#ccff00] transition-colors duration-200">
+                                  <p className="text-sm font-semibold text-white font-body truncate group-hover:text-[#99cc00] transition-colors duration-200">
                                     {inbound.batchName}
                                   </p>
                                   <div className="flex items-center gap-3 mt-1 text-[11px] text-neutral-500 font-body">
@@ -1457,7 +1457,7 @@ export default function WarehouseDetailPage() {
                                     )}
                                     {inbound.status === "in-transit" ? "In Transit" : inbound.status === "arrived" ? "Arrived" : "Completed"}
                                   </span>
-                                  <ExternalLink size={13} className="text-neutral-500 group-hover:text-[#ccff00] transition-colors duration-200" />
+                                  <ExternalLink size={13} className="text-neutral-500 group-hover:text-[#99cc00] transition-colors duration-200" />
                                 </div>
                               </Link>
                             ))}
@@ -1474,7 +1474,7 @@ export default function WarehouseDetailPage() {
                             className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-body font-medium transition-all duration-200 shadow-sm ${
                               selectedBooking.paymentStatus === "paid"
                                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
-                                : "bg-[#ccff00] text-black hover:bg-[#b8e600] active:scale-[0.98]"
+                                : "bg-[#99cc00] text-black hover:bg-[#8ab800] active:scale-[0.98]"
                             }`}
                           >
                             <CheckCircle size={16} />

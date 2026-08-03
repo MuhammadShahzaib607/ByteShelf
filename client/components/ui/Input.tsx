@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <div className="relative flex items-center w-full">
           {Icon && (
             <div className={`absolute left-4 pointer-events-none z-10 ${
-              dark ? "text-[#ccff00]/70" : "text-[#0284C7]"
+              dark ? "text-[#84cc16]/70" : "text-[#0284C7]"
             }`}>
               <Icon size={18} />
             </div>
@@ -44,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               ${isPassword && showPasswordToggle ? "pr-12" : ""}
               ${
                 dark
-                  ? "dark-input bg-slate-950/70 border border-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]"
+                  ? "dark-input bg-slate-950/70 border border-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#84cc16] focus:ring-1 focus:ring-[#84cc16]"
                   : "bg-[#F8FAFC]/40 border border-[#0284C7]/20 text-[#0F172A] placeholder:text-[#0F172A]/40 focus:outline-none focus:border-[#0284C7] focus:bg-white"
               }
               ${error ? "border-red-500 bg-red-50/50 dark:bg-red-950/20" : ""}
@@ -58,7 +58,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               onClick={() => setShowPassword(!showPassword)}
               className={`absolute right-4 transition-colors z-10 ${
                 dark
-                  ? "text-slate-500 hover:text-[#ccff00]"
+                  ? "text-slate-500 hover:text-[#84cc16]"
                   : "text-[#0284C7]/50 hover:text-[#0284C7]"
               }`}
               tabIndex={-1}

@@ -82,7 +82,7 @@ export default function LoginPage() {
           alt="ByteShelf Logo"
           width={56}
           height={56}
-          className="object-contain drop-shadow-[0_0_12px_rgba(204,255,0,0.3)] block mx-auto mb-4"
+          className="object-contain drop-shadow-[0_0_12px_rgba(132,204,22,0.20)] block mx-auto mb-4"
         />
         <h1 className="font-heading text-3xl text-white font-bold">
           Welcome Back
@@ -138,7 +138,7 @@ export default function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="text-[#ccff00] font-medium hover:text-lime-300 transition-colors underline underline-offset-2"
+            className="text-[#84cc16] font-medium hover:text-emerald-300 transition-colors underline underline-offset-2"
           >
             Register
           </Link>

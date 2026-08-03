@@ -23,7 +23,7 @@ const messageSchema = new mongoose.Schema(
           url: { type: String, required: true },
           fileType: {
             type: String,
-            enum: ["image", "pdf", "document"],
+            enum: ["image"],
             required: true,
           },
           fileName: { type: String, default: "" },

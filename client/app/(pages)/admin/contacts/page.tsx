@@ -77,7 +77,7 @@ export default function AdminContactsPage() {
       <div className="max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center"><MessageCircle size={20} className="text-[#ccff00]" /></div>
+            <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center"><MessageCircle size={20} className="text-[#99cc00]" /></div>
             <div>
               <h1 className="font-heading text-2xl font-bold text-white">Contact Messages</h1>
               <p className="text-sm text-neutral-400 font-body">Manage user inquiries and support requests</p>
@@ -90,12 +90,12 @@ export default function AdminContactsPage() {
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, email, or subject..."
-              className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 border border-neutral-700 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] transition-all font-body" />
+              className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 border border-neutral-700 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#99cc00] transition-all font-body" />
           </div>
           <div className="flex gap-1.5">
             {["all", "NEW", "RESOLVED"].map((tab) => (
               <button key={tab} onClick={() => setFilterStatus(tab)}
-                className={`px-4 py-2 rounded-full text-xs font-body font-medium transition-all ${filterStatus === tab ? "bg-[#ccff00] text-black shadow-sm shadow-[#ccff00]/20" : "bg-neutral-900/80 border border-white/10 text-neutral-400 hover:text-white"}`}>
+                className={`px-4 py-2 rounded-full text-xs font-body font-medium transition-all ${filterStatus === tab ? "bg-[#99cc00] text-black shadow-sm shadow-[#99cc00]/20" : "bg-neutral-900/80 border border-white/10 text-neutral-400 hover:text-white"}`}>
                 {tab === "all" ? "All" : tab === "NEW" ? "New" : "Resolved"}
               </button>
             ))}
@@ -103,12 +103,12 @@ export default function AdminContactsPage() {
         </div>
 
         {loading ? (
-          <div className="bg-[#111614] rounded-3xl border border-white/10 p-12 text-center"><Loader2 size={24} className="animate-spin text-[#ccff00] mx-auto" /></div>
+          <div className="bg-[#111614] rounded-3xl border border-white/10 p-12 text-center"><Loader2 size={24} className="animate-spin text-[#99cc00] mx-auto" /></div>
         ) : error ? (
           <div className="bg-[#111614] rounded-3xl border border-red-500/20 p-12 text-center"><AlertCircle size={32} className="mx-auto text-red-400 mb-3" /><p className="text-sm text-red-400 font-body">{error}</p></div>
         ) : contacts.length === 0 ? (
           <div className="bg-[#111614] rounded-3xl border border-white/10 p-12 text-center">
-            <MessageCircle size={32} className="mx-auto text-[#ccff00]/30 mb-3" />
+            <MessageCircle size={32} className="mx-auto text-[#99cc00]/30 mb-3" />
             <h3 className="font-heading text-lg font-semibold text-white mb-1">No inquiries found</h3>
             <p className="text-sm text-neutral-400 font-body">Contact messages from users will appear here.</p>
           </div>
@@ -141,7 +141,7 @@ export default function AdminContactsPage() {
                       </div>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); toggleResolved(c._id); }} disabled={toggling === c._id}
-                      className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${c.status === "NEW" ? "bg-[#ccff00] border border-[#ccff00] text-black hover:bg-[#b8e600] font-semibold" : "bg-neutral-800/60 border border-white/10 text-neutral-300 hover:bg-neutral-700/60"}`}>
+                      className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${c.status === "NEW" ? "bg-[#99cc00] border border-[#99cc00] text-black hover:bg-[#8ab800] font-semibold" : "bg-neutral-800/60 border border-white/10 text-neutral-300 hover:bg-neutral-700/60"}`}>
                       {toggling === c._id ? <Loader2 size={12} className="animate-spin" /> : c.status === "NEW" ? <CheckCircle size={12} /> : <XCircle size={12} />}
                       {c.status === "NEW" ? "Mark Resolved" : "Reopen"}
                     </button>

@@ -43,7 +43,7 @@ const FloatingChatButton: React.FC = () => {
       whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
       transition={{ duration: 0.3, delay: 0.5 }}
       onClick={() => router.push("/messages")}
-      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-[#C0E70B] to-[#D0F219] text-[#12140E] shadow-lg shadow-lime-500/30 hover:shadow-xl hover:shadow-lime-500/40 transition-shadow duration-300 flex items-center justify-center"
+      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-neutral-900 border border-[#84cc16]/40 text-[#84cc16] shadow-xl shadow-black/50 hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-[0_0_20px_rgba(132,204,22,0.2)] transition-all duration-300 flex items-center justify-center"
       aria-label="Open Messages"
     >
       <MessageCircle size={24} strokeWidth={2.2} />

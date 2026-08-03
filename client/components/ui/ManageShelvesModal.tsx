@@ -46,7 +46,7 @@ interface ManageShelvesModalProps {
 
 function statusBadge(status: ShelfStatus) {
   const map: Record<ShelfStatus, { bg: string; text: string; dot: string; label: string }> = {
-    available: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", dot: "bg-emerald-500", label: "Available" },
+    available: { bg: "bg-[#84cc16]/10 border-[#84cc16]/20", text: "text-[#84cc16]", dot: "bg-[#84cc16]", label: "Available" },
     booked: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", dot: "bg-amber-500", label: "Booked" },
     maintenance: { bg: "bg-sky-500/10 border-sky-500/20", text: "text-sky-400", dot: "bg-sky-500", label: "Maintenance" },
   };
@@ -222,7 +222,7 @@ export default function ManageShelvesModal({
 
   // ─── Dark input class ───────────────────────────────────────────────────
   const inputCls =
-    "w-full px-3.5 py-2.5 bg-neutral-900/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/30 rounded-xl transition-all text-sm font-body";
+    "w-full px-3.5 py-2.5 bg-neutral-900/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/30 rounded-xl transition-all text-sm font-body";
 
   return (
     <motion.div
@@ -253,8 +253,8 @@ export default function ManageShelvesModal({
 
         {/* Header */}
         <div className="flex items-center gap-3 px-6 sm:px-8 pt-6 pb-4 border-b border-neutral-800/80">
-          <div className="w-10 h-10 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center shrink-0">
-            <Layers size={20} className="text-[#ccff00]" />
+          <div className="w-10 h-10 rounded-xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center shrink-0">
+            <Layers size={20} className="text-[#84cc16]" />
           </div>
           <div className="min-w-0">
             <h2 className="font-heading text-xl font-bold text-white tracking-tight">Manage Shelves</h2>
@@ -287,7 +287,7 @@ export default function ManageShelvesModal({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {[
               { label: "Total", value: shelves.length, cls: "text-white" },
-              { label: "Available", value: availableCount, cls: "text-emerald-400" },
+              { label: "Available", value: availableCount, cls: "text-[#84cc16]" },
               { label: "Booked", value: bookedCount, cls: "text-amber-400" },
               { label: "Maintenance", value: maintenanceCount, cls: "text-sky-400" },
             ].map((s) => (
@@ -302,7 +302,7 @@ export default function ManageShelvesModal({
           <div className="mb-6">
             <button
               onClick={() => setAddOpen((o) => !o)}
-              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-[0.98] transition-all duration-200"
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.98] transition-all duration-200"
             >
               {addOpen ? <ChevronDown size={16} className="rotate-180 transition-transform" /> : <Plus size={16} />}
               {addOpen ? "Close Add Shelf" : "Add New Shelf"}
@@ -324,7 +324,7 @@ export default function ManageShelvesModal({
                         Number of Shelves to Add
                       </label>
                       <div className="relative">
-                        <Layers size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#ccff00]/60 pointer-events-none" />
+                        <Layers size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#84cc16]/60 pointer-events-none" />
                         <input
                           type="number"
                           min={1}
@@ -343,7 +343,7 @@ export default function ManageShelvesModal({
                       <button
                         type="submit"
                         disabled={adding}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#b8e600] active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {adding ? <><Loader2 size={16} className="animate-spin" /> Adding...</> : <><Plus size={16} /> Add Shelves</>}
                       </button>
@@ -369,13 +369,13 @@ export default function ManageShelvesModal({
           ) : shelves.length === 0 ? (
             <div className="text-center py-12 bg-neutral-900/40 rounded-3xl border border-neutral-800">
               <div className="w-14 h-14 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4">
-                <Layers size={26} className="text-[#ccff00]/40" />
+                <Layers size={26} className="text-[#84cc16]/40" />
               </div>
               <h3 className="font-heading text-lg font-semibold text-white mb-1">No shelves yet</h3>
               <p className="text-sm text-neutral-400 font-body mb-6">Add your first shelf to start listing storage space.</p>
               <button
                 onClick={() => setAddOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-semibold hover:bg-[#b8e600] transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all"
               >
                 <Plus size={16} /> Add First Shelf
               </button>
@@ -398,7 +398,7 @@ export default function ManageShelvesModal({
                     key={shelf._id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-900/80 hover:border-[#ccff00]/30 transition-all duration-200 overflow-hidden"
+                    className="rounded-2xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-900/80 hover:border-[#84cc16]/30 transition-all duration-200 overflow-hidden"
                   >
                     {isEditing ? (
                       <form onSubmit={handleSaveEdit} className="p-4 space-y-3">
@@ -446,7 +446,7 @@ export default function ManageShelvesModal({
                             <button
                               type="submit"
                               disabled={savingEdit}
-                              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] transition-all disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all disabled:opacity-50"
                             >
                               {savingEdit ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                               Save
@@ -462,8 +462,8 @@ export default function ManageShelvesModal({
                         </div>
                         <div className="hidden sm:grid grid-cols-[1fr_110px_130px_140px_130px] gap-2 items-center">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${shelf.status === "available" ? "bg-[#ccff00]/10" : shelf.status === "booked" ? "bg-amber-500/10" : "bg-sky-500/10"}`}>
-                              <Layers size={15} className={shelf.status === "available" ? "text-[#ccff00]" : shelf.status === "booked" ? "text-amber-400" : "text-sky-400"} />
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${shelf.status === "available" ? "bg-[#84cc16]/10" : shelf.status === "booked" ? "bg-amber-500/10" : "bg-sky-500/10"}`}>
+                              <Layers size={15} className={shelf.status === "available" ? "text-[#84cc16]" : shelf.status === "booked" ? "text-amber-400" : "text-sky-400"} />
                             </div>
                             <span className="font-semibold text-sm text-white font-body truncate">{shelf.shelfNumber}</span>
                           </div>
@@ -473,16 +473,16 @@ export default function ManageShelvesModal({
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-body truncate">
-                              {shelf.dimensions && <><Ruler size={11} className="shrink-0 text-[#ccff00]/60" /><span className="truncate">{shelf.dimensions}</span></>}
+                              {shelf.dimensions && <><Ruler size={11} className="shrink-0 text-[#84cc16]/60" /><span className="truncate">{shelf.dimensions}</span></>}
                             </div>
                             <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 font-body">
-                              {shelf.capacity ? <><Package size={11} className="shrink-0 text-[#ccff00]/40" /><span>{shelf.capacity} kg</span></> : <span className="italic">no details</span>}
+                              {shelf.capacity ? <><Package size={11} className="shrink-0 text-[#84cc16]/40" /><span>{shelf.capacity} kg</span></> : <span className="italic">no details</span>}
                             </div>
                           </div>
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => beginEdit(shelf)}
-                              className="w-8 h-8 rounded-lg border border-neutral-700 text-neutral-400 hover:text-[#ccff00] hover:border-[#ccff00]/40 hover:bg-[#ccff00]/5 flex items-center justify-center transition-all"
+                              className="w-8 h-8 rounded-lg border border-neutral-700 text-neutral-400 hover:text-[#84cc16] hover:border-[#84cc16]/40 hover:bg-[#84cc16]/5 flex items-center justify-center transition-all"
                               title="Edit shelf"
                             >
                               <Pencil size={13} />
@@ -500,7 +500,7 @@ export default function ManageShelvesModal({
 
                         {/* Mobile actions */}
                         <div className="sm:hidden flex items-center gap-2 pt-2 border-t border-neutral-800/70 mt-2">
-                          <button onClick={() => beginEdit(shelf)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-neutral-700 text-neutral-300 rounded-full text-xs hover:border-[#ccff00]/40 hover:text-[#ccff00] transition-all">
+                          <button onClick={() => beginEdit(shelf)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-neutral-700 text-neutral-300 rounded-full text-xs hover:border-[#84cc16]/40 hover:text-[#84cc16] transition-all">
                             <Pencil size={12} /> Edit
                           </button>
                           <button

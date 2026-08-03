@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
       ];
 
   return (
-    <footer className="bg-[#0D0F0A] border-t border-lime-500/20 text-slate-300">
+    <footer className="bg-[#0D0F0A] border-t border-[#84cc16]/15 text-slate-300">
       <div className="max-w-6xl mx-auto px-6 py-16 md:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand Statement */}
@@ -40,7 +40,7 @@ const Footer: React.FC = () => {
                 alt="ByteShelf Logo"
                 width={40}
                 height={40}
-                className="object-contain transition-[filter] group-hover:drop-shadow-[0_0_12px_rgba(208,242,25,0.4)]"
+                className="object-contain transition-[filter] group-hover:drop-shadow-[0_0_12px_rgba(132,204,22,0.4)]"
               />
               <span className="font-heading text-lg font-semibold text-white tracking-tight">
                 ByteShelf
@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
 
           {/* Platform */}
           <div>
-            <h4 className="text-xs font-semibold tracking-wider uppercase text-lime-300/70 mb-4 font-body">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-[#84cc16]/60 mb-4 font-body">
               Platform
             </h4>
             <ul className="space-y-2.5">
@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
                 <li key={`${link.label}-${link.href}-${index}`}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body"
+                    className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body"
                   >
                     {link.label}
                   </Link>
@@ -73,33 +73,33 @@ const Footer: React.FC = () => {
 
           {/* Company */}
           <div>
-            <h4 className="text-xs font-semibold tracking-wider uppercase text-lime-300/70 mb-4 font-body">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-[#84cc16]/60 mb-4 font-body">
               Company
             </h4>
             <ul className="space-y-2.5">
-              <li><Link href="/how-it-works" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">How It Works</Link></li>
-              <li><Link href="/about" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">About Us</Link></li>
-              <li><Link href="/help" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Help</Link></li>
-              <li><Link href="/blog" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Blog</Link></li>
-              <li><Link href="/contact" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Contact</Link></li>
+              <li><Link href="/how-it-works" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">How It Works</Link></li>
+              <li><Link href="/about" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">About Us</Link></li>
+              <li><Link href="/help" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">Help</Link></li>
+              <li><Link href="/blog" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">Blog</Link></li>
+              <li><Link href="/contact" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">Contact</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="text-xs font-semibold tracking-wider uppercase text-lime-300/70 mb-4 font-body">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-[#84cc16]/60 mb-4 font-body">
               Legal
             </h4>
             <ul className="space-y-2.5">
-              <li><Link href="/privacy-policy" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Terms of Service</Link></li>
-              <li><Link href="/cookie-policy" className="text-sm text-slate-400 hover:text-[#D0F219] transition-colors font-body">Cookie Policy</Link></li>
+              <li><Link href="/privacy-policy" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">Terms of Service</Link></li>
+              <li><Link href="/cookie-policy" className="text-sm text-slate-400 hover:text-[#84cc16] transition-colors font-body">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-14 pt-6 border-t border-lime-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-14 pt-6 border-t border-[#84cc16]/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-500 font-body">
             &copy; {year} ByteShelf. All rights reserved.
           </p>

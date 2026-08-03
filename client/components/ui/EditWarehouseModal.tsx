@@ -285,8 +285,8 @@ export default function EditWarehouseModal({
 
         {/* Header */}
         <div className="flex items-center gap-3 px-6 sm:px-8 pt-6 pb-4 border-b border-neutral-800/80">
-          <div className="w-10 h-10 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center shrink-0">
-            <Warehouse size={20} className="text-[#ccff00]" />
+          <div className="w-10 h-10 rounded-xl bg-[#84cc16]/10 border border-[#84cc16]/20 flex items-center justify-center shrink-0">
+            <Warehouse size={20} className="text-[#84cc16]" />
           </div>
           <div className="min-w-0">
             <h2 className="font-heading text-xl font-bold text-white tracking-tight">
@@ -320,7 +320,7 @@ export default function EditWarehouseModal({
               </p>
               <button
                 onClick={onClose}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#b8e600] transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all"
               >
                 Close
               </button>
@@ -333,13 +333,13 @@ export default function EditWarehouseModal({
                   Warehouse Name
                 </label>
                 <div className="relative">
-                  <Warehouse size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/70 pointer-events-none" />
+                  <Warehouse size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/70 pointer-events-none" />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Downtown Storage Hub"
-                    className="w-full pl-11 pr-4 py-3.5 bg-neutral-800/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/30 rounded-xl transition-all text-sm font-body"
+                    className="w-full pl-11 pr-4 py-3.5 bg-neutral-800/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/30 rounded-xl transition-all text-sm font-body"
                   />
                 </div>
                 {errors.name && (
@@ -355,13 +355,13 @@ export default function EditWarehouseModal({
                   Address / Area
                 </label>
                 <div className="relative">
-                  <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/70 pointer-events-none" />
+                  <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/70 pointer-events-none" />
                   <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g. Gulistan-e-Johar, Karachi"
-                    className="w-full pl-11 pr-4 py-3.5 bg-neutral-800/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/30 rounded-xl transition-all text-sm font-body"
+                    className="w-full pl-11 pr-4 py-3.5 bg-neutral-800/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/30 rounded-xl transition-all text-sm font-body"
                   />
                 </div>
                 {errors.location && (
@@ -378,7 +378,7 @@ export default function EditWarehouseModal({
                     Price Per Shelf (Rs.)
                   </label>
                   <div className="relative">
-                    <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/70 pointer-events-none" />
+                    <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/70 pointer-events-none" />
                     <input
                       type="number"
                       value={pricePerShelf}
@@ -386,7 +386,7 @@ export default function EditWarehouseModal({
                       placeholder="e.g. 1500"
                       min={0}
                       step={100}
-                      className="w-full pl-11 pr-4 py-3.5 bg-neutral-800/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/30 rounded-xl transition-all text-sm font-body [color-scheme:dark]"
+                      className="w-full pl-11 pr-4 py-3.5 bg-neutral-800/80 border border-neutral-700 text-white placeholder-neutral-500 focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/30 rounded-xl transition-all text-sm font-body [color-scheme:dark]"
                     />
                   </div>
                   {errors.pricePerShelf && (
@@ -401,7 +401,7 @@ export default function EditWarehouseModal({
                     Shelf Count
                   </label>
                   <div className="flex items-center gap-2.5 px-4 py-3.5 bg-neutral-800/40 border border-neutral-700/60 rounded-xl text-sm font-body">
-                    <Layers size={16} className="text-[#ccff00]/70 shrink-0" />
+                    <Layers size={16} className="text-[#84cc16]/70 shrink-0" />
                     <span className="text-white font-semibold numeric">
                       {shelfCount}
                     </span>
@@ -456,7 +456,7 @@ export default function EditWarehouseModal({
                 {totalImages < 5 && (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-dashed border-neutral-700 hover:border-[#ccff00]/50 bg-white/[0.02] hover:bg-white/[0.04] flex flex-col items-center justify-center gap-1 cursor-pointer transition-all shrink-0"
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-dashed border-neutral-700 hover:border-[#84cc16]/40 bg-white/[0.02] hover:bg-white/[0.04] flex flex-col items-center justify-center gap-1 cursor-pointer transition-all shrink-0"
                   >
                     <Plus size={20} className="text-neutral-500" />
                     <span className="text-[10px] text-neutral-500 font-body">
@@ -487,7 +487,7 @@ export default function EditWarehouseModal({
                 <button
                   type="submit"
                   disabled={isSubmitting || uploadingImage}
-                  className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body font-semibold text-sm hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploadingImage ? (
                     <>

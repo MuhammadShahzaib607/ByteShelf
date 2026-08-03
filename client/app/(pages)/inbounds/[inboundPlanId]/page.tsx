@@ -70,9 +70,9 @@ function statusBadgeClasses(status: string): string {
     case "arrived":
       return "bg-blue-50 border-blue-200 text-blue-700";
     case "completed":
-      return "bg-emerald-50 border-emerald-200 text-emerald-700";
+      return "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]";
     case "stored":
-      return "bg-emerald-50 border-emerald-200 text-emerald-700";
+      return "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]";
     default:
       return "bg-slate-50 border-slate-200 text-slate-600";
   }

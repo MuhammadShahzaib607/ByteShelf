@@ -196,7 +196,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#0284C7]/15 overflow-hidden max-h-[85vh] flex flex-col"
+        className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#84cc16]/15 overflow-hidden max-h-[85vh] flex flex-col"
       >
         {/* Header Image Carousel */}
         {w && (
@@ -223,7 +223,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
         <div className="p-6 overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-[#0284C7]" />
+              <Loader2 size={24} className="animate-spin text-[#84cc16]" />
             </div>
           ) : w ? (
             <>
@@ -238,8 +238,8 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
 
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-3 mt-6">
-                <div className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 text-center">
-                  <DollarSign size={18} className="mx-auto text-[#0284C7]" />
+                <div className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#84cc16]/10 text-center">
+                  <DollarSign size={18} className="mx-auto text-[#84cc16]" />
                   <p className="mt-1.5 font-heading text-lg font-bold text-[#1E293B] numeric">
                     Rs. {w.pricePerShelf.toLocaleString("en-PK")}
                   </p>
@@ -247,8 +247,8 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                     Per Shelf
                   </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 text-center">
-                  <Package size={18} className="mx-auto text-[#0284C7]" />
+                <div className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#84cc16]/10 text-center">
+                  <Package size={18} className="mx-auto text-[#84cc16]" />
                   <p className="mt-1.5 font-heading text-lg font-bold text-[#1E293B] numeric">
                     {w.totalShelves}
                   </p>
@@ -256,8 +256,8 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                     Total
                   </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#0284C7]/10 text-center">
-                  <Layers size={18} className="mx-auto text-[#0284C7]" />
+                <div className="p-4 rounded-2xl bg-[#F8FAFC]/40 border border-[#84cc16]/10 text-center">
+                  <Layers size={18} className="mx-auto text-[#84cc16]" />
                   <p className="mt-1.5 font-heading text-lg font-bold text-[#1E293B] numeric">
                     {detail.available ?? "—"}
                   </p>
@@ -268,7 +268,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
               </div>
 
               {/* Divider */}
-              <hr className="my-6 border-[#0284C7]/10" />
+              <hr className="my-6 border-[#84cc16]/10" />
 
               {/* Availability stats */}
               {detail.available !== undefined && detail.booked !== undefined && (
@@ -284,7 +284,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm font-body">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#0284C7]/40" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#84cc16]/40" />
                       <span className="text-[#0F172A]/70">
                         {detail.booked} Booked
                       </span>
@@ -316,7 +316,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                 <button
                   onClick={fetchShelves}
                   disabled={shelvesLoading}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-medium hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200"
                 >
                   {shelvesLoading ? (
                     <>
@@ -340,14 +340,14 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={selectAll}
-                        className="text-[10px] text-[#0284C7] font-medium hover:underline font-body"
+                        className="text-[10px] text-[#84cc16] font-medium hover:underline font-body"
                       >
                         Select All
                       </button>
-                      <span className="text-[#0284C7]/30 text-[10px]">|</span>
+                      <span className="text-[#84cc16]/30 text-[10px]">|</span>
                       <button
                         onClick={deselectAll}
-                        className="text-[10px] text-[#0284C7] font-medium hover:underline font-body"
+                        className="text-[10px] text-[#84cc16] font-medium hover:underline font-body"
                       >
                         Clear
                       </button>
@@ -357,7 +357,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                   {/* Shelf Grid */}
                   {shelvesLoading ? (
                     <div className="flex justify-center py-6">
-                      <Loader2 size={20} className="animate-spin text-[#0284C7]" />
+                      <Loader2 size={20} className="animate-spin text-[#84cc16]" />
                     </div>
                   ) : shelves.length === 0 ? (
                     <p className="text-sm text-[#0F172A]/50 font-body text-center py-6">
@@ -374,16 +374,16 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                             onClick={() => toggleShelf(shelf._id)}
                             className={`flex items-center gap-3 px-3.5 py-3 rounded-xl border-2 text-xs font-body transition-all duration-200 ${
                               isSelected
-                                ? "bg-[#F8FAFC] border-[#0284C7] text-[#1E293B] shadow-sm"
-                                : "bg-white border-[#0284C7]/20 text-[#0F172A]/70 hover:border-[#0284C7]/40"
+                                ? "bg-[#F8FAFC] border-[#84cc16] text-[#1E293B] shadow-sm"
+                                : "bg-white border-[#84cc16]/20 text-[#0F172A]/70 hover:border-[#84cc16]/40"
                             }`}
                           >
                             {/* Custom checkbox */}
                             <span
                               className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
                                 isSelected
-                                  ? "bg-[#0284C7] border-[#0284C7]"
-                                  : "border-[#0284C7]/30 bg-white"
+                                  ? "bg-[#84cc16] border-[#84cc16]"
+                                  : "border-[#84cc16]/30 bg-white"
                               }`}
                             >
                               {isSelected && (
@@ -396,7 +396,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                               <span className="font-medium text-current">
                                 #{shelf.shelfNumber}
                               </span>
-                              <span className="text-[#0284C7] font-medium">
+                              <span className="text-[#84cc16] font-medium">
                                 Rs. {shelf.pricePerMonth.toLocaleString("en-PK")}/mo
                               </span>
                             </div>
@@ -414,13 +414,13 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                           Start Date
                         </label>
                         <div className="relative">
-                          <CalendarDays size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0284C7]/50 pointer-events-none" />
+                          <CalendarDays size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#84cc16]/50 pointer-events-none" />
                           <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                             min={toDateInputValue(new Date())}
-                            className="w-full pl-8 pr-3 py-2.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20 rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body"
+                            className="w-full pl-8 pr-3 py-2.5 bg-[#F8FAFC]/40 border border-[#84cc16]/20 rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#84cc16] focus:bg-white transition-all font-body"
                           />
                         </div>
                       </div>
@@ -429,13 +429,13 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                           End Date
                         </label>
                         <div className="relative">
-                          <CalendarDays size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0284C7]/50 pointer-events-none" />
+                          <CalendarDays size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#84cc16]/50 pointer-events-none" />
                           <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                             min={startDate}
-                            className="w-full pl-8 pr-3 py-2.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20 rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body"
+                            className="w-full pl-8 pr-3 py-2.5 bg-[#F8FAFC]/40 border border-[#84cc16]/20 rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#84cc16] focus:bg-white transition-all font-body"
                           />
                         </div>
                       </div>
@@ -444,7 +444,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
 
                   {/* Live Price Calculation */}
                   {selectedCount > 0 && (
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#0284C7]/10 space-y-2">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F8FAFC] to-white border border-[#84cc16]/10 space-y-2">
                       <div className="flex items-center justify-between text-sm font-body">
                         <span className="text-[#0F172A]/60">Shelves selected</span>
                         <span className="font-semibold text-[#1E293B] numeric">{selectedCount}</span>
@@ -461,7 +461,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                           Rs. {pricePerMonth.toLocaleString("en-PK")}/mo
                         </span>
                       </div>
-                      <hr className="border-[#0284C7]/10" />
+                      <hr className="border-[#84cc16]/10" />
                       <div className="flex items-center justify-between font-body">
                         <span className="text-[#0F172A]/80 font-medium">
                           Estimated Total
@@ -477,7 +477,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                   <button
                     onClick={handleBooking}
                     disabled={selectedCount === 0 || isBooking}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1E293B] text-white rounded-full font-body text-sm font-medium hover:bg-[#0284C7] transition-all duration-300 shadow-sm shadow-slate-900/10 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1E293B]"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-medium hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all duration-300 shadow-sm shadow-slate-900/10 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1a231d]"
                   >
                     {isBooking ? (
                       <>
@@ -496,7 +496,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
             </>
           ) : (
             <div className="text-center py-12">
-              <AlertCircle size={28} className="mx-auto text-[#0284C7]/40 mb-3" />
+              <AlertCircle size={28} className="mx-auto text-[#84cc16]/40 mb-3" />
               <p className="text-sm text-[#0F172A]/50 font-body">
                 Could not load warehouse details.
               </p>

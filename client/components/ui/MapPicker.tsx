@@ -72,7 +72,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
         }`}
       >
         <div className="flex items-center gap-1.5">
-          <MapPin size={12} className={dark ? "text-[#ccff00]" : "text-[#0284C7]"} />
+          <MapPin size={12} className={dark ? "text-[#84cc16]" : "text-[#0284C7]"} />
           <span>
             Lat:{" "}
             {hasCoords ? latitude!.toFixed(6) : "—"}
@@ -80,7 +80,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
         </div>
         <span className={dark ? "text-neutral-700" : "text-[#0284C7]/30"}>|</span>
         <div className="flex items-center gap-1.5">
-          <MapPin size={12} className={dark ? "text-[#ccff00]" : "text-[#0284C7]"} />
+          <MapPin size={12} className={dark ? "text-[#84cc16]" : "text-[#0284C7]"} />
           <span>
             Lng:{" "}
             {hasCoords ? longitude!.toFixed(6) : "—"}
@@ -92,7 +92,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
       {!hasCoords && (
         <p
           className={`text-xs font-body flex items-center gap-1.5 ${
-            dark ? "text-[#ccff00]/80" : "text-[#0284C7]/70"
+            dark ? "text-[#84cc16]/80" : "text-[#0284C7]/70"
           }`}
         >
           <Navigation size={12} />

@@ -33,7 +33,7 @@ function NotificationBell({ unreadCount }: { unreadCount: number }) {
   return (
     <Link
       href="/notifications"
-      className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/[0.05] border border-lime-500/25 hover:bg-lime-400/10 hover:border-lime-400/50 transition-all"
+      className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/[0.05] border border-[#84cc16]/20 hover:bg-[#84cc16]/10 hover:border-[#84cc16]/50 transition-all"
     >
       <Bell size={17} className="text-slate-200" />
       {unreadCount > 0 && (
@@ -64,8 +64,8 @@ function NavLink({
       onClick={onClick}
       className={`px-4 py-1.5 text-sm font-body transition-colors rounded-full ${
         active
-          ? "text-[#D0F219] bg-lime-400/10 font-semibold"
-          : "text-slate-300/80 hover:text-[#D0F219] hover:bg-lime-400/10"
+          ? "text-[#84cc16] bg-neutral-800 font-medium border border-[#84cc16]/20"
+          : "text-slate-300/80 hover:text-[#84cc16] hover:bg-[#84cc16]/10"
       }`}
     >
       {label}
@@ -88,6 +88,7 @@ function UserDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter()
 
   useEffect(() => {
     if (!open) return;
@@ -111,10 +112,10 @@ function UserDropdown({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-lime-500/25 hover:bg-lime-400/10 hover:border-lime-400/50 transition-all"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-[#84cc16]/20 hover:bg-[#84cc16]/10 hover:border-[#84cc16]/50 transition-all"
       >
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center">
-          <span className="text-[11px] font-semibold text-[#12140E] font-body">
+        <div className="w-7 h-7 rounded-full bg-[#1a231d] border border-[#84cc16]/30 flex items-center justify-center">
+          <span className="text-[11px] font-semibold text-[#84cc16] font-body">
             {initials || "U"}
           </span>
         </div>
@@ -133,9 +134,9 @@ function UserDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-[#12150E]/95 border border-lime-500/20 shadow-2xl shadow-black/60 backdrop-blur-xl overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-[#12150E]/95 border border-[#84cc16]/20 shadow-2xl shadow-black/60 backdrop-blur-xl overflow-hidden"
           >
-            <div className="p-3 border-b border-lime-500/15">
+            <div className="p-3 border-b border-[#84cc16]/15">
               <p className="text-sm font-semibold text-white font-body truncate">
                 {userName}
               </p>
@@ -154,7 +155,7 @@ function UserDropdown({
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 transition-colors font-body"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 transition-colors font-body"
               >
                 <User size={16} />
                 Profile
@@ -164,7 +165,7 @@ function UserDropdown({
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#84cc16] hover:text-[#84cc16] hover:bg-[#84cc16]/15 transition-colors font-body"
                 >
                   <LayoutDashboard size={16} />
                   Dashboard
@@ -175,7 +176,7 @@ function UserDropdown({
                 <Link
                 href="/explore"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 transition-colors font-body"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 transition-colors font-body"
               >
                 <Compass size={16} />
                 Explore Warehouses
@@ -183,7 +184,7 @@ function UserDropdown({
                 <Link
                   href="/merchant-dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold text-[#84cc16] hover:text-[#84cc16] hover:bg-[#84cc16]/15 transition-colors font-body"
                 >
                   <LayoutDashboard size={16} />
                   Dashboard
@@ -196,7 +197,7 @@ function UserDropdown({
                   <Link
                     href="/admin/verifications"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#84cc16] hover:text-[#84cc16] hover:bg-[#84cc16]/15 transition-colors font-body"
                   >
                     <ShieldCheck size={16} />
                     Verify Users
@@ -204,7 +205,7 @@ function UserDropdown({
                   <Link
                     href="/admin/contacts"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 transition-colors font-body"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#84cc16] hover:text-[#84cc16] hover:bg-[#84cc16]/15 transition-colors font-body"
                   >
                     <MessageCircle size={16} />
                     Contact Messages
@@ -212,12 +213,13 @@ function UserDropdown({
                 </>
               )}
 
-              <hr className="my-1 border-lime-500/15" />
+              <hr className="my-1 border-[#84cc16]/15" />
 
               <button
                 onClick={() => {
                   setOpen(false);
                   onLogout();
+                  router.push("/login")
                 }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors font-body"
               >
@@ -328,7 +330,7 @@ const Navbar: React.FC = () => {
   if (isCheckingAuth) {
     return (
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 pt-4">
-        <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-[#0D0F0A]/80 border border-lime-500/20 backdrop-blur-md">
+        <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-[#0D0F0A]/80 border border-[#84cc16]/20 backdrop-blur-md">
           <Link href="/" className="flex items-center group">
             <Image src="/logo.png" alt="ByteShelf Logo" width={40} height={40} className="object-contain" />
             <span className="font-heading text-lg font-semibold text-white tracking-tight">
@@ -346,9 +348,9 @@ const Navbar: React.FC = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full transition-all duration-300 bg-[#0D0F0A]/80 backdrop-blur-md border border-lime-500/20 ${
+        className={`w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full transition-all duration-300 bg-[#0D0F0A]/80 backdrop-blur-md border border-[#84cc16]/20 ${
           scrolled
-            ? "shadow-lg shadow-lime-950/30"
+            ? "shadow-lg shadow-black/40"
             : "shadow-md shadow-black/40"
         }`}
       >
@@ -360,7 +362,7 @@ const Navbar: React.FC = () => {
             width={40}
             height={40}
             priority
-            className="object-contain transition-[filter] duration-300 group-hover:drop-shadow-[0_0_12px_rgba(208,242,25,0.5)]"
+            className="object-contain transition-[filter] duration-300 group-hover:drop-shadow-[0_0_12px_rgba(132,204,22,0.5)]"
           />
           <span className="font-heading text-lg font-semibold text-white tracking-tight">
             ByteShelf
@@ -404,14 +406,14 @@ const Navbar: React.FC = () => {
             <>
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-body text-slate-300 hover:text-[#D0F219] transition-colors rounded-full hover:bg-lime-400/10"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-body text-slate-300 hover:text-[#84cc16] transition-colors rounded-full hover:bg-[#84cc16]/10"
               >
                 <LogIn size={15} />
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="px-5 py-2 text-sm font-body font-semibold bg-[#D0F219] text-[#12140E] rounded-full hover:bg-lime-300 hover:shadow-[0_0_25px_rgba(208,242,25,0.35)] active:scale-95 transition-all duration-200"
+                className="px-5 py-2 text-sm font-body font-semibold bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full hover:bg-[#222e26] hover:border-[#84cc16]/60 active:scale-95 transition-all duration-200"
               >
                 Join Free
               </Link>
@@ -422,7 +424,7 @@ const Navbar: React.FC = () => {
         {/* Mobile menu button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 rounded-full text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 transition-colors"
+          className="md:hidden p-2 rounded-full text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 transition-colors"
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -437,15 +439,15 @@ const Navbar: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-4 right-4 mt-3 rounded-2xl bg-[#12150E]/95 border border-lime-500/20 shadow-2xl shadow-black/60 backdrop-blur-xl overflow-hidden md:hidden"
+            className="absolute top-full left-4 right-4 mt-3 rounded-2xl bg-[#12150E]/95 border border-[#84cc16]/20 shadow-2xl shadow-black/60 backdrop-blur-xl overflow-hidden md:hidden"
           >
             <div className="p-3 space-y-1">
               {isLoggedIn ? (
                 <>
                   {user && (
-                    <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-white/[0.04] border border-lime-500/10">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center">
-                        <span className="text-xs font-semibold text-[#12140E] font-body">
+                    <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-white/[0.04] border border-[#84cc16]/10">
+                      <div className="w-8 h-8 rounded-full bg-[#1a231d] border border-[#84cc16]/30 flex items-center justify-center">
+                        <span className="text-xs font-semibold text-[#84cc16] font-body">
                           {user.name
                             ?.split(" ")
                             .map((w) => w[0])
@@ -472,7 +474,7 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/notifications"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 rounded-xl transition-colors"
                   >
                     <div className="relative">
                       <Bell size={16} />
@@ -492,8 +494,8 @@ const Navbar: React.FC = () => {
                       onClick={() => setIsOpen(false)}
                       className={`flex items-center gap-2.5 px-4 py-2.5 text-sm font-body rounded-xl transition-colors ${
                         isActive(link.href)
-                          ? "text-[#D0F219] bg-lime-400/10 font-semibold"
-                          : "text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10"
+                          ? "text-[#84cc16] bg-neutral-800 font-medium border border-[#84cc16]/20"
+                          : "text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10"
                       }`}
                     >
                       {link.icon && <link.icon size={16} />}
@@ -505,7 +507,7 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/my-bookings"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 rounded-xl transition-colors"
                     >
                       <CalendarDays size={16} />
                       My Bookings
@@ -516,7 +518,7 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/worker/scan"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 rounded-xl transition-colors"
                     >
                       <Scan size={16} />
                       Scan Cartons
@@ -527,18 +529,19 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/admin/verifications"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#D0F219] hover:text-[#D0F219] hover:bg-lime-400/15 rounded-xl transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-[#84cc16] hover:text-[#84cc16] hover:bg-[#84cc16]/15 rounded-xl transition-colors"
                     >
                       <ShieldCheck size={16} />
                       Verify Users
                     </Link>
                   )}
 
-                  <hr className="my-2 border-lime-500/15" />
+                  <hr className="my-2 border-[#84cc16]/15" />
                   <button
                     onClick={() => {
                       setIsOpen(false);
                       handleLogout();
+                      router.push("/login")
                     }}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-body text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors w-full text-left"
                   >
@@ -555,25 +558,25 @@ const Navbar: React.FC = () => {
                       onClick={() => setIsOpen(false)}
                       className={`block px-4 py-2.5 text-sm font-body rounded-xl transition-colors ${
                         isActive(link.href)
-                          ? "text-[#D0F219] bg-lime-400/10 font-semibold"
-                          : "text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10"
+                          ? "text-[#84cc16] bg-neutral-800 font-medium border border-[#84cc16]/20"
+                          : "text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10"
                       }`}
                     >
                       {link.label}
                     </Link>
                   ))}
-                  <hr className="my-2 border-lime-500/15" />
+                  <hr className="my-2 border-[#84cc16]/15" />
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#D0F219] hover:bg-lime-400/10 rounded-xl transition-colors"
+                    className="block px-4 py-2.5 text-sm font-body text-slate-300 hover:text-[#84cc16] hover:bg-[#84cc16]/10 rounded-xl transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-2.5 text-sm font-body font-semibold bg-[#D0F219] text-[#12140E] text-center rounded-xl hover:bg-lime-300 transition-colors"
+                    className="block px-4 py-2.5 text-sm font-body font-semibold bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 text-center rounded-xl hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-colors"
                   >
                     Join Free
                   </Link>

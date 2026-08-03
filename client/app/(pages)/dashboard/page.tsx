@@ -157,9 +157,9 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
           return (
             <button key={tab.id} onClick={() => { onTabChange(tab.id); onClose(); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${
-                isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "text-white/50 hover:text-white hover:bg-white/5"
+                isActive ? "bg-neutral-800/90 text-[#84cc16] font-semibold border-l-2 border-[#84cc16]" : "text-white/50 hover:text-white hover:bg-white/5"
               }`}>
-              <Icon size={18} className={isActive ? "text-black" : "text-white/40"} />{tab.label}
+              <Icon className={isActive ? "text-[#84cc16] w-5 h-5" : "text-neutral-400 w-5 h-5"} />{tab.label}
             </button>
           );
         })}
@@ -208,7 +208,7 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
             {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
           </Link>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
-            <div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center">
               <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
             <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
@@ -269,10 +269,10 @@ function OverviewTab() {
             { icon: DollarSign, label: "Est. Monthly Revenue", value: `Rs. ${totalRev.toLocaleString("en-PK")}`, sub: "From active bookings", delay: 0.2 },
           ].map((k) => (
             <motion.div key={k.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: k.delay }}
-              className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-5 border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#ccff00]/40 hover:-translate-y-1 transition-all duration-300">
+              className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-5 border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#84cc16]/40 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center shadow-sm shadow-black/20">
-                  <k.icon size={20} className="text-[#ccff00]" />
+                  <k.icon size={20} className="text-[#84cc16]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-heading text-2xl font-bold text-white numeric tracking-tight">{k.value}</p>
@@ -292,7 +292,7 @@ function OverviewTab() {
           <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-8 animate-pulse space-y-4">{[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-neutral-800/60 rounded-xl" />)}</div>
         ) : bookings.length === 0 ? (
           <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#ccff00]/40" /></div>
+            <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CalendarDays size={28} className="text-[#84cc16]/40" /></div>
             <h3 className="font-heading text-lg font-semibold text-white mb-2">No bookings yet</h3>
             <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">When merchants book your shelves, their activity will appear here.</p>
           </div>
@@ -312,21 +312,21 @@ function OverviewTab() {
                   onClick={() => setSelectedBooking(b)}>
                   <div className="lg:hidden space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
+                      <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
                       {statusBadge(b.status)}
                     </div>
                     <div className="flex items-center justify-between text-xs text-neutral-400 font-body"><span className="truncate">{b.warehouse?.name || "Warehouse"}</span><span className="font-semibold text-white numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span></div>
                     <div className="flex items-center gap-3 text-[11px] text-neutral-500 font-body"><span>{b.shelves?.length || 0} shelf(ves)</span><span>·</span><span>{formatDate(b.createdAt)}</span></div>
                   </div>
-                  <div className="hidden lg:flex items-center gap-2.5 min-w-0"><div className="w-7 h-7 rounded-full bg-[#ccff00] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span><span className="text-[11px] text-neutral-500 font-body hidden xl:inline">{b.merchant?.email || ""}</span></div>
+                  <div className="hidden lg:flex items-center gap-2.5 min-w-0"><div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span><span className="text-[11px] text-neutral-500 font-body hidden xl:inline">{b.merchant?.email || ""}</span></div>
                   <div className="hidden lg:block text-sm text-neutral-300 font-body truncate">{b.warehouse?.name || "—"}</div>
-                  <div className="hidden lg:flex items-center gap-1.5 text-sm text-neutral-400 font-body"><Layers size={13} className="text-[#ccff00]/60" /><span>{b.shelves?.length || 0}</span></div>
+                  <div className="hidden lg:flex items-center gap-1.5 text-sm text-neutral-400 font-body"><Layers size={13} className="text-[#84cc16]/60" /><span>{b.shelves?.length || 0}</span></div>
                   <div className="hidden lg:block">{statusBadge(b.status)}</div>
                   <div className="hidden lg:block text-sm font-semibold text-white font-body numeric text-right">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</div>
                 </motion.div>
               ))}
             </div>
-            {bookings.length > 10 && <div className="px-6 py-3.5 border-t border-neutral-800 text-center"><Link href="/warehouses" className="text-sm text-[#ccff00] font-medium font-body hover:text-[#b8e600] transition-colors">View all {bookings.length} bookings</Link></div>}
+            {bookings.length > 10 && <div className="px-6 py-3.5 border-t border-neutral-800 text-center"><Link href="/warehouses" className="text-sm text-[#84cc16] font-medium font-body hover:text-[#84cc16] transition-colors">View all {bookings.length} bookings</Link></div>}
           </div>
         )}
       </motion.div>
@@ -446,7 +446,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           {/* ═══ HEADER: Merchant + Status ═══ */}
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-2xl bg-[#ccff00] flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-[#84cc16] flex items-center justify-center shrink-0">
                 <span className="text-sm font-bold text-black font-body">
                   {b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}
                 </span>
@@ -494,7 +494,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           {/* ═══ WAREHOUSE ═══ */}
           <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 border border-white/10 mb-5">
             <div className="w-9 h-9 rounded-lg bg-neutral-900/80 border border-neutral-800 flex items-center justify-center shrink-0">
-              <Warehouse size={16} className="text-[#ccff00]" />
+              <Warehouse size={16} className="text-[#84cc16]" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-white font-body truncate">{b.warehouse?.name || "—"}</p>
@@ -513,7 +513,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
                 {b.shelves.map((shelf) => (
                   <span key={shelf._id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-neutral-800 text-xs font-body">
-                    <Layers size={12} className="text-[#ccff00]" />
+                    <Layers size={12} className="text-[#84cc16]" />
                     <span className="font-medium text-white">{shelf.shelfNumber}</span>
                   </span>
                 ))}
@@ -525,7 +525,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           <div className="p-4 rounded-2xl bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 border border-neutral-800 mb-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-[#ccff00]" />
+                <CreditCard size={16} className="text-[#84cc16]" />
                 <span className="text-sm font-medium text-white font-body">Total Amount</span>
               </div>
               <span className="font-heading text-xl font-bold text-white numeric">
@@ -549,7 +549,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           <div className="flex flex-col sm:flex-row gap-3">
             {canMarkPaid && (
               <button onClick={() => setShowPaidConfirm(true)} disabled={actionLoading === "paid"}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full font-body text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                 {actionLoading === "paid" ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
                 Mark as Paid
               </button>
@@ -649,9 +649,9 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
 
   if (!w) return (
     <div className="text-center py-16">
-      <AlertCircle size={32} className="mx-auto text-[#ccff00]/40 mb-3" />
+      <AlertCircle size={32} className="mx-auto text-[#84cc16]/40 mb-3" />
       <h3 className="font-heading text-lg font-semibold text-white mb-2">Warehouse not found</h3>
-      <button onClick={onBack} className="mt-2 px-5 py-2.5 bg-[#ccff00] text-black rounded-full text-sm font-body font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all">← Back to My Warehouses</button>
+      <button onClick={onBack} className="mt-2 px-5 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 transition-all">← Back to My Warehouses</button>
     </div>
   );
 
@@ -683,7 +683,7 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <p className="font-heading text-lg font-bold text-[#ccff00] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</p>
+                <p className="font-heading text-lg font-bold text-[#84cc16] numeric">Rs. {w.pricePerShelf.toLocaleString("en-PK")}</p>
                 <p className="text-[10px] text-neutral-500 font-body">per shelf / mo</p>
               </div>
             </div>
@@ -708,9 +708,9 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#ccff00]/40 hover:-translate-y-0.5 transition-all duration-300">
+              className="flex items-center gap-3 p-3 rounded-xl bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-sm hover:shadow-md hover:border-[#84cc16]/40 hover:-translate-y-0.5 transition-all duration-300">
               <div className="w-9 h-9 rounded-lg bg-neutral-800/60 flex items-center justify-center shrink-0">
-                <s.icon size={16} className="text-[#ccff00]" />
+                <s.icon size={16} className="text-[#84cc16]" />
               </div>
               <div>
                 <p className="font-heading text-lg font-bold text-white numeric leading-tight">{s.value}</p>
@@ -733,7 +733,7 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
               return (
                 <button key={tab} onClick={() => setShelfFilter(tab as typeof shelfFilter)}
                   className={`px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${
-                    isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#ccff00]/40"
+                    isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"
                   }`}>
                   {tab === "all" ? "All Shelves" : tab === "available" ? "Available" : "Booked"}
                 </button>
@@ -743,9 +743,9 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
         )}
 
         {shelvesLoading ? (
-          <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-[#ccff00]" /></div>
+          <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-[#84cc16]" /></div>
         ) : shelves.length === 0 ? (
-          <div className="text-center py-10"><Layers size={32} className="mx-auto text-[#ccff00]/30 mb-3" /><p className="text-sm text-neutral-400 font-body">No shelves available.</p></div>
+          <div className="text-center py-10"><Layers size={32} className="mx-auto text-[#84cc16]/30 mb-3" /><p className="text-sm text-neutral-400 font-body">No shelves available.</p></div>
         ) : (
           <>
             <div className="hidden sm:grid grid-cols-[1fr_90px_105px] gap-2 px-4 py-2 bg-neutral-900/80 rounded-xl border border-neutral-800 mb-1">
@@ -760,8 +760,8 @@ function WarehouseDetailView({ warehouseId, onBack }: { warehouseId: string; onB
                     shelf.status !== "available" ? "opacity-60" : ""
                   }`}>
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${shelf.status === "available" ? "bg-[#ccff00]/10" : "bg-white/5"}`}>
-                      <Layers size={14} className={shelf.status === "available" ? "text-[#ccff00]" : "text-neutral-600"} />
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${shelf.status === "available" ? "bg-[#84cc16]/10" : "bg-white/5"}`}>
+                      <Layers size={14} className={shelf.status === "available" ? "text-[#84cc16]" : "text-neutral-600"} />
                     </div>
                     <span className="font-semibold text-sm text-white font-body truncate">Shelf #{shelf.shelfNumber}</span>
                   </div>
@@ -806,36 +806,36 @@ function WarehousesTab({ onViewWarehouse, onEditWarehouse, onManageShelves, refr
   if (loading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{[...Array(3)].map((_, i) => <div key={i} className="bg-[#111614] rounded-2xl h-52 border border-neutral-800/80 animate-pulse" />)}</div>;
   if (warehouses.length === 0) return (
     <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
-      <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Building2 size={28} className="text-[#ccff00]/40" /></div>
+      <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Building2 size={28} className="text-[#84cc16]/40" /></div>
       <h3 className="font-heading text-lg font-semibold text-white mb-2">No warehouses yet</h3>
       <p className="text-sm text-neutral-400 font-body mb-6 max-w-sm mx-auto">Create your first listing and start earning.</p>
-      <button onClick={() => {}} className="inline-flex items-center gap-2 px-6 py-3 bg-[#ccff00] text-black rounded-full text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all"><Plus size={16} /> Add Your First Warehouse</button>
+      <button onClick={() => {}} className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 transition-all"><Plus size={16} /> Add Your First Warehouse</button>
     </div>
   );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {warehouses.map((w) => (
-        <div key={w._id} className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#ccff00]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
-          <div className="h-2 bg-gradient-to-r from-[#ccff00] to-[#ccff00]/40" />
+        <div key={w._id} className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#84cc16]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
+          <div className="h-2 bg-gradient-to-r from-[#84cc16] to-[#84cc16]/40" />
           <div className="p-5 flex flex-col flex-1">
             <h3 className="font-heading text-lg font-semibold text-white mb-1">{w.name}</h3>
             <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body mb-3"><MapPin size={12} /><span className="truncate">{w.location}</span></div>
             <div className="flex items-center justify-between text-xs text-neutral-400 font-body mb-4">
               <button
                 onClick={() => onManageShelves(w)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 -ml-2.5 rounded-full hover:bg-[#ccff00]/10 transition-colors group"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 -ml-2.5 rounded-full hover:bg-[#84cc16]/10 transition-colors group"
                 title="Manage shelves"
               >
-                <strong className="text-white numeric group-hover:text-[#ccff00] transition-colors">{w.totalShelves}</strong>
+                <strong className="text-white numeric group-hover:text-[#84cc16] transition-colors">{w.totalShelves}</strong>
                 shelves
               </button>
               <span><strong className="text-white numeric">Rs. {w.pricePerShelf}</strong>/shelf/mo</span>
             </div>
             <div className="mt-auto flex items-center gap-2 pt-3 border-t border-neutral-800">
-              <button onClick={() => onViewWarehouse(w._id)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#ccff00]/30 text-[#ccff00] rounded-full text-xs font-medium hover:bg-[#ccff00]/10 transition-colors"><Eye size={14} /> View</button>
-              <button onClick={() => onManageShelves(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-neutral-700 text-neutral-300 rounded-full text-xs font-medium hover:border-[#ccff00]/40 hover:text-[#ccff00] hover:bg-[#ccff00]/5 transition-all"><Layers size={14} /> Shelves</button>
-              <button onClick={() => onEditWarehouse(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] transition-all"><Edit3 size={14} /> Edit</button>
+              <button onClick={() => onViewWarehouse(w._id)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors"><Eye size={14} /> View</button>
+              <button onClick={() => onManageShelves(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-neutral-700 text-neutral-300 rounded-full text-xs font-medium hover:border-[#84cc16]/40 hover:text-[#84cc16] hover:bg-[#84cc16]/5 transition-all"><Layers size={14} /> Shelves</button>
+              <button onClick={() => onEditWarehouse(w)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all"><Edit3 size={14} /> Edit</button>
             </div>
           </div>
         </div>
@@ -948,7 +948,7 @@ function AddWarehouseTab() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center">
-            <Warehouse size={20} className="text-[#ccff00]" />
+            <Warehouse size={20} className="text-[#84cc16]" />
           </div>
           <h1 className="font-heading text-2xl font-bold text-white tracking-tight">Add Warehouse</h1>
         </div>
@@ -973,17 +973,17 @@ function AddWarehouseTab() {
           {/* Name */}
           <Input dark label="Warehouse Name" placeholder="e.g. Downtown Storage Hub" icon={Warehouse}
             value={name} onChange={(e) => setName(e.target.value)} error={errors.name}
-            className={`bg-neutral-800/80! ${errors.name ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/50!`} />
+            className={`bg-neutral-800/80! ${errors.name ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/50!`} />
 
           {/* Location */}
           <Input dark label="Address / Area" placeholder="e.g. Gulistan-e-Johar, Karachi" icon={MapPin}
             value={location} onChange={(e) => setLocation(e.target.value)} error={errors.location}
-            className={`bg-neutral-800/80! ${errors.location ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/50!`} />
+            className={`bg-neutral-800/80! ${errors.location ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/50!`} />
 
           {/* Price */}
           <Input dark label="Price Per Shelf (Rs.)" type="number" placeholder="e.g. 1500" icon={DollarSign}
             value={pricePerShelf} onChange={(e) => setPricePerShelf(e.target.value)} error={errors.pricePerShelf} min={0} step={100}
-            className={`bg-neutral-800/80! ${errors.pricePerShelf ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]/50!`} />
+            className={`bg-neutral-800/80! ${errors.pricePerShelf ? "border-red-500! bg-red-950/20!" : "border-neutral-700/80!"} text-white placeholder-neutral-500! focus:border-[#84cc16] focus:outline-none focus:ring-1 focus:ring-[#84cc16]/50!`} />
 
           {/* Map Picker */}
           <MapPicker dark latitude={latitude} longitude={longitude} onChange={(lat, lng) => { setLatitude(lat); setLongitude(lng); }} />
@@ -1006,9 +1006,9 @@ function AddWarehouseTab() {
             )}
             {imageFiles.length + uploadedUrls.length < 5 && (
               <div onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-dashed border-[#ccff00]/30 hover:border-[#ccff00]/60 bg-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all hover:bg-white/10 shrink-0">
-                <Plus size={20} className="text-[#ccff00]/50" />
-                <span className="text-[10px] text-[#ccff00]/50 font-body">Add Image</span>
+                className="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-dashed border-[#84cc16]/30 hover:border-[#84cc16]/40 bg-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all hover:bg-white/10 shrink-0">
+                <Plus size={20} className="text-[#84cc16]/50" />
+                <span className="text-[10px] text-[#84cc16]/50 font-body">Add Image</span>
               </div>
             )}
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={handleFileSelect} />
@@ -1018,7 +1018,7 @@ function AddWarehouseTab() {
           {/* Submit */}
           <div className="pt-4">
             <button type="submit" disabled={isSubmitting || uploadingImage}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body font-semibold text-sm hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
               {uploadingImage ? (
                 <><Loader2 size={18} className="animate-spin" /> Uploading Images...</>
               ) : isSubmitting ? (
@@ -1153,7 +1153,7 @@ function ProfileTab() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center">
-            <User size={20} className="text-[#ccff00]" />
+            <User size={20} className="text-[#84cc16]" />
           </div>
           <h1 className="font-heading text-2xl font-bold text-white tracking-tight">My Profile</h1>
         </div>
@@ -1162,8 +1162,8 @@ function ProfileTab() {
         {profileUser && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}
             className="flex items-start gap-4 md:gap-5 p-5 md:p-6 rounded-2xl bg-white/5 border border-white/10 mb-6">
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#ccff00]/10 flex items-center justify-center shrink-0">
-              <User size={28} className="text-[#ccff00]" />
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#84cc16]/10 flex items-center justify-center shrink-0">
+              <User size={28} className="text-[#84cc16]" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
@@ -1177,7 +1177,7 @@ function ProfileTab() {
               <div className="flex items-center gap-1.5 mt-1 text-sm text-neutral-400 font-body">
                 <Mail size={14} /> <span className="truncate">{profileUser.email}</span>
               </div>
-              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] text-[#ccff00] font-body font-medium capitalize">
+              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] text-[#84cc16] font-body font-medium capitalize">
                 {(() => {
                   const opt = roleOptions.find((r) => r.value === profileUser.role);
                   const Icon = opt?.icon || Store;
@@ -1207,9 +1207,9 @@ function ProfileTab() {
           <div>
             <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Phone Number</label>
             <div className="relative">
-              <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ccff00]/60 pointer-events-none" />
+              <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/60 pointer-events-none" />
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000"
-                className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-900 transition-all text-sm font-body" />
+                className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all text-sm font-body" />
             </div>
           </div>
 
@@ -1223,8 +1223,8 @@ function ProfileTab() {
                   <button key={opt.value} type="button" onClick={() => setRole(opt.value)}
                     className={`flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-xl border-2 text-sm font-body font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-[#ccff00] text-black border-[#ccff00] shadow-lg shadow-[#ccff00]/20"
-                        : "bg-transparent text-neutral-400 border-neutral-800 hover:border-[#ccff00]/50 hover:bg-white/5"
+                        ? "bg-[#1a231d] text-[#84cc16] border-2 border-[#84cc16] shadow-lg shadow-[#84cc16]/10"
+                        : "bg-transparent text-neutral-400 border-neutral-800 hover:border-[#84cc16]/40 hover:bg-white/5"
                     }`}>
                     <opt.icon size={20} />
                     <span className="text-[11px] leading-tight text-center">{opt.label}</span>
@@ -1237,7 +1237,7 @@ function ProfileTab() {
           {/* Save Button */}
           <div className="pt-4">
             <button onClick={handleSave} disabled={isUpdating}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#ccff00] text-black rounded-full font-body font-semibold text-sm hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body font-semibold text-sm hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed">
               {isUpdating ? <><Loader2 size={18} className="animate-spin" /> Updating...</> : <><Save size={18} /> Save Changes</>}
             </button>
           </div>
@@ -1308,16 +1308,16 @@ function VerificationsTab() {
         <div className="flex items-center gap-1.5 bg-white/5 border border-neutral-800/80 rounded-2xl p-1.5 shadow-sm">
           {([{ k: "all", l: "All" }, { k: "pending", l: "Pending" }, { k: "approved", l: "Approved" }, { k: "rejected", l: "Rejected" }] as { k: FilterStatus; l: string }[]).map((t) => {
             const isActive = filter === t.k; const cnt = counts[t.k];
-            return <button key={t.k} onClick={() => setFilter(t.k)} className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#ccff00] text-black font-semibold shadow-lg shadow-[#ccff00]/20" : "text-neutral-400 hover:text-white hover:bg-white/10"}`}>{t.l}{cnt > 0 && <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? "bg-black/20 text-black" : "bg-white/10 text-neutral-400"}`}>{cnt}</span>}</button>;
+            return <button key={t.k} onClick={() => setFilter(t.k)} className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "text-neutral-400 hover:text-white hover:bg-white/10"}`}>{t.l}{cnt > 0 && <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? "bg-black/20 text-black" : "bg-white/10 text-neutral-400"}`}>{cnt}</span>}</button>;
           })}
         </div>
         <div className="relative flex-1 max-w-xs">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search users..." className="w-full pl-9 pr-3 py-2 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] transition-all font-body" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search users..." className="w-full pl-9 pr-3 py-2 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] transition-all font-body" />
         </div>
       </div>
       {error && <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-2"><AlertCircle size={16} className="text-red-400 shrink-0" /><p className="text-sm text-red-400 font-body">{error}</p></div>}
-      {loading && <div className="flex items-center justify-center py-16"><Loader2 size={28} className="animate-spin text-[#ccff00]" /></div>}
+      {loading && <div className="flex items-center justify-center py-16"><Loader2 size={28} className="animate-spin text-[#84cc16]" /></div>}
       {!loading && users.length === 0 && (
         <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><CheckCircle size={28} className="text-emerald-400" /></div>
@@ -1330,13 +1330,13 @@ function VerificationsTab() {
           {users.map((u) => { const b = sBadge(u.verificationStatus); const BI = b.icon; return (
             <div key={u._id} className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-sm rounded-3xl p-5">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-[#ccff00] flex items-center justify-center shrink-0"><User size={18} className="text-black" /></div>
+                <div className="w-11 h-11 rounded-2xl bg-[#84cc16] flex items-center justify-center shrink-0"><User size={18} className="text-black" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap"><h3 className="font-heading text-base font-semibold text-white truncate">{u.name}</h3><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${b.bg} ${b.text}`}><BI size={11} />{b.label}</span></div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-neutral-400 font-body"><span>{u.email}</span><span className="capitalize">Role: {u.role}</span><span>{formatDate(u.createdAt)}</span></div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => setSelected(u)} className="px-3.5 py-2 bg-[#ccff00] text-black rounded-full text-xs font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all">Review Docs</button>
+                  <button onClick={() => setSelected(u)} className="px-3.5 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 transition-all">Review Docs</button>
                   {u.verificationStatus === "pending" && <><button onClick={() => updateStatus(u._id, "approved")} disabled={actionLoading} className="p-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all disabled:opacity-50" title="Approve"><ThumbsUp size={15} /></button><button onClick={() => updateStatus(u._id, "rejected")} disabled={actionLoading} className="p-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50" title="Reject"><ThumbsDown size={15} /></button></>}
                   {u.verificationStatus === "approved" && <><button onClick={() => updateStatus(u._id, "pending")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-all text-xs font-medium disabled:opacity-50"><Undo2 size={13} /> Pending</button><button onClick={() => updateStatus(u._id, "rejected")} disabled={actionLoading} className="p-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50" title="Reject"><ThumbsDown size={15} /></button></>}
                   {u.verificationStatus === "rejected" && <><button onClick={() => updateStatus(u._id, "approved")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all text-xs font-medium disabled:opacity-50"><ThumbsUp size={13} /> Approve</button><button onClick={() => updateStatus(u._id, "pending")} disabled={actionLoading} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-all text-xs font-medium disabled:opacity-50"><Undo2 size={13} /> Pending</button></>}
@@ -1353,27 +1353,27 @@ function VerificationsTab() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}>
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80">
             <div className="sticky top-0 bg-[#111614]/90 backdrop-blur-sm border-b border-neutral-800 px-6 py-4 flex items-center justify-between rounded-t-3xl">
-              <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><ShieldCheck size={18} className="text-[#ccff00]" /></div><div><h3 className="font-heading text-lg font-semibold text-white">KYC — {selected.name}</h3><p className="text-xs text-neutral-400 font-body">{selected.email}</p></div></div>
+              <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><ShieldCheck size={18} className="text-[#84cc16]" /></div><div><h3 className="font-heading text-lg font-semibold text-white">KYC — {selected.name}</h3><p className="text-xs text-neutral-400 font-body">{selected.email}</p></div></div>
               <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/20"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {(["nicFront", "nicBack"] as const).map((doc) => (
                   <div key={doc}><p className="text-xs font-semibold text-white uppercase mb-2 font-body">{doc === "nicFront" ? "NIC Front" : "NIC Back"}</p>
-                    <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-800 h-48 cursor-pointer hover:border-[#ccff00]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.[doc] || null); setPreviewLabel(doc === "nicFront" ? "NIC Front" : "NIC Back"); }}>
+                    <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-800 h-48 cursor-pointer hover:border-[#84cc16]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.[doc] || null); setPreviewLabel(doc === "nicFront" ? "NIC Front" : "NIC Back"); }}>
                       {selected.kycDocuments?.[doc] ? <img src={selected.kycDocuments[doc]!} alt={doc} className="w-full h-full object-contain p-2" /> : <div className="flex items-center justify-center h-full text-neutral-600"><ImageIcon size={32} /></div>}
                     </div>
                   </div>
                 ))}
               </div>
               <div><p className="text-xs font-semibold text-white uppercase mb-2 font-body">Live Photo</p>
-                <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-800 h-48 cursor-pointer hover:border-[#ccff00]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.livePhoto || null); setPreviewLabel("Live Photo"); }}>
+                <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-800 h-48 cursor-pointer hover:border-[#84cc16]/30 transition-all" onClick={() => { setPreviewImg(selected.kycDocuments?.livePhoto || null); setPreviewLabel("Live Photo"); }}>
                   {selected.kycDocuments?.livePhoto ? <img src={selected.kycDocuments.livePhoto} alt="Live Photo" className="w-full h-full object-contain p-2" /> : <div className="flex items-center justify-center h-full text-neutral-600"><ImageIcon size={32} /></div>}
                 </div>
               </div>
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
                 <button onClick={() => setSelected(null)} className="px-5 py-2.5 border border-neutral-800 text-neutral-400 rounded-full text-sm font-medium hover:bg-white/5 transition-all">Close</button>
-                {selected.verificationStatus !== "approved" && <button onClick={() => { updateStatus(selected._id, "approved"); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ccff00] text-black rounded-full text-sm font-semibold hover:bg-[#b8e600] hover:shadow-lg hover:shadow-[#ccff00]/20 transition-all disabled:opacity-50">{actionLoading ? <Loader2 size={15} className="animate-spin" /> : <ThumbsUp size={15} />} Approve</button>}
+                {selected.verificationStatus !== "approved" && <button onClick={() => { updateStatus(selected._id, "approved"); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 transition-all disabled:opacity-50">{actionLoading ? <Loader2 size={15} className="animate-spin" /> : <ThumbsUp size={15} />} Approve</button>}
                 {selected.verificationStatus !== "rejected" && <button onClick={() => { setRejectTarget(selected._id); setShowReject(true); }} disabled={actionLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full text-sm font-medium hover:bg-red-500/20 transition-all disabled:opacity-50"><ThumbsDown size={15} /> Reject</button>}
               </div>
             </div>
@@ -1450,7 +1450,7 @@ export default function DashboardPage() {
   return (
     <div className="relative overflow-hidden min-h-screen bg-[#0a0d0c]">
       {/* Ambient smoky radial glows */}
-      <div className="pointer-events-none fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#ccff00]/10 blur-[130px] z-0" />
+      <div className="pointer-events-none fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#84cc16]/10 blur-[130px] z-0" />
       <div className="pointer-events-none fixed bottom-[5%] right-[-5%] w-[450px] h-[450px] rounded-full bg-emerald-500/10 blur-[150px] z-0" />
       <Sidebar activeTab={activeTab} onTabChange={(tab) => { setActiveTab(tab); setSelectedWarehouseId(null); }} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} isAdmin={isAdmin} />
       <TopHeader onMenuToggle={() => setSidebarOpen(true)} unread={unread} />

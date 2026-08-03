@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, MessageCircle, ChevronLeft, ChevronRight, Send, CheckCheck, ChevronDown, Paperclip, X, FileText, Download, ZoomIn, ZoomOut, Maximize2, AlertCircle } from "lucide-react";
+import { Loader2, MessageCircle, ChevronLeft, ChevronRight, Send, CheckCheck, ChevronDown, Paperclip, X, Download, ZoomIn, ZoomOut, Maximize2, AlertCircle } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 import { getSocket, disconnectSocket } from "@/lib/socket";
@@ -34,7 +34,7 @@ interface Conversation {
 
 interface Attachment {
   url: string;
-  fileType: "image" | "pdf" | "document";
+  fileType: "image";
   fileName: string;
   fileSize: number | string;
 }
@@ -132,12 +132,12 @@ function ConversationItem({
       onClick={onClick}
       className={`w-full text-left px-4 py-3.5 rounded-xl transition-all duration-200 flex items-start gap-3 ${
         isActive
-          ? "bg-[#D0F219]/10 border-l-4 border-l-[#D0F219] border border-lime-500/20"
+          ? "bg-neutral-800/90 border-l-4 border-l-[#84cc16] border border-[#84cc16]/20"
           : "bg-transparent border border-transparent hover:bg-white/[0.03]"
       }`}
     >
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center shrink-0 mt-0.5">
-        <span className="text-xs font-semibold text-[#12140E] font-body">{initials}</span>
+      <div className="w-10 h-10 rounded-full bg-[#1a231d] border border-[#84cc16]/30 flex items-center justify-center shrink-0 mt-0.5">
+        <span className="text-xs font-semibold text-[#84cc16] font-body">{initials}</span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
@@ -155,7 +155,7 @@ function ConversationItem({
         </p>
       </div>
       {conv.unreadCount > 0 && (
-        <span className="w-5 h-5 rounded-full bg-[#D0F219] text-[#12140E] text-[10px] font-bold flex items-center justify-center shrink-0 mt-1 font-body shadow-[0_0_12px_rgba(208,242,25,0.4)]">
+        <span className="w-5 h-5 rounded-full bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 text-[10px] font-bold flex items-center justify-center shrink-0 mt-1 font-body shadow-[0_0_12px_rgba(132,204,22,0.15)]">
           {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
         </span>
       )}
@@ -177,8 +177,6 @@ function MessageBubble({
   onOpenAttachment: (attachments: Attachment[], index: number) => void;
 }) {
   const attachments = message.attachments || [];
-  const images = attachments.filter((a) => a.fileType === "image");
-  const pdfs = attachments.filter((a) => a.fileType !== "image");
   const hasAttachments = attachments.length > 0;
 
   return (
@@ -186,7 +184,7 @@ function MessageBubble({
       <div
         className={`max-w-[75%] sm:max-w-[65%] px-4 py-2.5 rounded-2xl ${
           isOwn
-            ? "bg-[#D0F219] text-slate-950 rounded-br-lg shadow-[0_4px_20px_rgba(208,242,25,0.2)]"
+            ? "bg-[#15221a] text-neutral-100 border border-[#84cc16]/20 rounded-br-lg"
             : "bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-lg"
         }`}
       >
@@ -201,67 +199,36 @@ function MessageBubble({
         )}
 
         {/* Image attachments — clean grid inside the bubble */}
-        {images.length > 0 && (
+        {attachments.length > 0 && (
           <div
             className={`${message.text ? "mt-2" : ""} ${
-              images.length === 1 ? "" : "grid grid-cols-2 gap-1.5"
+              attachments.length === 1 ? "" : "grid grid-cols-2 gap-1.5"
             }`}
           >
-            {images.map((att, i) => (
+            {attachments.map((att, i) => (
               <img
                 key={`${att.url}-${i}`}
                 src={att.url}
                 alt={att.fileName || "Attachment"}
                 loading="lazy"
-                onClick={() => onOpenAttachment(attachments, attachments.indexOf(att))}
+                onClick={() => onOpenAttachment(attachments, i)}
                 className={`rounded-xl hover:opacity-80 transition-opacity duration-200 cursor-pointer object-cover bg-black/20 ${
-                  images.length === 1 ? "w-full max-h-64" : "w-full h-32 sm:h-36"
+                  attachments.length === 1 ? "w-full max-h-64" : "w-full h-32 sm:h-36"
                 }`}
               />
             ))}
           </div>
         )}
 
-        {/* PDF / document attachments — styled doc cards */}
-        {pdfs.map((att, i) => (
-          <div
-            key={`${att.url}-${i}`}
-            onClick={() => onOpenAttachment(attachments, attachments.indexOf(att))}
-            className="bg-neutral-800/90 p-3 rounded-xl flex items-center gap-3 border border-neutral-700/60 w-full min-w-[220px] cursor-pointer hover:bg-neutral-800 transition-colors mt-2"
-          >
-            <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
-              <FileText size={18} className="text-red-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white font-body truncate">
-                {att.fileName || "Document"}
-              </p>
-              <p className="text-[11px] text-slate-400 font-body">
-                {formatFileSize(att.fileSize)}
-              </p>
-            </div>
-            <a
-              href={att.url}
-              download={att.fileName || "document.pdf"}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-[#D0F219] hover:bg-white/5 transition-colors shrink-0"
-            >
-              <Download size={15} />
-            </a>
-          </div>
-        ))}
-
         <div
           className={`flex items-center gap-1 ${hasAttachments ? "mt-2" : "mt-1"} ${
             isOwn ? "justify-end" : "justify-start"
           }`}
         >
-          <span className={`text-[10px] ${isOwn ? "text-slate-900/80" : "text-slate-400"} font-body`}>
+          <span className={`text-[10px] ${isOwn ? "text-neutral-400/80" : "text-slate-400"} font-body`}>
             {formatTime(message.createdAt)}
           </span>
-          {isOwn && <CheckCheck size={12} className={message.isRead ? "text-slate-900" : "text-slate-900/50"} />}
+          {isOwn && <CheckCheck size={12} className={message.isRead ? "text-[#84cc16]" : "text-[#84cc16]/50"} />}
         </div>
       </div>
     </div>
@@ -285,7 +252,6 @@ function AttachmentViewer({
   const [scale, setScale] = useState(1);
   const count = attachments.length;
   const current = attachments[index] || attachments[0];
-  const isPdf = current?.fileType !== "image";
 
   // Navigate to a specific attachment (also resets zoom)
   const goTo = useCallback(
@@ -328,9 +294,8 @@ function AttachmentViewer({
           </p>
         </div>
 
-        {/* Zoom controls (images only) */}
-        {!isPdf && (
-          <div className="flex items-center gap-1">
+        {/* Zoom controls */}
+        <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setScale((s) => Math.min(4, +(s * 1.25).toFixed(2)))}
@@ -358,8 +323,7 @@ function AttachmentViewer({
             <span className="text-[11px] text-slate-400 w-10 text-center font-body">
               {Math.round(scale * 100)}%
             </span>
-          </div>
-        )}
+        </div>
 
         <a
           href={current.url}
@@ -386,20 +350,12 @@ function AttachmentViewer({
         className="flex-1 relative flex items-center justify-center px-4 pb-24 min-h-0"
         onClick={(e) => e.stopPropagation()}
       >
-        {isPdf ? (
-          <iframe
-            src={current.url}
-            title={current.fileName || "PDF"}
-            className="w-full h-full max-w-4xl rounded-xl bg-white/5 border border-slate-800"
-          />
-        ) : (
-          <img
-            src={current.url}
-            alt={current.fileName || "Image"}
-            style={{ transform: `scale(${scale})` }}
-            className="max-w-full max-h-full object-contain transition-transform duration-200 select-none"
-          />
-        )}
+        <img
+          src={current.url}
+          alt={current.fileName || "Image"}
+          style={{ transform: `scale(${scale})` }}
+          className="max-w-full max-h-[75vh] object-contain transition-transform duration-200 select-none"
+        />
 
         {/* Prev / Next arrows */}
         {count > 1 && (
@@ -444,17 +400,11 @@ function AttachmentViewer({
                 onClick={() => goTo(i)}
                 className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
                   i === index
-                    ? "border-[#D0F219] opacity-100"
+                    ? "border-[#84cc16] opacity-100"
                     : "border-transparent opacity-50 hover:opacity-80"
                 }`}
               >
-                {att.fileType === "image" ? (
-                  <img src={att.url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-                    <FileText size={18} className="text-red-400" />
-                  </div>
-                )}
+                <img src={att.url} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -473,7 +423,7 @@ export default function MessagesPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[#0D0F0A] pt-24 pb-6 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto h-[calc(100vh-8rem)] flex items-center justify-center">
-          <Loader2 size={28} className="animate-spin text-[#D0F219]" />
+          <Loader2 size={28} className="animate-spin text-[#84cc16]" />
         </div>
       </div>
     }>
@@ -515,6 +465,15 @@ function MessagesContent() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ─── Error toast state ────────────────────────────────────────────────────
+  const [toast, setToast] = useState<{ message: string } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   // ─── Attachment viewer state ──────────────────────────────────────────────
   const [viewer, setViewer] = useState<{ attachments: Attachment[]; index: number } | null>(null);
@@ -845,28 +804,29 @@ function MessagesContent() {
     }, 2500);
   }, [emitTypingStart, emitTypingStop]);
 
-  // ─── Handle file selection (max 5, images + PDFs) ────────────────────────
+  // ─── Handle file selection (max 5, images only) ──────────────────────────
   const handleFilesSelected = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
       e.target.value = ""; // allow re-selecting the same file
 
       const MAX_FILES = 5;
-      const ACCEPTED = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
+      const ACCEPTED = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
 
       if (files.length === 0) return;
 
       const remaining = MAX_FILES - selectedFiles.length;
       if (files.length > remaining) {
         setUploadError(
-          `You can attach up to ${MAX_FILES} files (${remaining} slot${remaining === 1 ? "" : "s"} remaining).`
+          `You can attach up to ${MAX_FILES} images (${remaining} slot${remaining === 1 ? "" : "s"} remaining).`
         );
         return;
       }
 
+      // Strict filter: reject any non-image file
       const invalid = files.find((f) => !ACCEPTED.includes(f.type));
       if (invalid) {
-        setUploadError("Only PNG, JPG, WEBP images and PDF files are allowed.");
+        setToast({ message: "Only image files (PNG, JPG, WEBP) are supported." });
         return;
       }
 
@@ -875,7 +835,7 @@ function MessagesContent() {
         ...prev,
         ...files.map((f) => ({
           file: f,
-          previewUrl: f.type.startsWith("image/") ? URL.createObjectURL(f) : "",
+          previewUrl: URL.createObjectURL(f),
         })),
       ]);
     },
@@ -914,12 +874,25 @@ function MessagesContent() {
           selectedFiles.map((sf) => sf.file),
           5
         );
-        attachments = results.map((r, i) => ({
-          url: r.secure_url,
-          fileType: selectedFiles[i].file.type === "application/pdf" ? "pdf" : "image",
-          fileName: selectedFiles[i].file.name,
-          fileSize: selectedFiles[i].file.size,
-        }));
+        // Map Cloudinary's response into the attachments payload — images only.
+        // Fall back to `url` if `secure_url` is missing so a valid URL always
+        // flows through.
+        attachments = results.map((r, i) => {
+          const file = selectedFiles[i].file;
+          return {
+            url: r.secure_url || r.url,
+            fileType: "image",
+            fileName: file.name,
+            fileSize: file.size,
+          };
+        });
+
+        // Fallback guard: if any upload returned no usable URL, abort sending
+        // and surface an error toast instead of dispatching a broken message.
+        if (attachments.some((a) => !a.url)) {
+          setToast({ message: "One or more files failed to upload. Please try again." });
+          return;
+        }
       }
 
       const socket = getSocket();
@@ -973,7 +946,7 @@ function MessagesContent() {
         {!showSidebar && activeConvId && (
           <button
             onClick={() => setShowSidebar(true)}
-            className="sm:hidden flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#D0F219] font-body mb-3"
+            className="sm:hidden flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#84cc16] font-body mb-3"
           >
             <ChevronLeft size={16} />
             All Conversations
@@ -981,15 +954,15 @@ function MessagesContent() {
         )}
 
         {/* Main Chat Container */}
-        <div className="h-full bg-[#11140C]/90 rounded-3xl shadow-2xl shadow-black/40 border border-lime-500/15 overflow-hidden flex flex-col sm:flex-row">
+        <div className="h-full bg-[#11140C]/90 rounded-3xl shadow-2xl shadow-black/40 border border-[#84cc16]/15 overflow-hidden flex flex-col sm:flex-row">
           {/* ═══ SIDEBAR ═══ */}
           <div
             className={`${
               showSidebar || !activeConvId ? "flex" : "hidden"
-            } sm:flex flex-col w-full sm:w-80 lg:w-96 border-r border-lime-500/10 bg-[#11140C]/40`}
+            } sm:flex flex-col w-full sm:w-80 lg:w-96 border-r border-[#84cc16]/10 bg-[#11140C]/40`}
           >
             {/* Sidebar Header */}
-            <div className="p-4 border-b border-lime-500/10">
+            <div className="p-4 border-b border-[#84cc16]/10">
               <h2 className="font-heading text-lg font-semibold text-white">
                 Messages
               </h2>
@@ -1002,18 +975,18 @@ function MessagesContent() {
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {convLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 size={20} className="animate-spin text-[#D0F219]" />
+                  <Loader2 size={20} className="animate-spin text-[#84cc16]" />
                 </div>
               ) : convError ? (
                 <div className="text-center py-12">
-                  <MessageCircle size={28} className="mx-auto text-lime-400/30 mb-2" />
+                  <MessageCircle size={28} className="mx-auto text-[#84cc16]/30 mb-2" />
                   <p className="text-xs text-slate-400 font-body">
                     Failed to load conversations.
                   </p>
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="text-center py-12">
-                  <MessageCircle size={28} className="mx-auto text-lime-400/30 mb-2" />
+                  <MessageCircle size={28} className="mx-auto text-[#84cc16]/30 mb-2" />
                   <p className="text-xs text-slate-400 font-body">
                     No conversations yet.
                   </p>
@@ -1045,8 +1018,8 @@ function MessagesContent() {
               /* Empty State */
               <div className="flex-1 flex items-center justify-center p-8">
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-lime-500/15 flex items-center justify-center mx-auto mb-4">
-                    <MessageCircle size={32} className="text-lime-400/40" />
+                  <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-[#84cc16]/15 flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle size={32} className="text-[#84cc16]/40" />
                   </div>
                   <h3 className="font-heading text-lg font-semibold text-white mb-2">
                     Select a conversation
@@ -1060,16 +1033,16 @@ function MessagesContent() {
             ) : (
               <>
                 {/* Chat Header */}
-                <div className="px-5 py-4 border-b border-lime-500/10 flex items-center gap-3 shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#D0F219] to-[#C0E70B] flex items-center justify-center shrink-0 relative">
-                    <span className="text-xs font-semibold text-[#12140E] font-body">
+                <div className="px-5 py-4 border-b border-[#84cc16]/10 flex items-center gap-3 shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#1a231d] border border-[#84cc16]/30 flex items-center justify-center shrink-0 relative">
+                    <span className="text-xs font-semibold text-[#84cc16] font-body">
                       {otherParticipant
                         ? getInitials(otherParticipant.name)
                         : "?"}
                     </span>
                     {/* Online indicator dot */}
                     {otherParticipant && onlineStatus[otherParticipant._id]?.isOnline && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#D0F219] border-2 border-[#11140C]" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#84cc16] border-2 border-[#11140C]" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -1079,7 +1052,7 @@ function MessagesContent() {
                       </p>
                       {/* Online / Last Seen status */}
                       {otherParticipant && onlineStatus[otherParticipant._id]?.isOnline ? (
-                        <span className="text-[10px] text-[#D0F219] font-body font-medium shrink-0">Online</span>
+                        <span className="text-[10px] text-[#84cc16] font-body font-medium shrink-0">Online</span>
                       ) : otherParticipant && onlineStatus[otherParticipant._id]?.lastSeen ? (
                         <span className="text-[10px] text-slate-500 font-body shrink-0">
                           Last seen {formatTime(onlineStatus[otherParticipant._id].lastSeen!)}
@@ -1111,7 +1084,7 @@ function MessagesContent() {
                       <button
                         onClick={loadMore}
                         disabled={msgLoading}
-                        className="text-xs text-[#D0F219] font-medium hover:underline font-body disabled:opacity-50"
+                        className="text-xs text-[#84cc16] font-medium hover:underline font-body disabled:opacity-50"
                       >
                         {msgLoading ? "Loading..." : "Load earlier messages"}
                       </button>
@@ -1121,7 +1094,7 @@ function MessagesContent() {
                   {/* Message Loading */}
                   {msgLoading && page === 1 && (
                     <div className="flex items-center justify-center py-12">
-                      <Loader2 size={20} className="animate-spin text-[#D0F219]" />
+                      <Loader2 size={20} className="animate-spin text-[#84cc16]" />
                     </div>
                   )}
 
@@ -1137,7 +1110,7 @@ function MessagesContent() {
                   {/* No Messages */}
                   {!msgLoading && !msgError && messages.length === 0 && (
                     <div className="text-center py-12">
-                      <MessageCircle size={28} className="mx-auto text-lime-400/30 mb-2" />
+                      <MessageCircle size={28} className="mx-auto text-[#84cc16]/30 mb-2" />
                       <p className="text-sm text-slate-400 font-body">
                         No messages yet.
                       </p>
@@ -1197,9 +1170,9 @@ function MessagesContent() {
                   {otherTyping && (
                     <div className="flex justify-start mb-3">
                       <div className="px-5 py-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-lg inline-flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-lime-400/70 animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-2 h-2 rounded-full bg-lime-400/70 animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-2 h-2 rounded-full bg-lime-400/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-[#84cc16]/70 animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-[#84cc16]/70 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-2 h-2 rounded-full bg-[#84cc16]/70 animate-bounce" style={{ animationDelay: "300ms" }} />
                       </div>
                     </div>
                   )}
@@ -1212,49 +1185,33 @@ function MessagesContent() {
                 {showScrollBottomBtn && (
                   <button
                     onClick={scrollToBottom}
-                    className="absolute bottom-20 right-6 w-10 h-10 rounded-full bg-[#12150E] border border-slate-700 shadow-lg flex items-center justify-center text-slate-400 hover:text-[#D0F219] hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(208,242,25,0.2)] transition-all duration-200 z-10"
+                    className="absolute bottom-20 right-6 w-10 h-10 rounded-full bg-[#12150E] border border-slate-700 shadow-lg flex items-center justify-center text-slate-400 hover:text-[#84cc16] hover:border-[#84cc16]/40 hover:shadow-[0_0_20px_rgba(132,204,22,0.2)] transition-all duration-200 z-10"
                   >
                     <ChevronDown size={18} />
                   </button>
                 )}
 
                 {/* Message Input */}
-                <div className="px-5 py-4 border-t border-lime-500/10 shrink-0">
+                <div className="px-5 py-4 border-t border-[#84cc16]/10 shrink-0">
                   {/* Attachment preview bar (pre-send) */}
                   {selectedFiles.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {selectedFiles.map((sel, i) => (
                         <div key={`${sel.file.name}-${i}`} className="group relative">
-                          {sel.previewUrl ? (
-                            <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-700 shadow-lg shadow-black/30">
-                              <img
-                                src={sel.previewUrl}
-                                alt={sel.file.name}
-                                className="w-full h-full object-cover"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeFile(i)}
-                                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 border border-white/10 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
-                              >
-                                <X size={11} className="text-white" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 bg-neutral-800/80 border border-slate-700 rounded-xl pl-3 pr-2 py-2 max-w-[220px]">
-                              <FileText size={15} className="text-red-400 shrink-0" />
-                              <span className="text-xs text-white font-body truncate">
-                                {sel.file.name}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => removeFile(i)}
-                                className="text-slate-400 hover:text-red-400 transition-colors shrink-0"
-                              >
-                                <X size={13} />
-                              </button>
-                            </div>
-                          )}
+                          <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-700 shadow-lg shadow-black/30">
+                            <img
+                              src={sel.previewUrl}
+                              alt={sel.file.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeFile(i)}
+                              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 border border-white/10 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                            >
+                              <X size={11} className="text-white" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1268,17 +1225,17 @@ function MessagesContent() {
                     </p>
                   )}
 
-                  <div className="flex items-end gap-3">
+                  <div className="flex items-center gap-3 p-3 bg-neutral-900/90 border border-neutral-800 rounded-2xl">
                     {/* Attachment picker */}
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={sending || uploading}
-                      title="Attach files (PNG, JPG, WEBP, PDF — max 5)"
-                      className="w-11 h-11 rounded-full border border-slate-700 text-slate-400 hover:text-[#D0F219] hover:border-lime-500/40 flex items-center justify-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                      title="Attach images (PNG, JPG, WEBP — max 5)"
+                      className="w-11 h-11 rounded-full border border-slate-700 text-slate-400 hover:text-[#84cc16] hover:border-[#84cc16]/40 flex items-center justify-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                     >
                       {uploading ? (
-                        <Loader2 size={18} className="animate-spin text-[#D0F219]" />
+                        <Loader2 size={18} className="animate-spin text-[#84cc16]" />
                       ) : (
                         <Paperclip size={18} />
                       )}
@@ -1291,7 +1248,7 @@ function MessagesContent() {
                         onKeyDown={handleKeyDown}
                         placeholder="Type your message..."
                         rows={1}
-                        className="w-full px-4 py-3 bg-[#0A0C07] border border-slate-800 rounded-2xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#D0F219] focus:ring-1 focus:ring-[#D0F219]/50 transition-all font-body resize-none"
+                        className="w-full px-4 py-3 bg-[#0A0C07] border border-slate-800 rounded-2xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#84cc16] focus:ring-1 focus:ring-[#84cc16]/50 transition-all font-body resize-none"
                         style={{ minHeight: 44, maxHeight: 120 }}
                       />
                     </div>
@@ -1300,7 +1257,7 @@ function MessagesContent() {
                       disabled={
                         (!inputText.trim() && selectedFiles.length === 0) || sending || uploading
                       }
-                      className="w-11 h-11 rounded-full bg-[#D0F219] text-[#12140E] flex items-center justify-center hover:bg-lime-300 hover:shadow-[0_0_20px_rgba(208,242,25,0.3)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-sm shrink-0"
+                      className="w-11 h-11 rounded-full bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 flex items-center justify-center hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-[0_0_20px_rgba(132,204,22,0.15)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-sm shrink-0"
                     >
                       {sending ? (
                         <Loader2 size={18} className="animate-spin" />
@@ -1315,7 +1272,7 @@ function MessagesContent() {
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/png,image/jpeg,image/webp,application/pdf,.png,.jpg,.jpeg,.webp,.pdf"
+                    accept="image/png, image/jpeg, image/jpg, image/webp, image/gif"
                     onChange={handleFilesSelected}
                     className="hidden"
                   />
@@ -1333,6 +1290,20 @@ function MessagesContent() {
           initialIndex={viewer.index}
           onClose={() => setViewer(null)}
         />
+      )}
+
+      {/* Error toast */}
+      {toast && (
+        <div className="fixed top-28 right-6 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md bg-red-500/10 border-red-500/20 text-red-300">
+          <AlertCircle size={18} className="shrink-0 text-red-500" />
+          <span className="text-sm font-body font-medium">{toast.message}</span>
+          <button
+            onClick={() => setToast(null)}
+            className="ml-2 p-1 rounded-full hover:bg-white/10 transition-colors"
+          >
+            <X size={14} className="opacity-50" />
+          </button>
+        </div>
       )}
     </div>
   );

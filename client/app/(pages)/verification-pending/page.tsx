@@ -47,7 +47,7 @@ export default function VerificationPendingPage() {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-[#05080e] flex items-center justify-center p-4">
-        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
+        <Loader2 size={32} className="animate-spin text-[#99cc00]" />
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function VerificationPendingPage() {
               className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-body transition-all duration-200 ${
                 isRejected
                   ? "bg-slate-800/50 text-slate-500 border border-slate-700/60 cursor-not-allowed"
-                  : "bg-[#ccff00] text-black font-semibold hover:bg-[#b8e600] shadow-[0_0_20px_rgba(204,255,0,0.15)] hover:shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
+                  : "bg-[#99cc00] text-black font-semibold hover:bg-[#8ab800] shadow-[0_0_20px_rgba(153,204,0,0.10)] hover:shadow-[0_0_30px_rgba(153,204,0,0.20)] active:scale-95"
               }`}
             >
               {refreshing ? (

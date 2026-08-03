@@ -238,7 +238,7 @@ export default function AdminVerificationsPage() {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-[#0a0d0c] pt-24 md:pt-28 pb-20 px-4 sm:px-6 flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-[#ccff00]" />
+        <Loader2 size={32} className="animate-spin text-[#99cc00]" />
       </div>
     );
   }
@@ -302,7 +302,7 @@ export default function AdminVerificationsPage() {
                   onClick={() => setFilterStatus(tab.key)}
                   className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-body font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-[#ccff00] text-black shadow-md shadow-[#ccff00]/20"
+                      ? "bg-[#99cc00] text-black shadow-md shadow-[#99cc00]/20"
                       : "text-neutral-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -337,7 +337,7 @@ export default function AdminVerificationsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, email, or ID..."
-              className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-800 transition-all font-body shadow-sm"
+              className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#99cc00] focus:bg-neutral-800 transition-all font-body shadow-sm"
             />
             {searchQuery && (
               <button
@@ -353,7 +353,7 @@ export default function AdminVerificationsPage() {
         {/* Loading state */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={28} className="animate-spin text-[#ccff00]" />
+            <Loader2 size={28} className="animate-spin text-[#99cc00]" />
           </div>
         )}
 
@@ -501,7 +501,7 @@ export default function AdminVerificationsPage() {
                           <button
                             onClick={() => updateStatus(u._id, "approved")}
                             disabled={actionLoading}
-                            className="p-2 rounded-full bg-[#ccff00] text-black hover:bg-[#b8e600] active:scale-95 transition-all disabled:opacity-50"
+                            className="p-2 rounded-full bg-[#99cc00] text-black hover:bg-[#8ab800] active:scale-95 transition-all disabled:opacity-50"
                             title="Approve"
                           >
                             <ThumbsUp size={15} />
@@ -544,7 +544,7 @@ export default function AdminVerificationsPage() {
                           <button
                             onClick={() => updateStatus(u._id, "approved")}
                             disabled={actionLoading}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ccff00] border border-[#ccff00] text-black hover:bg-[#b8e600] active:scale-95 transition-all text-xs font-body font-medium disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#99cc00] border border-[#99cc00] text-black hover:bg-[#8ab800] active:scale-95 transition-all text-xs font-body font-medium disabled:opacity-50"
                             title="Approve"
                           >
                             <ThumbsUp size={13} />
@@ -604,7 +604,7 @@ export default function AdminVerificationsPage() {
               <div className="sticky top-0 z-10 bg-[#111614]/90 backdrop-blur-sm border-b border-white/10 px-6 py-4 flex items-center justify-between rounded-t-3xl">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-neutral-800 flex items-center justify-center">
-                    <Shield size={18} className="text-[#ccff00]" />
+                    <Shield size={18} className="text-[#99cc00]" />
                   </div>
                   <div>
                     <h3 className="font-heading text-lg font-semibold text-white">
@@ -630,7 +630,7 @@ export default function AdminVerificationsPage() {
                       NIC Front
                     </p>
                     <div
-                      className="relative rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/10 h-48 cursor-pointer hover:border-[#ccff00]/40 transition-all"
+                      className="relative rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/10 h-48 cursor-pointer hover:border-[#99cc00]/40 transition-all"
                       onClick={() => {
                         setPreviewImage(selectedUser.kycDocuments?.nicFront || null);
                         setPreviewLabel("NIC Front");
@@ -655,7 +655,7 @@ export default function AdminVerificationsPage() {
                       NIC Back
                     </p>
                     <div
-                      className="relative rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/10 h-48 cursor-pointer hover:border-[#ccff00]/40 transition-all"
+                      className="relative rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/10 h-48 cursor-pointer hover:border-[#99cc00]/40 transition-all"
                       onClick={() => {
                         setPreviewImage(selectedUser.kycDocuments?.nicBack || null);
                         setPreviewLabel("NIC Back");
@@ -682,7 +682,7 @@ export default function AdminVerificationsPage() {
                     Live Photo (Selfie)
                   </p>
                   <div
-                    className="relative rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/10 h-48 cursor-pointer hover:border-[#ccff00]/40 transition-all"
+                    className="relative rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/10 h-48 cursor-pointer hover:border-[#99cc00]/40 transition-all"
                     onClick={() => {
                       setPreviewImage(selectedUser.kycDocuments?.livePhoto || null);
                       setPreviewLabel("Live Photo");
@@ -752,7 +752,7 @@ export default function AdminVerificationsPage() {
                       <button
                         onClick={() => updateStatus(selectedUser._id, "approved")}
                         disabled={actionLoading}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-medium hover:bg-[#b8e600] active:scale-95 transition-all duration-200 disabled:opacity-60"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#99cc00] text-black rounded-full text-sm font-body font-medium hover:bg-[#8ab800] active:scale-95 transition-all duration-200 disabled:opacity-60"
                       >
                         {actionLoading ? (
                           <Loader2 size={16} className="animate-spin" />
@@ -775,7 +775,7 @@ export default function AdminVerificationsPage() {
                       <button
                         onClick={() => updateStatus(selectedUser._id, "approved")}
                         disabled={actionLoading}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#ccff00] text-black rounded-full text-sm font-body font-medium hover:bg-[#b8e600] active:scale-95 transition-all duration-200 disabled:opacity-60"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#99cc00] text-black rounded-full text-sm font-body font-medium hover:bg-[#8ab800] active:scale-95 transition-all duration-200 disabled:opacity-60"
                       >
                         {actionLoading ? (
                           <Loader2 size={16} className="animate-spin" />
@@ -881,7 +881,7 @@ export default function AdminVerificationsPage() {
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="e.g. NIC image blurry, mismatched identity..."
                 rows={3}
-                className="w-full px-4 py-3 bg-neutral-800/80 border border-neutral-700 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:bg-neutral-800 transition-all font-body resize-none mb-4"
+                className="w-full px-4 py-3 bg-neutral-800/80 border border-neutral-700 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#99cc00] focus:bg-neutral-800 transition-all font-body resize-none mb-4"
               />
               <div className="flex items-center gap-3">
                 <button

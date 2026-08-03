@@ -82,7 +82,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#0284C7]/15 overflow-hidden"
+        className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#84cc16]/15 overflow-hidden"
       >
         {/* Close button */}
         <button
@@ -94,7 +94,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
         </button>
 
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-[#0284C7]/10">
+        <div className="p-6 pb-4 border-b border-[#84cc16]/10">
           <div className="flex items-center gap-3">
             {step === "confirm" && (
               <button
@@ -105,7 +105,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
               </button>
             )}
             <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] flex items-center justify-center">
-              <Layers size={20} className="text-[#0284C7]" />
+              <Layers size={20} className="text-[#84cc16]" />
             </div>
             <div>
               <h2 className="font-heading text-lg font-semibold text-[#1E293B]">
@@ -145,7 +145,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                 <div className="relative">
                   <Layers
                     size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0284C7]/60 pointer-events-none"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/60 pointer-events-none"
                   />
                   <input
                     type="number"
@@ -156,13 +156,13 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                         Math.max(1, parseInt(e.target.value) || 1)
                       )
                     }
-                    className="w-full pl-11 pr-4 py-3.5 bg-[#F8FAFC]/40 border border-[#0284C7]/20 rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all text-sm font-mono tabular-nums font-body"
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#F8FAFC]/40 border border-[#84cc16]/20 rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#84cc16] focus:bg-white transition-all text-sm font-mono tabular-nums font-body"
                   />
                 </div>
               </div>
 
               {/* Live preview */}
-              <div className="p-4 rounded-2xl bg-[#F8FAFC]/30 border border-[#0284C7]/10 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#F8FAFC]/30 border border-[#84cc16]/10 space-y-2">
                 <div className="flex items-center justify-between text-sm font-body">
                   <span className="text-[#0F172A]/60">Price per shelf</span>
                   <span className="font-mono tabular-nums font-medium text-[#1E293B]">
@@ -175,7 +175,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                     × {numberOfShelves}
                   </span>
                 </div>
-                <hr className="border-[#0284C7]/10" />
+                <hr className="border-[#84cc16]/10" />
                 <div className="flex items-center justify-between text-sm font-body">
                   <span className="text-[#0F172A]/70 font-medium">
                     Estimated monthly increase
@@ -194,7 +194,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
               {/* Continue button */}
               <button
                 onClick={() => setStep("confirm")}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-medium hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200"
               >
                 Continue
                 <ArrowRight size={16} />
@@ -220,7 +220,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                 </div>
 
                 {/* Summary */}
-                <div className="space-y-3 bg-[#F8FAFC]/40 rounded-2xl p-4 border border-[#0284C7]/10">
+                <div className="space-y-3 bg-[#F8FAFC]/40 rounded-2xl p-4 border border-[#84cc16]/10">
                   <div className="flex items-center justify-between text-sm font-body">
                     <span className="text-[#0F172A]/60">Warehouse</span>
                     <span className="font-medium text-[#1E293B] truncate ml-4">
@@ -239,7 +239,7 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                       {newTotal} shelves
                     </span>
                   </div>
-                  <hr className="border-[#0284C7]/10" />
+                  <hr className="border-[#84cc16]/10" />
                   <div className="flex items-center justify-between text-sm font-body">
                     <span className="text-[#0F172A]/70 font-medium">
                       Monthly revenue increase
@@ -263,14 +263,14 @@ const AddShelvesModal: React.FC<AddShelvesModalProps> = ({
                   <button
                     onClick={onClose}
                     disabled={isSubmitting}
-                    className="flex-1 px-5 py-3 border border-[#0284C7]/30 text-[#0284C7] rounded-full font-body text-sm font-medium hover:bg-[#F8FAFC]/40 transition-colors disabled:opacity-50"
+                    className="flex-1 px-5 py-3 border border-[#84cc16]/30 text-[#84cc16] rounded-full font-body text-sm font-medium hover:bg-[#F8FAFC]/40 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleConfirm}
                     disabled={isSubmitting}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200 disabled:opacity-60"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-medium hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60"
                   >
                     {isSubmitting ? (
                       <>

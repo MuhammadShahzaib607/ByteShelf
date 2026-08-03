@@ -143,7 +143,7 @@ export default function ExplorePage() {
   return (
     <div className="relative overflow-hidden min-h-screen bg-[#0a0d0c] pt-28 pb-20 px-4 sm:px-6">
       {/* Background smoky glow / radial lighting */}
-      <div className="pointer-events-none absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#ccff00]/10 blur-[120px]" />
+      <div className="pointer-events-none absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#84cc16]/10 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-emerald-500/10 blur-[140px]" />
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
@@ -177,7 +177,7 @@ export default function ExplorePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or location..."
-            className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ccff00] focus:ring-2 focus:ring-[#ccff00]/10 focus:bg-neutral-900 transition-all text-sm font-body shadow-sm shadow-black/20"
+            className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:ring-2 focus:ring-[#84cc16]/10 focus:bg-neutral-900 transition-all text-sm font-body shadow-sm shadow-black/20"
           />
         </motion.div>
 
@@ -218,7 +218,7 @@ export default function ExplorePage() {
             className="text-center py-20"
           >
             <div className="w-16 h-16 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-center mx-auto mb-4 shadow-sm shadow-black/20">
-              <Warehouse size={28} className="text-[#ccff00]/40" />
+              <Warehouse size={28} className="text-[#84cc16]/40" />
             </div>
             <h3 className="font-heading text-lg font-semibold text-white mb-2">
               No warehouses found
@@ -237,7 +237,7 @@ export default function ExplorePage() {
             className="text-center py-16"
           >
             <div className="w-14 h-14 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-center mx-auto mb-3 shadow-sm shadow-black/20">
-              <Search size={22} className="text-[#ccff00]/40" />
+              <Search size={22} className="text-[#84cc16]/40" />
             </div>
             <h3 className="font-heading text-base font-semibold text-white mb-1">
               No matches
@@ -268,7 +268,7 @@ export default function ExplorePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 hover:border-[#ccff00]/50 transition-all duration-300 rounded-2xl overflow-hidden shadow-xl flex flex-col"
+                className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 hover:border-[#84cc16]/40 transition-all duration-300 rounded-2xl overflow-hidden shadow-xl flex flex-col"
               >
                 {/* Image Showcase — blurred backdrop + centered foreground */}
                 <div className="relative w-full h-48 overflow-hidden bg-neutral-900/40">
@@ -305,7 +305,7 @@ export default function ExplorePage() {
 
                   <div className="mt-3 flex items-center justify-between">
                     <div>
-                      <span className="font-heading text-lg font-bold text-[#ccff00] numeric">
+                      <span className="font-heading text-lg font-bold text-[#84cc16] numeric">
                         Rs. {w.pricePerShelf.toLocaleString("en-PK")}
                       </span>
                       <span className="text-xs text-neutral-400 font-body ml-1">
@@ -320,7 +320,7 @@ export default function ExplorePage() {
 
                   <button
                     onClick={() => router.push(`/warehouses/${w._id}`)}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ccff00] text-black text-sm font-body font-semibold rounded-xl hover:bg-[#b8e600] active:scale-95 transition-all duration-200"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 text-sm font-body font-semibold rounded-xl hover:bg-[#222e26] hover:border-[#84cc16]/60 active:scale-95 transition-all duration-200"
                   >
                     <Eye size={15} />
                     View Details & Shelves
@@ -342,7 +342,7 @@ export default function ExplorePage() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-neutral-900/80 border border-neutral-800 text-white rounded-full font-body font-medium text-sm hover:bg-neutral-800 hover:border-[#ccff00]/40 transition-all duration-300 shadow-sm shadow-black/20 hover:shadow-md active:scale-[0.98] disabled:opacity-60"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-neutral-900/80 border border-neutral-800 text-white rounded-full font-body font-medium text-sm hover:bg-neutral-800 hover:border-[#84cc16]/40 transition-all duration-300 shadow-sm shadow-black/20 hover:shadow-md active:scale-[0.98] disabled:opacity-60"
             >
               {loadingMore ? (
                 <>

@@ -322,7 +322,7 @@ export default function MyWarehousesPage() {
                           totalShelves: w.totalShelves,
                         })
                       }
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-xs font-body font-medium hover:bg-emerald-100 transition-colors"
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-[#84cc16]/10 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-body font-medium hover:bg-[#84cc16]/15 transition-colors"
                     >
                       <Plus size={14} />
                       Shelves

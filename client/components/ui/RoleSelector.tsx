@@ -49,18 +49,18 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ value, onChange, error }) =
                 cursor-pointer transition-all duration-200
                 ${
                   isSelected
-                    ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00] shadow-[0_0_20px_rgba(204,255,0,0.15)]"
-                    : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-[#ccff00]/50 hover:text-slate-200"
+                    ? "border-[#84cc16] bg-[#84cc16]/10 text-[#84cc16] shadow-[0_0_20px_rgba(132,204,22,0.10)]"
+                    : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-[#84cc16]/40 hover:text-slate-200"
                 }
               `}
             >
-              <div className={isSelected ? "text-[#ccff00]" : "text-slate-500"}>
+              <div className={isSelected ? "text-[#84cc16]" : "text-slate-500"}>
                 {role.icon}
               </div>
               <div className="text-center">
                 <p
                   className={`font-heading text-sm font-semibold ${
-                    isSelected ? "text-[#ccff00]" : "text-slate-300"
+                    isSelected ? "text-[#84cc16]" : "text-slate-300"
                   }`}
                 >
                   {role.label}

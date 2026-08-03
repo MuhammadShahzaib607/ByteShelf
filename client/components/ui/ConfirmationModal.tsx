@@ -74,7 +74,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 ? "bg-red-50"
                 : accentColor === "amber"
                 ? "bg-amber-50"
-                : "bg-[#0284C7]/10"
+                : "bg-[#84cc16]/10"
             }`}
           >
             <AlertTriangle
@@ -84,7 +84,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   ? "text-red-500"
                   : accentColor === "amber"
                   ? "text-[#F59E0B]"
-                  : "text-[#0284C7]"
+                  : "text-[#84cc16]"
               }
             />
           </div>
@@ -108,7 +108,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 placeholder={reasonPlaceholder}
                 rows={3}
                 disabled={isLoading}
-                className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all text-sm font-body resize-none"
+                className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#84cc16] focus:bg-white transition-all text-sm font-body resize-none"
               />
             </div>
           )}
@@ -130,7 +130,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   ? "bg-red-600 text-white hover:bg-red-700"
                   : accentColor === "amber"
                   ? "bg-[#F59E0B] text-white hover:bg-[#F59E0B]/90"
-                  : "bg-[#0284C7] text-white hover:bg-[#0284C7]/90"
+                  : "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 hover:bg-[#222e26] hover:border-[#84cc16]/60"
               }`}
             >
               {isLoading ? (
