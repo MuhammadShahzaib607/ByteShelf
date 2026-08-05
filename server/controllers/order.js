@@ -254,15 +254,17 @@ export const createOrder = async (req, res) => {
       source: source === "AI_PDF_Extraction" ? "AI_PDF_Extraction" : "Manual",
     });
 
-    // Notify the warehouse owner (prompt Step 3)
+    // Notify the warehouse owner (targeted routing — never the creating merchant)
     const merchantUser = await User.findById(req.user.id).select("name");
     const merchantName = merchantUser?.name || "Merchant";
-    const totalUnits = items.reduce((sum, it) => sum + it.quantity, 0);
-    const itemList = items.map((it) => it.itemName).join(", ");
+    const itemList = items
+      .map((it) => `${it.quantity} units of ${it.itemName}`)
+      .join(", ");
     await Notification.create({
       recipient: warehouse.owner,
       sender: req.user.id,
-      message: `Order for ${totalUnits} units of ${itemList} placed by ${merchantName}`,
+      title: "New Packing Request",
+      message: `Merchant ${merchantName} placed an order for ${itemList} for your shelf in ${warehouse.name}. Please prepare for packing.`,
       link: "/dashboard",
     });
 

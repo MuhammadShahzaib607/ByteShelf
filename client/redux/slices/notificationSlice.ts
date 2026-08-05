@@ -7,6 +7,7 @@ export interface Notification {
   _id: string;
   recipient: string;
   sender: string;
+  title?: string;
   message: string;
   link?: string | null;
   isRead: boolean;

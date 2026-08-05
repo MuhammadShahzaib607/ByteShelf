@@ -178,13 +178,32 @@ function NotificationCard({
             </span>
           )}
         </div>
-        <p
-          className={`text-sm font-body leading-relaxed mt-0.5 ${
-            isUnread ? "font-semibold text-white" : "text-slate-400"
-          }`}
-        >
-          {notification.message}
-        </p>
+        {notification.title ? (
+          <>
+            <p
+              className={`text-sm font-heading font-semibold leading-snug mt-0.5 ${
+                isUnread ? "text-white" : "text-slate-300"
+              }`}
+            >
+              {notification.title}
+            </p>
+            <p
+              className={`text-[13px] font-body leading-relaxed mt-0.5 ${
+                isUnread ? "text-slate-300" : "text-slate-500"
+              }`}
+            >
+              {notification.message}
+            </p>
+          </>
+        ) : (
+          <p
+            className={`text-sm font-body leading-relaxed mt-0.5 ${
+              isUnread ? "font-semibold text-white" : "text-slate-400"
+            }`}
+          >
+            {notification.message}
+          </p>
+        )}
         <div className="flex items-center gap-2 mt-1.5">
           <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-body">
             <Clock size={11} />

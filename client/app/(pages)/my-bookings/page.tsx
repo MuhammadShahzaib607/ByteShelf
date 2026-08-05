@@ -308,19 +308,36 @@ export default function MyBookingsPage() {
                       </span>
                     </div>
 
-                    {/* Create Inbound — active bookings only (single entry point) */}
-                    {booking.status === "confirmed" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setInboundBooking(booking);
-                        }}
-                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200"
-                      >
-                        <Package size={12} />
-                        Create Inbound
-                      </button>
-                    )}
+                    {/* Create Inbound — active bookings only, locked until payment is confirmed */}
+                    {booking.status === "confirmed" &&
+                      (booking.paymentStatus === "paid" ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInboundBooking(booking);
+                          }}
+                          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200"
+                        >
+                          <Package size={12} />
+                          Create Inbound
+                        </button>
+                      ) : (
+                        <>
+                          <div className="mt-3 w-full flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+                            <Clock size={13} className="text-amber-600 shrink-0" />
+                            <p className="text-[11px] text-amber-700 font-body leading-snug">
+                              Payment Pending – Inbound creation unlocks after booking payment is confirmed.
+                            </p>
+                          </div>
+                          <button
+                            disabled
+                            className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-400 border border-slate-200 rounded-full text-xs font-body font-semibold cursor-not-allowed"
+                          >
+                            <Package size={12} />
+                            Create Inbound
+                          </button>
+                        </>
+                      ))}
 
                     {/* Cancel button inline */}
                     {canCancel && (

@@ -251,6 +251,18 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // ─── Body scroll lock while the mobile menu is open ────────────────────
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   const isLoggedIn = !!accessToken;
   const role = user?.role || "";
 

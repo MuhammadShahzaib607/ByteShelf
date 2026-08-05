@@ -787,6 +787,8 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredBookings.map((b, i) => {
             const canCancel = b.status !== "cancelled";
+            const inboundLocked =
+              b.status === "confirmed" && b.paymentStatus !== "paid";
             return (
               <motion.div key={b._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}
                 className="bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 hover:border-[#84cc16]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
@@ -813,9 +815,15 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                       className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors">
                       <Eye size={13} /> View Details
                     </button>
-                    {b.status === "confirmed" && (
+                    {b.status === "confirmed" && b.paymentStatus === "paid" && (
                       <button onClick={() => openInboundModal(b)}
                         className="flex-[1.5] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
+                        <Package size={13} /> Create Inbound
+                      </button>
+                    )}
+                    {inboundLocked && (
+                      <button disabled
+                        className="flex-[1.5] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full text-xs font-semibold cursor-not-allowed">
                         <Package size={13} /> Create Inbound
                       </button>
                     )}
@@ -826,6 +834,14 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                       </button>
                     )}
                   </div>
+                  {inboundLocked && (
+                    <div className="mt-2.5 flex items-center gap-2 px-3 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <Clock size={13} className="text-amber-400 shrink-0" />
+                      <p className="text-[11px] text-amber-300 font-body leading-snug">
+                        Payment Pending – Inbound creation unlocks after booking payment is confirmed.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );

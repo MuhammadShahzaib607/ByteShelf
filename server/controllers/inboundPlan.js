@@ -34,6 +34,11 @@ export const createInboundPlan = async (req, res) => {
       return sendRes(res, 404, false, "Booking not found");
     }
 
+    // Payment guard: inbound creation is locked until the booking is PAID
+    if (booking.paymentStatus !== "paid") {
+      return sendRes(res, 400, false, "Payment pending — inbound creation unlocks after booking payment is confirmed.");
+    }
+
     if (booking.status !== "confirmed") {
       return sendRes(res, 400, false, "Booking is not active");
     }
@@ -173,9 +178,11 @@ export const createInboundPlan = async (req, res) => {
 
     const warehouse = await Warehouse.findById(booking.warehouse);
 
+    // Notify the warehouse owner (targeted routing — never the creating merchant)
     await Notification.create({
       recipient: warehouse.owner,
       sender: req.user.id,
+      title: "New Inbound Shipment",
       message: `New inbound added for your warehouse booking: ${planTotalCartons} carton(s) in batch "${batchName}"`,
       link: `/inbound-plans/${inboundPlan._id}`,
     });
