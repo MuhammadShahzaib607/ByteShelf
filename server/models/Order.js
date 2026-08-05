@@ -50,6 +50,10 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    deliveredAt: {
+      type: Date,
+      default: null,
+    },
     // Courier & post-packing tracking details
     courierDetails: {
       courierName: { type: String, default: "", trim: true },

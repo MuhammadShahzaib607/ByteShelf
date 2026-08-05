@@ -28,6 +28,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import EditWarehouseModal from "@/components/ui/EditWarehouseModal";
 import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
 import DispatchOrderModal from "@/components/ui/DispatchOrderModal";
+import DeliveryConfirmationModal from "@/components/ui/DeliveryConfirmationModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -1111,6 +1112,8 @@ function OrdersDispatchTab() {
 
   // ─── Dispatch modal state ──────────────────────────────────────────────
   const [dispatchTarget, setDispatchTarget] = useState<OwnerOrderData | null>(null);
+  // ─── Delivery confirmation modal state ─────────────────────────────────
+  const [deliveredTarget, setDeliveredTarget] = useState<OwnerOrderData | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!accessToken) return;
@@ -1145,15 +1148,10 @@ function OrdersDispatchTab() {
     fetchOrders();
   }, [fetchOrders]);
 
-  const markDelivered = useCallback(async (orderId: string) => {
-    setActingId(orderId);
-    try {
-      await api.patch(`/order/${orderId}/mark-delivered`);
-      setToast({ message: "Order marked as delivered.", type: "success" });
-      fetchOrders();
-    } catch (err: any) {
-      setToast({ message: err.response?.data?.message || "Failed to update the order.", type: "error" });
-    } finally { setActingId(null); }
+  const handleDelivered = useCallback(() => {
+    setToast({ message: "Order marked as delivered.", type: "success" });
+    setDeliveredTarget(null);
+    fetchOrders();
   }, [fetchOrders]);
 
   const filters = [
@@ -1304,9 +1302,9 @@ function OrdersDispatchTab() {
                       <span className="text-[11px] text-neutral-500 font-body">
                         Dispatched {order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : ""}
                       </span>
-                      <button onClick={() => markDelivered(order._id)} disabled={actingId === order._id}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200 disabled:opacity-60">
-                        {actingId === order._id ? <><Loader2 size={14} className="animate-spin" />Updating...</> : <><CheckCircle size={14} />Mark Delivered</>}
+                      <button onClick={() => setDeliveredTarget(order)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200">
+                        <CheckCircle size={14} />Mark Delivered
                       </button>
                     </div>
                   </div>
@@ -1339,6 +1337,17 @@ function OrdersDispatchTab() {
             order={dispatchTarget}
             onClose={() => setDispatchTarget(null)}
             onDispatched={handleDispatched}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ DELIVERY CONFIRMATION MODAL (self-contained) ═══ */}
+      <AnimatePresence>
+        {deliveredTarget && (
+          <DeliveryConfirmationModal
+            order={deliveredTarget}
+            onClose={() => setDeliveredTarget(null)}
+            onDelivered={handleDelivered}
           />
         )}
       </AnimatePresence>

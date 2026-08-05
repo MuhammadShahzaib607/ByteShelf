@@ -575,34 +575,47 @@ export const dispatchOrder = async (req, res) => {
 
 export const markDelivered = async (req, res) => {
   try {
+    const { note } = req.body;
+
     const order = await Order.findById(req.params.orderId);
     if (!order) {
       return sendRes(res, 404, false, "Order not found");
     }
 
-    const auth = await assertOwnerOfOrder(order, req);
-    if (auth.error) {
-      return sendRes(res, 403, false, auth.error);
+    // Both the warehouse owner AND the order's merchant may finalize delivery.
+    const warehouse = await Warehouse.findById(order.warehouse);
+    const isOwner =
+      warehouse && warehouse.owner && warehouse.owner.toString() === req.user.id;
+    const isMerchant = order.merchant && order.merchant.toString() === req.user.id;
+    if (!isOwner && !isMerchant) {
+      return sendRes(res, 403, false, "Unauthorized to manage this order");
     }
 
     if (order.status !== "Dispatched" && order.status !== "In Transit") {
       return sendRes(res, 400, false, "Order must be dispatched before marking delivered");
     }
 
+    const deliveredNote =
+      (note && note.trim()) || `Delivered to ${order.customerDetails?.name || "customer"}`;
+
     order.status = "Delivered";
+    order.deliveredAt = new Date();
     order.timeline.push({
       status: "Delivered",
       timestamp: new Date(),
-      note: `Delivered to ${order.customerDetails?.name || "customer"}`,
+      note: deliveredNote,
     });
     await order.save();
 
+    // Notify the other party: owner marks -> merchant notified, and vice versa.
+    // (If the warehouse reference is missing, fall back to notifying the merchant.)
+    const otherParty = isOwner ? order.merchant : warehouse?.owner || order.merchant;
     await Notification.create({
-      recipient: order.merchant,
+      recipient: otherParty,
       sender: req.user.id,
       title: "Order Delivered",
-      message: `Order #${order.orderId} delivered successfully to ${order.customerDetails?.name || "customer"}.`,
-      link: "/merchant-dashboard",
+      message: `Order #${order.orderId} successfully delivered`,
+      link: isOwner ? "/merchant-dashboard" : "/dashboard",
     });
 
     return sendRes(res, 200, true, "Order marked as delivered", order);

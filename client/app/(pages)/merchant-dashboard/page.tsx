@@ -26,6 +26,7 @@ import InboundDetailsDrawer from "@/components/ui/InboundDetailsDrawer";
 import CreateInboundModal from "@/components/ui/CreateInboundModal";
 import CreateOrderModal from "@/components/ui/CreateOrderModal";
 import OrderTimeline from "@/components/ui/OrderTimeline";
+import DeliveryConfirmationModal from "@/components/ui/DeliveryConfirmationModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -1460,6 +1461,8 @@ function OrdersTab() {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [deliveredTarget, setDeliveredTarget] = useState<OrderData | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!accessToken) return;
@@ -1470,6 +1473,18 @@ function OrdersTab() {
   }, [accessToken]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const handleDelivered = useCallback(() => {
+    setToast({ message: "Order marked as delivered — warehouse owner notified.", type: "success" });
+    setDeliveredTarget(null);
+    fetchOrders();
+  }, [fetchOrders]);
 
   const statusFilters = [
     { id: "all", label: "All" },
@@ -1619,6 +1634,15 @@ function OrdersTab() {
                       courierDetails={order.courierDetails}
                       timeline={order.timeline}
                     />
+
+                    {(order.status === "Dispatched" || order.status === "In Transit") && (
+                      <button
+                        onClick={() => setDeliveredTarget(order)}
+                        className="mt-4 w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200"
+                      >
+                        <CheckCircle size={14} />Mark as Delivered
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -1627,6 +1651,25 @@ function OrdersTab() {
         </div>
       )}
 
+      {/* Toast */}
+      <AnimatePresence>{toast && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+          className={`fixed top-28 right-6 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md ${toast.type === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" : "bg-red-500/10 border-red-500/20 text-red-300"}`}>
+          {toast.type === "success" ? <CheckCircle size={18} className="shrink-0 text-emerald-500" /> : <AlertCircle size={18} className="shrink-0 text-red-500" />}
+          <span className="text-sm font-body font-medium">{toast.message}</span>
+        </motion.div>
+      )}</AnimatePresence>
+
+      {/* ═══ DELIVERY CONFIRMATION MODAL (self-contained) ═══ */}
+      <AnimatePresence>
+        {deliveredTarget && (
+          <DeliveryConfirmationModal
+            order={deliveredTarget}
+            onClose={() => setDeliveredTarget(null)}
+            onDelivered={handleDelivered}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
