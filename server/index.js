@@ -1,3 +1,22 @@
+// ─── Serverless safety polyfill (defensive guard) ───────────────────────────
+// pdf.js-based parsers (e.g. pdfjs-dist) expect a global DOMMatrix in Node.
+// Vercel's serverless runtime doesn't provide one, which crashed cold starts
+// with `ReferenceError: DOMMatrix is not defined`. Current deps (pdf-parse@1.x)
+// no longer need it, but this guard is kept as insurance against future
+// transitive pdfjs-dist additions.
+if (typeof globalThis.DOMMatrix === "undefined") {
+  globalThis.DOMMatrix = class DOMMatrix {
+    constructor() {
+      this.a = 1;
+      this.b = 0;
+      this.c = 0;
+      this.d = 1;
+      this.e = 0;
+      this.f = 0;
+    }
+  };
+}
+
 import express from "express"
 import cors from "cors"
 import http from "http"

@@ -3,7 +3,15 @@ import InboundPlan from "../models/InboundPlan.js";
 import Warehouse from "../models/Warehouse.js";
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
-import { PDFParse } from "pdf-parse";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+// pdf-parse@1.1.1 is CommonJS and runs a debug block (reads ./test/data/*)
+// whenever `module.parent` is falsy — which is the case under pure ESM
+// imports. Loading it via require keeps module.parent set so the debug
+// block is skipped. (Serverless-safe: zero native dependencies.)
+// Note: it bundles pdf.js 1.10.100, so very new/encrypted PDF encodings may
+// not extract — parsePdf's try/catch returns a clean 500 for those.
+const pdf = require("pdf-parse");
 import { sendRes } from "../utils/responseHandler.js";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -368,8 +376,7 @@ export const parsePdf = async (req, res) => {
       return sendRes(res, 400, false, "Only PDF files are allowed");
     }
 
-    const parser = new PDFParse({ data: req.file.buffer });
-    const result = await parser.getText();
+    const result = await pdf(req.file.buffer);
     const text = result.text || "";
     const lines = text
       .replace(/\r/g, "")
