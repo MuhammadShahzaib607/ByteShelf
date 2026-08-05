@@ -135,11 +135,12 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
   isOpen: boolean; onClose: () => void; isAdmin: boolean;
 }) {
   const { user } = useAppSelector((s) => s.auth);
+  const { unread } = useAppSelector((s) => s.notifications);
   const dispatch = useAppDispatch();
   const handleLogout = () => { dispatch(logout()); localStorage.removeItem("byteshelf_access_token"); localStorage.removeItem("auth_tokens"); window.location.href = "/login"; };
 
   const content = (
-    <div className="flex flex-col h-full bg-[#0d100f]/95 backdrop-blur-md">
+    <div className="flex flex-col h-full bg-neutral-900/95 backdrop-blur-md">
       <div className="shrink-0 px-5 pt-6 pb-5 border-b border-white/10">
         <Link href="/" className="inline-flex items-center group mb-4">
           <Image
@@ -160,13 +161,32 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
           return (
             <button key={tab.id} onClick={() => { onTabChange(tab.id); onClose(); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-left transition-all duration-200 ${
-                isActive ? "bg-neutral-800/90 text-[#84cc16] font-semibold border-l-2 border-[#84cc16]" : "text-white/50 hover:text-white hover:bg-white/5"
+                isActive ? "bg-neutral-800 text-[#84cc16] border-l-2 border-[#84cc16] font-medium" : "text-neutral-400 hover:text-white hover:bg-white/5"
               }`}>
               <Icon className={isActive ? "text-[#84cc16] w-5 h-5" : "text-neutral-400 w-5 h-5"} />{tab.label}
             </button>
           );
         })}
       </nav>
+
+      {/* Action items — Notifications (mobile & desktop drawer) */}
+      <div className="shrink-0 px-3 pb-3 border-t border-white/10">
+        <Link
+          href="/notifications"
+          onClick={onClose}
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+        >
+          <span className="relative">
+            <Bell size={18} className="text-neutral-400" />
+            {unread > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-[8px] font-bold text-white font-body">
+                {unread > 99 ? "99+" : unread}
+              </span>
+            )}
+          </span>
+          Notifications
+        </Link>
+      </div>
       <div className="shrink-0 px-4 py-4 border-t border-white/10">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
@@ -180,10 +200,10 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
   );
 
   return (<>
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-[#0d100f]/95 backdrop-blur-md border-r border-white/10 z-40">{content}</aside>
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-neutral-900/95 backdrop-blur-md border-r border-white/10 z-40">{content}</aside>
     <AnimatePresence>{isOpen && (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose}>
-        <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed left-0 top-0 bottom-0 w-60 bg-[#0d100f]/95 backdrop-blur-md z-50" onClick={(e) => e.stopPropagation()}>{content}</motion.aside>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden" onClick={onClose}>
+        <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed left-0 top-0 bottom-0 w-60 bg-neutral-900/95 backdrop-blur-md z-50" onClick={(e) => e.stopPropagation()}>{content}</motion.aside>
       </motion.div>
     )}</AnimatePresence>
   </>);
@@ -210,7 +230,14 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
             <Bell size={17} className="text-neutral-300" />
             {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
+          {/* Avatar opens the drawer on mobile — profile access in one tap */}
+          <button type="button" onClick={onMenuToggle} aria-label="Open menu"
+            className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-all">
+            <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center">
+              <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
+            </div>
+          </button>
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
             <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center">
               <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
