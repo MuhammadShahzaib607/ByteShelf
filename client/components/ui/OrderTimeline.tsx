@@ -1,24 +1,38 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
   PackageCheck,
   PackageOpen,
   Truck,
   XCircle,
-  ExternalLink,
   Copy,
   Check as CheckIcon,
+  ChevronDown,
+  MapPin,
+  Clock,
 } from "lucide-react";
 import { useState } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
+export interface TimelineEntry {
+  status: string;
+  timestamp?: string;
+  note?: string;
+}
+
 interface OrderTimelineProps {
   status: string;
   trackingId?: string | null;
   dispatchTimestamp?: string | null;
+  courierDetails?: {
+    courierName?: string;
+    trackingId?: string;
+    trackingUrl?: string;
+  } | null;
+  timeline?: TimelineEntry[] | null;
 }
 
 interface Step {
@@ -45,16 +59,18 @@ function formatDateTime(d?: string | null): string {
   }
 }
 
-// Determine which steps are completed based on order status
+// Determine how many steps are completed based on order status
 function resolveProgress(status: string): number {
   switch (status) {
-    case "Dispatched":
     case "Delivered":
       return 4;
-    case "Packed":
+    case "Dispatched":
+    case "In Transit":
       return 3;
-    case "Pending Packing":
+    case "Packed":
       return 2;
+    case "Pending Packing":
+      return 1;
     case "Cancelled":
       return 0;
     default:
@@ -68,47 +84,55 @@ export default function OrderTimeline({
   status,
   trackingId,
   dispatchTimestamp,
+  courierDetails,
+  timeline,
 }: OrderTimelineProps) {
   const [copied, setCopied] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   const completed = resolveProgress(status);
   const isCancelled = status === "Cancelled";
 
+  const courierName = courierDetails?.courierName || "";
+  const courierTrackingId = courierDetails?.trackingId || trackingId || "";
+
   const steps: Step[] = [
     {
-      id: "created",
-      label: "Order Created",
-      sub: "Order received and registered",
+      id: "placed",
+      label: "Order Placed",
+      sub: "Order received and stock reserved",
       icon: <PackageOpen size={14} />,
     },
     {
-      id: "reserved",
-      label: "Stock Reserved",
-      sub: "Items reserved from your inbound inventory",
-      icon: <PackageCheck size={14} />,
-    },
-    {
       id: "packed",
-      label: "Packed by Owner",
+      label: "Packed",
       sub: "Warehouse owner packed the items",
       icon: <PackageCheck size={14} />,
     },
     {
       id: "dispatched",
       label: "Dispatched",
-      sub: trackingId
-        ? `Tracking ID: ${trackingId}`
-        : dispatchTimestamp
-          ? formatDateTime(dispatchTimestamp)
-          : "Out for delivery",
+      sub: courierName
+        ? `Via ${courierName}${courierTrackingId ? ` · ${courierTrackingId}` : ""}`
+        : courierTrackingId
+          ? `Tracking: ${courierTrackingId}`
+          : dispatchTimestamp
+            ? formatDateTime(dispatchTimestamp)
+            : "Out for delivery",
       icon: <Truck size={14} />,
+    },
+    {
+      id: "delivered",
+      label: "Delivered",
+      sub: "Handed over to the customer",
+      icon: <PackageCheck size={14} />,
     },
   ];
 
   const copyTracking = async () => {
-    if (!trackingId) return;
+    if (!courierTrackingId) return;
     try {
-      await navigator.clipboard.writeText(trackingId);
+      await navigator.clipboard.writeText(courierTrackingId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -116,12 +140,19 @@ export default function OrderTimeline({
     }
   };
 
+  const sortedTimeline = Array.isArray(timeline)
+    ? [...timeline].sort(
+        (a, b) =>
+          new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+      )
+    : [];
+
   return (
     <div className="relative pl-1">
       {/* Vertical rail */}
       <div className="absolute left-[15px] top-3 bottom-3 w-px bg-gradient-to-b from-[#84cc16]/50 via-neutral-800 to-neutral-800" />
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {steps.map((step, i) => {
           const done = completed > i;
           const isCurrent = !isCancelled && completed === i;
@@ -169,23 +200,16 @@ export default function OrderTimeline({
                   {step.label}
                   {isCurrent && (
                     <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#84cc16]/10 border border-[#84cc16]/30 text-[#84cc16] text-[10px] font-semibold uppercase tracking-wider">
-                      In Progress
+                      {status === "In Transit" ? "In Transit" : "In Progress"}
                     </span>
                   )}
                 </p>
 
-                {step.id === "dispatched" && trackingId ? (
-                  <div className="mt-1 flex items-center gap-2">
-                    <a
-                      href={`https://www.google.com/search?q=${encodeURIComponent(trackingId)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-[#84cc16] font-body hover:underline group"
-                      title="Search tracking ID"
-                    >
-                      <span className="font-mono">{trackingId}</span>
-                      <ExternalLink size={11} className="opacity-60 group-hover:opacity-100 transition-opacity" />
-                    </a>
+                {step.id === "dispatched" && courierTrackingId ? (
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-[#84cc16] font-body">
+                      <span className="font-mono">{courierTrackingId}</span>
+                    </span>
                     <button
                       type="button"
                       onClick={copyTracking}
@@ -198,9 +222,26 @@ export default function OrderTimeline({
                         <Copy size={11} className="text-neutral-500 hover:text-neutral-300" />
                       )}
                     </button>
+                    {sortedTimeline.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowNotes((v) => !v)}
+                        className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white font-body transition-colors"
+                      >
+                        <ChevronDown size={11} className={`transition-transform ${showNotes ? "rotate-180" : ""}`} />
+                        Delivery notes
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <p className="mt-0.5 text-xs text-neutral-500 font-body">{step.sub}</p>
+                )}
+
+                {step.id === "dispatched" && courierName && (
+                  <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-neutral-400 font-body">
+                    <Truck size={10} className="text-neutral-500" />
+                    {courierName}
+                  </p>
                 )}
               </div>
             </motion.div>
@@ -208,10 +249,55 @@ export default function OrderTimeline({
         })}
       </div>
 
+      {/* Full delivery notes / timeline */}
+      <AnimatePresence>
+        {showNotes && sortedTimeline.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-4 ml-12 rounded-xl bg-neutral-900/80 border border-neutral-800 p-3 space-y-2">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase font-body">
+                Full delivery notes
+              </p>
+              {sortedTimeline.map((entry, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs font-body">
+                  <Clock size={11} className="text-[#84cc16] shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-white font-medium">
+                      {entry.status}
+                      {entry.timestamp && (
+                        <span className="text-neutral-500 font-normal ml-1.5">
+                          {formatDateTime(entry.timestamp)}
+                        </span>
+                      )}
+                    </p>
+                    {entry.note && (
+                      <p className="text-neutral-400 mt-0.5">{entry.note}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {isCancelled && (
         <div className="mt-5 flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-body">
           <XCircle size={14} className="shrink-0" />
           This order was cancelled and will not be fulfilled.
+        </div>
+      )}
+
+      {/* Delivered milestone marker */}
+      {!isCancelled && status === "Delivered" && (
+        <div className="mt-4 ml-12 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-body">
+          <MapPin size={13} className="shrink-0" />
+          Delivered to the customer
         </div>
       )}
     </div>

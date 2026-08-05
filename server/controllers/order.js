@@ -252,6 +252,13 @@ export const createOrder = async (req, res) => {
       customerDetails: { name, phone, address, city },
       orderedItems: items,
       source: source === "AI_PDF_Extraction" ? "AI_PDF_Extraction" : "Manual",
+      timeline: [
+        {
+          status: "Pending Packing",
+          timestamp: new Date(),
+          note: "Order placed and stock reserved",
+        },
+      ],
     });
 
     // Notify the warehouse owner (targeted routing — never the creating merchant)
@@ -485,12 +492,18 @@ export const markPacked = async (req, res) => {
     }
 
     order.status = "Packed";
+    order.timeline.push({
+      status: "Packed",
+      timestamp: new Date(),
+      note: "Items packed by the warehouse",
+    });
     await order.save();
 
     await Notification.create({
       recipient: order.merchant,
       sender: req.user.id,
-      message: `Order #${order.orderId} has been packed by the warehouse`,
+      title: "Order Packed",
+      message: `Order #${order.orderId} has been packed by the warehouse and is ready for dispatch`,
       link: "/merchant-dashboard",
     });
 
@@ -503,9 +516,12 @@ export const markPacked = async (req, res) => {
 
 export const dispatchOrder = async (req, res) => {
   try {
-    const { trackingId } = req.body;
+    const { courierName, trackingId, trackingUrl } = req.body;
     if (!trackingId || !trackingId.trim()) {
       return sendRes(res, 400, false, "Tracking ID is required");
+    }
+    if (!courierName || !courierName.trim()) {
+      return sendRes(res, 400, false, "Courier name is required");
     }
 
     const order = await Order.findById(req.params.orderId);
@@ -523,17 +539,30 @@ export const dispatchOrder = async (req, res) => {
     }
 
     // Stock was already deducted from the inbound inventory when the order
-    // was created (prompt Step 3) — dispatch only advances the status and
-    // records tracking details.
+    // was created — dispatch only advances the status and records the
+    // courier / tracking details.
+    const cleanCourier = courierName.trim();
+    const cleanTracking = trackingId.trim();
     order.status = "Dispatched";
-    order.trackingId = trackingId.trim();
+    order.trackingId = cleanTracking;
     order.dispatchTimestamp = new Date();
+    order.courierDetails = {
+      courierName: cleanCourier,
+      trackingId: cleanTracking,
+      trackingUrl: (trackingUrl || "").trim(),
+    };
+    order.timeline.push({
+      status: "Dispatched",
+      timestamp: new Date(),
+      note: `Handed over to ${cleanCourier} — ${cleanTracking}`,
+    });
     await order.save();
 
     await Notification.create({
       recipient: order.merchant,
       sender: req.user.id,
-      message: `Order #${order.orderId} dispatched — Tracking ID: ${trackingId.trim()}`,
+      title: "Order Dispatched",
+      message: `Order #${order.orderId} has been dispatched via ${cleanCourier} (Tracking: ${cleanTracking}).`,
       link: "/merchant-dashboard",
     });
 
@@ -556,17 +585,23 @@ export const markDelivered = async (req, res) => {
       return sendRes(res, 403, false, auth.error);
     }
 
-    if (order.status !== "Dispatched") {
+    if (order.status !== "Dispatched" && order.status !== "In Transit") {
       return sendRes(res, 400, false, "Order must be dispatched before marking delivered");
     }
 
     order.status = "Delivered";
+    order.timeline.push({
+      status: "Delivered",
+      timestamp: new Date(),
+      note: `Delivered to ${order.customerDetails?.name || "customer"}`,
+    });
     await order.save();
 
     await Notification.create({
       recipient: order.merchant,
       sender: req.user.id,
-      message: `Order #${order.orderId} has been delivered`,
+      title: "Order Delivered",
+      message: `Order #${order.orderId} delivered successfully to ${order.customerDetails?.name || "customer"}.`,
       link: "/merchant-dashboard",
     });
 

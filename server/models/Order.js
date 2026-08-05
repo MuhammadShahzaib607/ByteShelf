@@ -38,9 +38,10 @@ const orderSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["Pending Packing", "Packed", "Dispatched", "Delivered", "Cancelled"],
+      enum: ["Pending Packing", "Packed", "Dispatched", "In Transit", "Delivered", "Cancelled"],
       default: "Pending Packing",
     },
+    // Legacy flat tracking fields (kept for backward compatibility)
     trackingId: {
       type: String,
       default: null,
@@ -49,6 +50,20 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Courier & post-packing tracking details
+    courierDetails: {
+      courierName: { type: String, default: "", trim: true },
+      trackingId: { type: String, default: "", trim: true },
+      trackingUrl: { type: String, default: "", trim: true },
+    },
+    // Order lifecycle timeline (status milestones with timestamps & notes)
+    timeline: [
+      {
+        status: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        note: { type: String, default: "", trim: true },
+      },
+    ],
     source: {
       type: String,
       enum: ["Manual", "AI_PDF_Extraction"],

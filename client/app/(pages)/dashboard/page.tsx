@@ -27,6 +27,7 @@ import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import EditWarehouseModal from "@/components/ui/EditWarehouseModal";
 import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
+import DispatchOrderModal from "@/components/ui/DispatchOrderModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -1078,6 +1079,8 @@ interface OwnerOrderData {
   status: string;
   trackingId?: string | null;
   dispatchTimestamp?: string | null;
+  courierDetails?: { courierName?: string; trackingId?: string; trackingUrl?: string } | null;
+  timeline?: Array<{ status: string; timestamp?: string; note?: string }> | null;
   createdAt: string;
 }
 
@@ -1086,6 +1089,7 @@ function orderStatusPill(status: string) {
     "Pending Packing": "bg-amber-500/10 border-amber-500/30 text-amber-400",
     Packed: "bg-sky-500/10 border-sky-500/30 text-sky-400",
     Dispatched: "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]",
+    "In Transit": "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]",
     Delivered: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
     Cancelled: "bg-red-500/10 border-red-500/30 text-red-400",
   };
@@ -1102,9 +1106,11 @@ function OrdersDispatchTab() {
   const [orders, setOrders] = useState<OwnerOrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-  const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
   const [actingId, setActingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // ─── Dispatch modal state ──────────────────────────────────────────────
+  const [dispatchTarget, setDispatchTarget] = useState<OwnerOrderData | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!accessToken) return;
@@ -1133,22 +1139,11 @@ function OrdersDispatchTab() {
     } finally { setActingId(null); }
   }, [fetchOrders]);
 
-  const dispatchOrder = useCallback(async (orderId: string) => {
-    const trackingId = (trackingInputs[orderId] || "").trim();
-    if (!trackingId) {
-      setToast({ message: "Please enter a tracking ID first.", type: "error" });
-      return;
-    }
-    setActingId(orderId);
-    try {
-      await api.patch(`/order/${orderId}/dispatch`, { trackingId });
-      setToast({ message: "Order dispatched — stock updated.", type: "success" });
-      setTrackingInputs((prev) => ({ ...prev, [orderId]: "" }));
-      fetchOrders();
-    } catch (err: any) {
-      setToast({ message: err.response?.data?.message || "Failed to dispatch the order.", type: "error" });
-    } finally { setActingId(null); }
-  }, [trackingInputs, fetchOrders]);
+  const handleDispatched = useCallback(() => {
+    setToast({ message: "Order dispatched — merchant notified.", type: "success" });
+    setDispatchTarget(null);
+    fetchOrders();
+  }, [fetchOrders]);
 
   const markDelivered = useCallback(async (orderId: string) => {
     setActingId(orderId);
@@ -1161,9 +1156,20 @@ function OrdersDispatchTab() {
     } finally { setActingId(null); }
   }, [fetchOrders]);
 
-  const filters = ["all", "Pending Packing", "Packed", "Dispatched", "Delivered"];
-  const filteredOrders = orders.filter((o) => filter === "all" || o.status === filter);
+  const filters = [
+    { id: "all", label: "All" },
+    { id: "Pending Packing", label: "Pending Packing" },
+    { id: "Packed", label: "Packed" },
+    { id: "transit", label: "In Transit / Dispatched" },
+    { id: "Delivered", label: "Delivered" },
+  ];
+  const filteredOrders = orders.filter((o) => {
+    if (filter === "all") return true;
+    if (filter === "transit") return o.status === "Dispatched" || o.status === "In Transit";
+    return o.status === filter;
+  });
   const pendingCount = orders.filter((o) => o.status === "Pending Packing").length;
+  const courierNameFor = (o: OwnerOrderData) => o.courierDetails?.courierName || "";
 
   return (
     <div>
@@ -1182,7 +1188,7 @@ function OrdersDispatchTab() {
           { label: "Total Orders", value: orders.length, icon: ClipboardList },
           { label: "Pending Packing", value: pendingCount, icon: Clock },
           { label: "Packed", value: orders.filter((o) => o.status === "Packed").length, icon: Package },
-          { label: "Dispatched", value: orders.filter((o) => o.status === "Dispatched").length, icon: Truck },
+          { label: "Dispatched / In Transit", value: orders.filter((o) => o.status === "Dispatched" || o.status === "In Transit").length, icon: Truck },
         ].map((k) => (
           <div key={k.label} className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-4 border border-neutral-800/80 shadow-sm">
             <div className="flex items-center gap-3">
@@ -1196,11 +1202,11 @@ function OrdersDispatchTab() {
       {/* Filter pills */}
       <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
         {filters.map((f) => {
-          const isActive = filter === f;
+          const isActive = filter === f.id;
           return (
-            <button key={f} onClick={() => setFilter(f)}
+            <button key={f.id} onClick={() => setFilter(f.id)}
               className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}>
-              {f === "all" ? "All" : f}
+              {f.label}
             </button>
           );
         })}
@@ -1217,7 +1223,7 @@ function OrdersDispatchTab() {
       ) : filteredOrders.length === 0 ? (
         <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
           <ClipboardList size={26} className="mx-auto text-[#84cc16]/30 mb-3" />
-          <p className="text-sm text-neutral-400 font-body">No orders with status “{filter}”.</p>
+          <p className="text-sm text-neutral-400 font-body">No orders with status “{filters.find((f) => f.id === filter)?.label || filter}”.</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -1277,31 +1283,22 @@ function OrdersDispatchTab() {
                 )}
 
                 {order.status === "Packed" && (
-                  <div className="flex items-center gap-3 pt-4 border-t border-neutral-800 flex-wrap">
-                    <div className="flex-1 min-w-[220px]">
-                      <div className="relative">
-                        <Truck size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/60 pointer-events-none" />
-                        <input
-                          type="text"
-                          value={trackingInputs[order._id] || ""}
-                          onChange={(e) => setTrackingInputs((prev) => ({ ...prev, [order._id]: e.target.value }))}
-                          placeholder="Courier Tracking ID (e.g. TC-778899)"
-                          className="w-full pl-10 pr-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body"
-                        />
-                      </div>
-                    </div>
-                    <button onClick={() => dispatchOrder(order._id)} disabled={actingId === order._id}
+                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
+                    <button onClick={() => setDispatchTarget(order)} disabled={actingId === order._id}
                       className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60">
-                      {actingId === order._id ? <><Loader2 size={14} className="animate-spin" />Dispatching...</> : <><Truck size={14} />Dispatch Order</>}
+                      <Truck size={14} />Dispatch Order
                     </button>
                   </div>
                 )}
 
-                {order.status === "Dispatched" && (
+                {(order.status === "Dispatched" || order.status === "In Transit") && (
                   <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800 flex-wrap">
-                    <div className="flex items-center gap-2 text-xs font-body">
+                    <div className="flex items-center gap-2 text-xs font-body flex-wrap">
+                      <span className="text-neutral-500">Via:</span>
+                      <span className="font-semibold text-white">{courierNameFor(order) || "Courier"}</span>
+                      <span className="text-neutral-600">·</span>
                       <span className="text-neutral-500">Tracking:</span>
-                      <span className="font-mono text-[#84cc16] font-semibold">{order.trackingId || "—"}</span>
+                      <span className="font-mono text-[#84cc16] font-semibold">{order.courierDetails?.trackingId || order.trackingId || "—"}</span>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="text-[11px] text-neutral-500 font-body">
@@ -1318,8 +1315,11 @@ function OrdersDispatchTab() {
                 {order.status === "Delivered" && (
                   <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800">
                     <div className="flex items-center gap-2 text-xs font-body">
+                      <span className="text-neutral-500">Via:</span>
+                      <span className="font-semibold text-white">{courierNameFor(order) || "Courier"}</span>
+                      <span className="text-neutral-600">·</span>
                       <span className="text-neutral-500">Tracking:</span>
-                      <span className="font-mono text-[#84cc16] font-semibold">{order.trackingId || "—"}</span>
+                      <span className="font-mono text-[#84cc16] font-semibold">{order.courierDetails?.trackingId || order.trackingId || "—"}</span>
                     </div>
                     <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 font-body font-medium">
                       <CheckCircle size={13} /> Delivered to customer
@@ -1331,6 +1331,17 @@ function OrdersDispatchTab() {
           })}
         </div>
       )}
+
+      {/* ═══ DISPATCH ORDER MODAL (self-contained) ═══ */}
+      <AnimatePresence>
+        {dispatchTarget && (
+          <DispatchOrderModal
+            order={dispatchTarget}
+            onClose={() => setDispatchTarget(null)}
+            onDispatched={handleDispatched}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

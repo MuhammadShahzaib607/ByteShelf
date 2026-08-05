@@ -1432,6 +1432,8 @@ interface OrderData {
   status: string;
   trackingId?: string | null;
   dispatchTimestamp?: string | null;
+  courierDetails?: { courierName?: string; trackingId?: string; trackingUrl?: string } | null;
+  timeline?: Array<{ status: string; timestamp?: string; note?: string }> | null;
   source?: string;
   createdAt: string;
 }
@@ -1441,6 +1443,7 @@ function orderStatusPill(status: string) {
     "Pending Packing": "bg-amber-500/10 border-amber-500/30 text-amber-400",
     Packed: "bg-sky-500/10 border-sky-500/30 text-sky-400",
     Dispatched: "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]",
+    "In Transit": "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]",
     Delivered: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
     Cancelled: "bg-red-500/10 border-red-500/30 text-red-400",
   };
@@ -1468,8 +1471,18 @@ function OrdersTab() {
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  const statusFilters = ["all", "Pending Packing", "Packed", "Dispatched", "Delivered"];
-  const filteredOrders = orders.filter((o) => filter === "all" || o.status === filter);
+  const statusFilters = [
+    { id: "all", label: "All" },
+    { id: "Pending Packing", label: "Pending Packing" },
+    { id: "Packed", label: "Packed" },
+    { id: "transit", label: "In Transit / Dispatched" },
+    { id: "Delivered", label: "Delivered" },
+  ];
+  const filteredOrders = orders.filter((o) => {
+    if (filter === "all") return true;
+    if (filter === "transit") return o.status === "Dispatched" || o.status === "In Transit";
+    return o.status === filter;
+  });
 
   return (
     <div>
@@ -1484,14 +1497,14 @@ function OrdersTab() {
       {/* Filter pills */}
       <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
         {statusFilters.map((f) => {
-          const isActive = filter === f;
+          const isActive = filter === f.id;
           return (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
+              key={f.id}
+              onClick={() => setFilter(f.id)}
               className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}
             >
-              {f === "all" ? "All" : f}
+              {f.label}
             </button>
           );
         })}
@@ -1510,7 +1523,7 @@ function OrdersTab() {
       ) : filteredOrders.length === 0 ? (
         <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
           <ClipboardList size={26} className="mx-auto text-[#84cc16]/30 mb-3" />
-          <p className="text-sm text-neutral-400 font-body">No orders with status “{filter}”.</p>
+          <p className="text-sm text-neutral-400 font-body">No orders with status “{statusFilters.find((f) => f.id === filter)?.label || filter}”.</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -1572,6 +1585,28 @@ function OrdersTab() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Dispatch Details (in-app) */}
+                    {(order.status === "Dispatched" || order.status === "In Transit" || order.status === "Delivered") &&
+                      (order.courierDetails?.courierName || order.courierDetails?.trackingId || order.trackingId) && (
+                        <div className="p-4 rounded-2xl bg-[#1a231d]/60 border border-[#84cc16]/25">
+                          <p className="text-[10px] font-semibold tracking-wider text-[#84cc16] uppercase mb-3 font-body">Dispatch Details</p>
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between gap-2 text-xs font-body">
+                              <span className="text-neutral-400">Delivery via</span>
+                              <span className="text-white font-semibold">{order.courierDetails?.courierName || "—"}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2 text-xs font-body">
+                              <span className="text-neutral-400">Tracking / Contact</span>
+                              <span className="font-mono text-[#84cc16] font-semibold">{order.courierDetails?.trackingId || order.trackingId || "—"}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2 text-xs font-body">
+                              <span className="text-neutral-400">Dispatched Date &amp; Time</span>
+                              <span className="text-white font-medium">{order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : "—"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                   </div>
 
                   {/* Right: timeline */}
@@ -1581,6 +1616,8 @@ function OrdersTab() {
                       status={order.status}
                       trackingId={order.trackingId}
                       dispatchTimestamp={order.dispatchTimestamp}
+                      courierDetails={order.courierDetails}
+                      timeline={order.timeline}
                     />
                   </div>
                 </div>
