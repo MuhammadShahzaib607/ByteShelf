@@ -573,6 +573,51 @@ export const dispatchOrder = async (req, res) => {
   }
 };
 
+export const markInTransit = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    if (!order) {
+      return sendRes(res, 404, false, "Order not found");
+    }
+
+    const auth = await assertOwnerOfOrder(order, req);
+    if (auth.error) {
+      return sendRes(res, 403, false, auth.error);
+    }
+
+    if (order.status !== "Dispatched") {
+      return sendRes(res, 400, false, "Order must be dispatched before marking in transit");
+    }
+
+    const courier =
+      (order.courierDetails?.courierName || "").trim() ||
+      (order.trackingId || "").trim();
+
+    order.status = "In Transit";
+    order.timeline.push({
+      status: "In Transit",
+      timestamp: new Date(),
+      note: courier
+        ? `Package with ${courier} — on its way to the customer`
+        : "Package handed to the courier and is on its way to the customer",
+    });
+    await order.save();
+
+    await Notification.create({
+      recipient: order.merchant,
+      sender: req.user.id,
+      title: "Order In Transit",
+      message: `Order #${order.orderId} is now in transit and on its way to the customer.`,
+      link: "/merchant-dashboard",
+    });
+
+    return sendRes(res, 200, true, "Order marked as in transit", order);
+  } catch (error) {
+    console.error("[markInTransit] Error:", error.message);
+    return sendRes(res, 500, false, "Something went wrong");
+  }
+};
+
 export const markDelivered = async (req, res) => {
   try {
     const { note } = req.body;

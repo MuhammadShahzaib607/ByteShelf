@@ -1142,6 +1142,17 @@ function OrdersDispatchTab() {
     } finally { setActingId(null); }
   }, [fetchOrders]);
 
+  const markInTransit = useCallback(async (orderId: string) => {
+    setActingId(orderId);
+    try {
+      await api.patch(`/order/${orderId}/mark-in-transit`);
+      setToast({ message: "Order marked as in transit.", type: "success" });
+      fetchOrders();
+    } catch (err: any) {
+      setToast({ message: err.response?.data?.message || "Failed to update the order.", type: "error" });
+    } finally { setActingId(null); }
+  }, [fetchOrders]);
+
   const handleDispatched = useCallback(() => {
     setToast({ message: "Order dispatched — merchant notified.", type: "success" });
     setDispatchTarget(null);
@@ -1300,12 +1311,25 @@ function OrdersDispatchTab() {
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="text-[11px] text-neutral-500 font-body">
-                        Dispatched {order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : ""}
+                        {order.status === "In Transit"
+                          ? `In Transit since ${formatDateTime(
+                              order.timeline?.find((t) => t.status === "In Transit")?.timestamp ||
+                              order.dispatchTimestamp ||
+                              ""
+                            )}`
+                          : `Dispatched ${order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : ""}`}
                       </span>
-                      <button onClick={() => setDeliveredTarget(order)}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200">
-                        <CheckCircle size={14} />Mark Delivered
-                      </button>
+                      {order.status === "Dispatched" ? (
+                        <button onClick={() => markInTransit(order._id)} disabled={actingId === order._id}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60">
+                          {actingId === order._id ? <><Loader2 size={14} className="animate-spin" />Updating...</> : <><Truck size={14} />Mark In Transit</>}
+                        </button>
+                      ) : (
+                        <button onClick={() => setDeliveredTarget(order)}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200">
+                          <CheckCircle size={14} />Mark Delivered
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

@@ -10,6 +10,7 @@ import {
   getOrdersByWarehouse,
   markPacked,
   dispatchOrder,
+  markInTransit,
   markDelivered,
 } from "../controllers/order.js";
 
@@ -29,6 +30,7 @@ router.get("/warehouse-orders", verifyToken, getWarehouseOrders);
 router.get("/warehouse/:warehouseId", verifyToken, getOrdersByWarehouse);
 router.patch("/:orderId/mark-packed", verifyToken, markPacked);
 router.patch("/:orderId/dispatch", verifyToken, dispatchOrder);
+router.patch("/:orderId/mark-in-transit", verifyToken, markInTransit);
 router.patch("/:orderId/mark-delivered", verifyToken, markDelivered);
 
 export default router;
