@@ -17,7 +17,10 @@ import conversationRoute from "./routes/conversation.js"
 import adminRoute from "./routes/admin.js"
 import contactRoute from "./routes/contact.js"
 import dns from 'dns';
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+if (process.env.NODE_ENV !== 'production') {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 
 dotenv.config()
 const app = express()
@@ -25,8 +28,8 @@ const server = http.createServer(app)
 initializeSocket(server)
 
 app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
+    origin: "http://localhost:3000",
+    credentials: true,
 }))
 app.use(express.json())
 app.use("/api/v1/user", authRoute);
@@ -41,10 +44,10 @@ app.use("/api/v1/conversation", conversationRoute);
 app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/contact", contactRoute);
 
-const connectDB = async ()=> {
+const connectDB = async () => {
     try {
-       await mongoose.connect(process.env.MONGO_URI)
-       console.log("server connected to DB Successfully")
+        await mongoose.connect(process.env.MONGO_URI)
+        console.log("server connected to DB Successfully")
     } catch (error) {
         console.log("something went wrong with db connection")
         console.log(error.message)
@@ -53,11 +56,11 @@ const connectDB = async ()=> {
 
 connectDB()
 
-app.get("/", (req, res)=> {
+app.get("/", (req, res) => {
     sendRes(res, 200, true, "API Hit Successfully")
 })
 
-app.get("/health-check", (req, res)=> {
+app.get("/health-check", (req, res) => {
     sendRes(res, 200, true, "ok")
 })
 
