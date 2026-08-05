@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Warehouse,
   CalendarDays,
@@ -14,9 +14,11 @@ import {
   CreditCard,
   MapPin,
   Ban,
+  Package,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
+import CreateInboundModal from "@/components/ui/CreateInboundModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -140,6 +142,9 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ─── Create Inbound (from an active booking card) ───────────────────────
+  const [inboundBooking, setInboundBooking] = useState<BookingData | null>(null);
+
   // ─── Auth guard ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (isCheckingAuth) return;
@@ -228,6 +233,19 @@ export default function MyBookingsPage() {
           </motion.div>
         )}
 
+        {/* Create Inbound Modal (only reachable from an active booking card) */}
+        <AnimatePresence>
+          {inboundBooking && (
+            <CreateInboundModal
+              booking={inboundBooking}
+              onClose={() => setInboundBooking(null)}
+              onCreated={() => {
+                fetchBookings();
+              }}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Booking Grid */}
         {!loading && bookings.length > 0 && (
           <motion.div
@@ -289,6 +307,20 @@ export default function MyBookingsPage() {
                         ID: {booking._id.slice(-8)}
                       </span>
                     </div>
+
+                    {/* Create Inbound — active bookings only (single entry point) */}
+                    {booking.status === "confirmed" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setInboundBooking(booking);
+                        }}
+                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200"
+                      >
+                        <Package size={12} />
+                        Create Inbound
+                      </button>
+                    )}
 
                     {/* Cancel button inline */}
                     {canCancel && (

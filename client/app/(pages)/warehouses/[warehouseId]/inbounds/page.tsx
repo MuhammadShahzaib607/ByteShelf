@@ -27,6 +27,13 @@ interface InboundBatch {
   status: "in-transit" | "arrived" | "completed";
   createdAt: string;
   merchantName?: string;
+  stock?: Array<{
+    itemName: string;
+    sku?: string;
+    initialUnits: number;
+    dispatchedUnits: number;
+    availableUnits: number;
+  }>;
 }
 
 // ─── Status Badge ───────────────────────────────────────────────────────────────
@@ -219,11 +226,12 @@ export default function WarehouseInboundsPage() {
           ) : (
             <>
               {/* Table Header (desktop) */}
-              <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_0.5fr] gap-3 px-4 py-2.5 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
+              <div className="hidden md:grid grid-cols-[2fr_1.2fr_1fr_1fr_1fr_1fr_0.5fr] gap-3 px-4 py-2.5 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] mb-1">
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Batch Name</span>
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Booking Ref</span>
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Merchant</span>
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Cartons</span>
+                <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Stock</span>
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Expected</span>
                 <span className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">Status</span>
               </div>
@@ -234,7 +242,7 @@ export default function WarehouseInboundsPage() {
                   <div
                     key={batch._id}
                     onClick={() => router.push(`/inbounds/${batch._id}`)}
-                    className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr_0.5fr] gap-2 md:gap-3 items-center px-4 py-3.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]/30 hover:border-[#0284C7]/30 transition-all duration-200 cursor-pointer"
+                    className="grid grid-cols-1 md:grid-cols-[2fr_1.2fr_1fr_1fr_1fr_1fr_0.5fr] gap-2 md:gap-3 items-center px-4 py-3.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]/30 hover:border-[#0284C7]/30 transition-all duration-200 cursor-pointer"
                   >
                     {/* Batch Name */}
                     <div className="flex items-center gap-2 min-w-0">
@@ -260,6 +268,22 @@ export default function WarehouseInboundsPage() {
                     <div className="text-sm font-semibold text-[#1E293B] font-body">
                       <span className="md:hidden text-[10px] text-[#0F172A]/40 mr-1">Cartons: </span>
                       {batch.totalCartons}
+                    </div>
+
+                    {/* Stock (read-only ledger) */}
+                    <div className="text-xs text-[#0F172A]/60 font-body">
+                      <span className="md:hidden text-[10px] text-[#0F172A]/40 mr-1">Stock: </span>
+                      {(batch.stock || []).reduce((s, e) => s + (e.initialUnits || 0), 0) > 0 ? (
+                        <span className="inline-flex flex-col md:flex-row md:items-center md:gap-1.5">
+                          <span className="font-semibold text-[#1E293B] numeric">
+                            {(batch.stock || []).reduce((s, e) => s + (e.availableUnits || 0), 0)}
+                          </span>
+                          <span className="text-[#0F172A]/40">/ {(batch.stock || []).reduce((s, e) => s + (e.initialUnits || 0), 0)}</span>
+                          <span className="text-[10px] text-[#0F172A]/40">available</span>
+                        </span>
+                      ) : (
+                        <span className="text-[#0F172A]/30">—</span>
+                      )}
                     </div>
 
                     {/* Expected Date */}

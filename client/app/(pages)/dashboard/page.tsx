@@ -13,6 +13,7 @@ import {
   Save, Check, Image as ImageIcon, Video,
   ThumbsUp, ThumbsDown, X, Search, Undo2, AlertCircle,
   Phone, HardHat, Store, Copy, ChevronLeft,
+  Truck, ClipboardList, Box,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout, setUser } from "@/redux/slices/authSlice";
@@ -29,7 +30,7 @@ import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
-type TabId = "overview" | "warehouses" | "add-warehouse" | "profile" | "verifications";
+type TabId = "overview" | "warehouses" | "add-warehouse" | "orders" | "profile" | "verifications";
 
 interface WarehouseData { _id: string; name: string; location: string; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; }
 interface BookingData { _id: string; merchant: { _id: string; name: string; email: string; phone: string }; warehouse: { _id: string; name: string; location: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: string; paymentStatus: string; totalAmount: number; createdAt: string; }
@@ -50,6 +51,7 @@ const roleOptions = [
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
 function formatDate(d: string) { return new Date(d).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }); }
+function formatDateTime(d: string) { return new Date(d).toLocaleString("en-PK", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
 function calcMonths(start: Date, end: Date): number { return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44))); }
 function toDateInputValue(date: Date): string { return date.toISOString().split("T")[0]; }
 
@@ -123,6 +125,7 @@ const SIDEBAR_TABS: { id: TabId; label: string; icon: React.ElementType; adminOn
   { id: "overview", label: "Dashboard", icon: LayoutDashboard },
   { id: "warehouses", label: "My Warehouses", icon: Warehouse },
   { id: "add-warehouse", label: "Add Warehouse", icon: Plus },
+  { id: "orders", label: "Orders & Dispatch", icon: Truck },
   { id: "profile", label: "Account / Profile", icon: User },
   { id: "verifications", label: "Verify Users", icon: ShieldCheck, adminOnly: true },
 ];
@@ -1035,6 +1038,277 @@ function AddWarehouseTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TAB: ORDERS & DISPATCH (Fulfillment Pipeline — STEP 4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface OwnerOrderData {
+  _id: string;
+  orderId: string;
+  merchant?: { _id: string; name: string; email?: string };
+  warehouse?: { _id: string; name: string; location?: string };
+  customerDetails: { name: string; phone: string; address: string; city: string };
+  orderedItems: Array<{ itemName: string; sku?: string; quantity: number }>;
+  status: string;
+  trackingId?: string | null;
+  dispatchTimestamp?: string | null;
+  createdAt: string;
+}
+
+function orderStatusPill(status: string) {
+  const map: Record<string, string> = {
+    "Pending Packing": "bg-amber-500/10 border-amber-500/30 text-amber-400",
+    Packed: "bg-sky-500/10 border-sky-500/30 text-sky-400",
+    Dispatched: "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]",
+    Delivered: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+    Cancelled: "bg-red-500/10 border-red-500/30 text-red-400",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${map[status] || "bg-neutral-500/10 border-neutral-500/30 text-neutral-400"}`}>
+      <ClipboardList size={10} />
+      {status}
+    </span>
+  );
+}
+
+function OrdersDispatchTab() {
+  const { accessToken } = useAppSelector((s) => s.auth);
+  const [orders, setOrders] = useState<OwnerOrderData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
+  const [actingId, setActingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const fetchOrders = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const res = await api.get("/order/warehouse-orders");
+      setOrders(Array.isArray(res.data.data) ? res.data.data : []);
+    } catch { } finally { setLoading(false); }
+  }, [accessToken]);
+
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const markPacked = useCallback(async (orderId: string) => {
+    setActingId(orderId);
+    try {
+      await api.patch(`/order/${orderId}/mark-packed`);
+      setToast({ message: "Order marked as packed.", type: "success" });
+      fetchOrders();
+    } catch (err: any) {
+      setToast({ message: err.response?.data?.message || "Failed to update the order.", type: "error" });
+    } finally { setActingId(null); }
+  }, [fetchOrders]);
+
+  const dispatchOrder = useCallback(async (orderId: string) => {
+    const trackingId = (trackingInputs[orderId] || "").trim();
+    if (!trackingId) {
+      setToast({ message: "Please enter a tracking ID first.", type: "error" });
+      return;
+    }
+    setActingId(orderId);
+    try {
+      await api.patch(`/order/${orderId}/dispatch`, { trackingId });
+      setToast({ message: "Order dispatched — stock updated.", type: "success" });
+      setTrackingInputs((prev) => ({ ...prev, [orderId]: "" }));
+      fetchOrders();
+    } catch (err: any) {
+      setToast({ message: err.response?.data?.message || "Failed to dispatch the order.", type: "error" });
+    } finally { setActingId(null); }
+  }, [trackingInputs, fetchOrders]);
+
+  const markDelivered = useCallback(async (orderId: string) => {
+    setActingId(orderId);
+    try {
+      await api.patch(`/order/${orderId}/mark-delivered`);
+      setToast({ message: "Order marked as delivered.", type: "success" });
+      fetchOrders();
+    } catch (err: any) {
+      setToast({ message: err.response?.data?.message || "Failed to update the order.", type: "error" });
+    } finally { setActingId(null); }
+  }, [fetchOrders]);
+
+  const filters = ["all", "Pending Packing", "Packed", "Dispatched", "Delivered"];
+  const filteredOrders = orders.filter((o) => filter === "all" || o.status === filter);
+  const pendingCount = orders.filter((o) => o.status === "Pending Packing").length;
+
+  return (
+    <div>
+      {/* Toast */}
+      <AnimatePresence>{toast && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+          className={`fixed top-28 right-6 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md ${toast.type === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" : "bg-red-500/10 border-red-500/20 text-red-300"}`}>
+          {toast.type === "success" ? <CheckCircle size={18} className="shrink-0 text-emerald-500" /> : <AlertCircle size={18} className="shrink-0 text-red-500" />}
+          <span className="text-sm font-body font-medium">{toast.message}</span>
+        </motion.div>
+      )}</AnimatePresence>
+
+      {/* Header stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {[
+          { label: "Total Orders", value: orders.length, icon: ClipboardList },
+          { label: "Pending Packing", value: pendingCount, icon: Clock },
+          { label: "Packed", value: orders.filter((o) => o.status === "Packed").length, icon: Package },
+          { label: "Dispatched", value: orders.filter((o) => o.status === "Dispatched").length, icon: Truck },
+        ].map((k) => (
+          <div key={k.label} className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-4 border border-neutral-800/80 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-neutral-800/60 flex items-center justify-center"><k.icon size={17} className="text-[#84cc16]" /></div>
+              <div><p className="font-heading text-xl font-bold text-white numeric">{k.value}</p><p className="text-[11px] text-neutral-400 font-body">{k.label}</p></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter pills */}
+      <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
+        {filters.map((f) => {
+          const isActive = filter === f;
+          return (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}>
+              {f === "all" ? "All" : f}
+            </button>
+          );
+        })}
+      </div>
+
+      {loading ? (
+        <div className="space-y-4">{[1, 2].map((i) => <div key={i} className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 p-6 animate-pulse"><div className="h-5 bg-neutral-800/60 rounded w-40 mb-4" /><div className="h-32 bg-neutral-800/60 rounded-2xl" /></div>)}</div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Truck size={28} className="text-[#84cc16]/40" /></div>
+          <h3 className="font-heading text-lg font-semibold text-white mb-2">No orders yet</h3>
+          <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">When a merchant creates a dispatch order, it will appear here for packing and dispatch.</p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
+          <ClipboardList size={26} className="mx-auto text-[#84cc16]/30 mb-3" />
+          <p className="text-sm text-neutral-400 font-body">No orders with status “{filter}”.</p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {filteredOrders.map((order, i) => {
+            const totalQty = order.orderedItems.reduce((s, it) => s + (it.quantity || 0), 0);
+            return (
+              <motion.div key={order._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.04 }}
+                className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-colors duration-200 p-5 sm:p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center shrink-0">
+                      <Truck size={18} className="text-[#84cc16]" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm font-bold text-white font-mono">{order.orderId}</span>
+                      <p className="text-xs text-neutral-400 font-body truncate mt-0.5">
+                        {order.warehouse?.name || "Warehouse"} · {order.merchant?.name || "Merchant"}
+                      </p>
+                    </div>
+                  </div>
+                  {orderStatusPill(order.status)}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {/* Ship To */}
+                  <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                    <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-2 font-body">Ship To</p>
+                    <p className="text-sm font-semibold text-white font-body">{order.customerDetails?.name || "—"}</p>
+                    <p className="text-xs text-neutral-400 font-body mt-1">{order.customerDetails?.phone} · {order.customerDetails?.city}</p>
+                    <p className="text-xs text-neutral-500 font-body mt-1 truncate">{order.customerDetails?.address}</p>
+                  </div>
+                  {/* Items */}
+                  <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase font-body">Items ({totalQty})</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      {order.orderedItems.map((it, idx) => (
+                        <div key={`${it.itemName}-${idx}`} className="flex items-center justify-between gap-2 text-xs font-body">
+                          <span className="text-white truncate">{it.itemName}</span>
+                          <span className="text-[#84cc16] font-bold numeric shrink-0">× {it.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action footer */}
+                {order.status === "Pending Packing" && (
+                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
+                    <button onClick={() => markPacked(order._id)} disabled={actingId === order._id}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60">
+                      {actingId === order._id ? <><Loader2 size={14} className="animate-spin" />Updating...</> : <><Package size={14} />Mark as Packed</>}
+                    </button>
+                  </div>
+                )}
+
+                {order.status === "Packed" && (
+                  <div className="flex items-center gap-3 pt-4 border-t border-neutral-800 flex-wrap">
+                    <div className="flex-1 min-w-[220px]">
+                      <div className="relative">
+                        <Truck size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#84cc16]/60 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={trackingInputs[order._id] || ""}
+                          onChange={(e) => setTrackingInputs((prev) => ({ ...prev, [order._id]: e.target.value }))}
+                          placeholder="Courier Tracking ID (e.g. TC-778899)"
+                          className="w-full pl-10 pr-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body"
+                        />
+                      </div>
+                    </div>
+                    <button onClick={() => dispatchOrder(order._id)} disabled={actingId === order._id}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-60">
+                      {actingId === order._id ? <><Loader2 size={14} className="animate-spin" />Dispatching...</> : <><Truck size={14} />Dispatch Order</>}
+                    </button>
+                  </div>
+                )}
+
+                {order.status === "Dispatched" && (
+                  <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800 flex-wrap">
+                    <div className="flex items-center gap-2 text-xs font-body">
+                      <span className="text-neutral-500">Tracking:</span>
+                      <span className="font-mono text-[#84cc16] font-semibold">{order.trackingId || "—"}</span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-[11px] text-neutral-500 font-body">
+                        Dispatched {order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : ""}
+                      </span>
+                      <button onClick={() => markDelivered(order._id)} disabled={actingId === order._id}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200 disabled:opacity-60">
+                        {actingId === order._id ? <><Loader2 size={14} className="animate-spin" />Updating...</> : <><CheckCircle size={14} />Mark Delivered</>}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {order.status === "Delivered" && (
+                  <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800">
+                    <div className="flex items-center gap-2 text-xs font-body">
+                      <span className="text-neutral-500">Tracking:</span>
+                      <span className="font-mono text-[#84cc16] font-semibold">{order.trackingId || "—"}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 font-body font-medium">
+                      <CheckCircle size={13} /> Delivered to customer
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TAB: PROFILE — Full Profile Management
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1463,6 +1737,7 @@ export default function DashboardPage() {
                 {activeTab === "overview" && "Dashboard"}
                 {activeTab === "warehouses" && "My Warehouses"}
                 {activeTab === "add-warehouse" && "Add Warehouse"}
+                {activeTab === "orders" && "Orders & Dispatch"}
                 {activeTab === "profile" && "Account / Profile"}
                 {activeTab === "verifications" && "KYC Verifications"}
               </h1>
@@ -1470,6 +1745,7 @@ export default function DashboardPage() {
                 {activeTab === "overview" && "Here's your overview at a glance"}
                 {activeTab === "warehouses" && "Manage your listed properties"}
                 {activeTab === "add-warehouse" && "Create a new warehouse listing"}
+                {activeTab === "orders" && "Pack and dispatch merchant orders"}
                 {activeTab === "profile" && "Manage your account settings"}
                 {activeTab === "verifications" && "Manage user identity verification requests"}
               </p>
@@ -1491,6 +1767,7 @@ export default function DashboardPage() {
               )
             )}
             {activeTab === "add-warehouse" && <AddWarehouseTab />}
+            {activeTab === "orders" && <OrdersDispatchTab />}
             {activeTab === "profile" && <ProfileTab />}
             {activeTab === "verifications" && <VerificationsTab />}
           </motion.div>

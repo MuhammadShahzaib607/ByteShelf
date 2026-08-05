@@ -15,10 +15,8 @@ import {
   Clock,
   XCircle,
   CreditCard,
-  Plus,
   Ban,
   Package,
-  Send,
   DollarSign,
   ChevronRight,
   MessageCircle,
@@ -142,14 +140,6 @@ export default function BookingDetailPage() {
   const [inboundPlans, setInboundPlans] = useState<InboundPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
 
-  // ─── Create inbound plan state ───────────────────────────────────────────
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [batchName, setBatchName] = useState("");
-  const [totalCartons, setTotalCartons] = useState(1);
-  const [expectedDate, setExpectedDate] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-
   // ─── Cancel booking state ────────────────────────────────────────────────
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -193,30 +183,6 @@ export default function BookingDetailPage() {
     if (!accessToken || !bookingId) return;
     fetchInboundPlans();
   }, [accessToken, bookingId, fetchInboundPlans]);
-
-  // ─── Create inbound plan ─────────────────────────────────────────────────
-  const handleCreateInbound = useCallback(async () => {
-    if (!batchName.trim() || !totalCartons || !expectedDate) return;
-    setCreating(true);
-    setCreateError(null);
-    try {
-      await api.post("/inbound/create", {
-        bookingId,
-        batchName: batchName.trim(),
-        totalCartons,
-        expectedDate,
-      });
-      setShowCreateForm(false);
-      setBatchName("");
-      setTotalCartons(1);
-      setExpectedDate("");
-      fetchInboundPlans();
-    } catch (err: any) {
-      setCreateError(err.response?.data?.message || "Failed to create inbound plan.");
-    } finally {
-      setCreating(false);
-    }
-  }, [batchName, totalCartons, expectedDate, bookingId, fetchInboundPlans]);
 
 // ─── Chat with warehouse owner ──────────────────────────────────────────
 const handleChatWithOwner = useCallback(async () => {
@@ -496,15 +462,6 @@ const handleChatWithOwner = useCallback(async () => {
               </div>
               <h2 className="font-heading text-xl font-semibold text-[#1E293B]">Inbound Plans</h2>
             </div>
-            {!isCancelledStatus && (
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded-full text-xs font-body font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
-              >
-                <Plus size={14} />
-                New Plan
-              </button>
-            )}
           </div>
 
           {plansLoading ? (
@@ -520,13 +477,10 @@ const handleChatWithOwner = useCallback(async () => {
                   : "No inbound plans yet for this booking."}
               </p>
               {!isCancelledStatus && (
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#0284C7] text-white rounded-full text-xs font-body font-medium hover:bg-[#0284C7]/90 transition-all duration-300"
-                >
-                  <Plus size={14} />
-                  Create Your First Inbound Plan
-                </button>
+                <p className="mt-4 text-xs text-[#0F172A]/50 font-body max-w-sm mx-auto">
+                  New shipments are created from the My Bookings page — press the
+                  “Create Inbound” button on this booking&apos;s card.
+                </p>
               )}
             </div>
           ) : (
@@ -573,90 +527,6 @@ const handleChatWithOwner = useCallback(async () => {
             </div>
           )}
         </motion.div>
-
-        {/* ═══ C. INBOUND PLAN CREATION FORM (hidden when cancelled) ═══ */}
-        {!isCancelledStatus && (
-        <AnimatePresence>
-          {showCreateForm && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#E2E8F0] mb-8"
-            >
-              <div className="flex items-center gap-2.5 mb-6">
-                <div className="w-9 h-9 rounded-xl bg-[#F8FAFC] flex items-center justify-center">
-                  <Package size={18} className="text-[#0284C7]" />
-                </div>
-                <h2 className="font-heading text-lg font-semibold text-[#1E293B]">Create Inbound Plan</h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Batch Name</label>
-                  <input
-                    type="text"
-                    value={batchName}
-                    onChange={(e) => setBatchName(e.target.value)}
-                    placeholder="e.g. Q3 Inventory Restock"
-                    className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Total Cartons</label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={totalCartons}
-                      onChange={(e) => setTotalCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold tracking-wider text-[#1E293B] uppercase mb-1.5 block font-body">Expected Date</label>
-                    <input
-                      type="date"
-                      value={expectedDate}
-                      onChange={(e) => setExpectedDate(e.target.value)}
-                      min={new Date().toISOString().split("T")[0]}
-                      className="w-full px-4 py-3 bg-[#F8FAFC]/40 border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white transition-all font-body"
-                    />
-                  </div>
-                </div>
-
-                {createError && (
-                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5">
-                    <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-600 font-body">{createError}</p>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    onClick={handleCreateInbound}
-                    disabled={creating || !batchName.trim() || !expectedDate}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#0284C7] text-white rounded-full text-sm font-body font-medium hover:bg-[#0284C7]/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    {creating ? (
-                      <><Loader2 size={16} className="animate-spin" />Creating...</>
-                    ) : (
-                      <><Send size={16} />Create Inbound Plan</>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setShowCreateForm(false)}
-                    className="px-5 py-3 border border-[#E2E8F0] text-[#0F172A]/60 rounded-full text-sm font-body hover:bg-[#F8FAFC] transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        )}
       </div>
 
       {/* Cancel Confirmation Modal */}

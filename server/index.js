@@ -12,6 +12,7 @@ import bookingRoute from "./routes/booking.js"
 import notificationRoute from "./routes/notification.js"
 import inboundRoute from "./routes/inboundPlan.js"
 import cartonRoute from "./routes/carton.js"
+import orderRoute from "./routes/order.js"
 import conversationRoute from "./routes/conversation.js"
 import adminRoute from "./routes/admin.js"
 import contactRoute from "./routes/contact.js"
@@ -35,6 +36,7 @@ app.use("/api/v1/booking", bookingRoute);
 app.use("/api/v1/notification", notificationRoute);
 app.use("/api/v1/inbound", inboundRoute);
 app.use("/api/v1/carton", cartonRoute);
+app.use("/api/v1/order", orderRoute);
 app.use("/api/v1/conversation", conversationRoute);
 app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/contact", contactRoute);

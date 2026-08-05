@@ -4,18 +4,29 @@ import Carton from "../models/Carton.js";
 import Booking from "../models/Booking.js";
 import Notification from "../models/Notification.js";
 import Warehouse from "../models/Warehouse.js";
+
 import { sendRes } from "../utils/responseHandler.js";
+
+// Auto-generate a short SKU when the merchant leaves the SKU blank
+const generateSku = (itemName) => {
+  const base =
+    String(itemName || "ITEM")
+      .trim()
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase()
+      .slice(0, 4) || "ITEM";
+  return `${base}-${Date.now().toString(36).toUpperCase().slice(-4)}${Math.random()
+    .toString(36)
+    .toUpperCase()
+    .slice(2, 5)}`;
+};
 
 export const createInboundPlan = async (req, res) => {
   try {
-    const { bookingId, batchName, totalCartons, expectedDate } = req.body;
+    const { bookingId, batchName, expectedDate, items, totalCartons, cartons: cartonsData } = req.body;
 
-    if (!bookingId || !batchName || !totalCartons || !expectedDate) {
+    if (!bookingId || !batchName || !expectedDate) {
       return sendRes(res, 400, false, "All fields are required");
-    }
-
-    if (totalCartons <= 0) {
-      return sendRes(res, 400, false, "Total cartons must be greater than 0");
     }
 
     const booking = await Booking.findOne({ _id: bookingId, merchant: req.user.id });
@@ -31,17 +42,126 @@ export const createInboundPlan = async (req, res) => {
       return sendRes(res, 400, false, "Booking has expired");
     }
 
+    // ─── Item-detail payload (new flow): items = [{ itemName, sku, totalCartons, itemsPerCarton }] ───
+    const itemPayload = Array.isArray(items) ? items.filter((it) => it && it.itemName) : [];
+
+    let cartonContents = [];
+    let stock = [];
+    let planTotalCartons = 0;
+
+    if (itemPayload.length > 0) {
+      // Validate + normalize each declared item
+      const normalized = itemPayload.map((it) => {
+        const itemName = String(it.itemName || "").trim();
+        const cartons = Number(it.totalCartons) || 0;
+        const perCarton = Number(it.itemsPerCarton) || 0;
+        if (!itemName || cartons < 1 || perCarton < 1) {
+          return null;
+        }
+        return {
+          itemName,
+          sku: String(it.sku || "").trim(),
+          cartons,
+          perCarton,
+        };
+      }).filter(Boolean);
+
+      if (normalized.length === 0) {
+        return sendRes(res, 400, false, "Each item needs a name, at least 1 carton and at least 1 piece per carton");
+      }
+
+      // Build carton declarations + stock ledger from the item details
+      let cartonIndex = 0;
+      for (const it of normalized) {
+        const sku = it.sku || generateSku(it.itemName);
+        const initialUnits = it.cartons * it.perCarton;
+        planTotalCartons += it.cartons;
+        stock.push({
+          itemName: it.itemName,
+          sku,
+          initialUnits,
+          dispatchedUnits: 0,
+          availableUnits: initialUnits,
+        });
+        for (let c = 0; c < it.cartons; c++) {
+          cartonIndex += 1;
+          cartonContents.push({
+            cartonNumber: `CTN-${String(cartonIndex).padStart(3, "0")}`,
+            items: [{ itemName: it.itemName, sku, quantity: it.perCarton }],
+            status: "In Storage",
+            totalItemsCount: it.perCarton,
+          });
+        }
+      }
+
+      if (planTotalCartons <= 0) {
+        return sendRes(res, 400, false, "Total cartons must be greater than 0");
+      }
+    } else {
+      // ─── Legacy payload: totalCartons + optional per-carton contents ────
+      if (!totalCartons || Number(totalCartons) <= 0) {
+        return sendRes(res, 400, false, "Total cartons must be greater than 0");
+      }
+      planTotalCartons = Number(totalCartons);
+
+      cartonContents = Array.isArray(cartonsData)
+        ? cartonsData
+            .map((c, idx) => {
+              const items = Array.isArray(c.items)
+                ? c.items
+                    .filter((i) => i.itemName && Number(i.quantity) > 0)
+                    .map((i) => ({
+                      itemName: String(i.itemName).trim(),
+                      sku: String(i.sku || "").trim(),
+                      quantity: Number(i.quantity) || 0,
+                    }))
+                : [];
+              if (items.length === 0) return null;
+              return {
+                cartonNumber:
+                  String(c.cartonNumber || "").trim() ||
+                  `CTN-${String(idx + 1).padStart(3, "0")}`,
+                items,
+                status: "In Storage",
+                totalItemsCount: items.reduce((s, i) => s + i.quantity, 0),
+              };
+            })
+            .filter(Boolean)
+        : [];
+
+      // Derive the stock ledger from the declared carton contents
+      const stockMap = new Map();
+      for (const c of cartonContents) {
+        for (const i of c.items || []) {
+          const key = (i.sku || "").toLowerCase() || i.itemName.toLowerCase();
+          const entry = stockMap.get(key) || {
+            itemName: i.itemName,
+            sku: i.sku || generateSku(i.itemName),
+            initialUnits: 0,
+            dispatchedUnits: 0,
+            availableUnits: 0,
+          };
+          entry.initialUnits += i.quantity;
+          entry.availableUnits += i.quantity;
+          stockMap.set(key, entry);
+        }
+      }
+      stock = Array.from(stockMap.values());
+    }
+
     const inboundPlan = await InboundPlan.create({
       merchant: req.user.id,
       warehouse: booking.warehouse,
       booking: booking._id,
       batchName: batchName.trim(),
-      totalCartons,
+      totalCartons: planTotalCartons,
       expectedDate,
+      cartons: cartonContents,
+      stock,
     });
 
     const cartons = [];
-    for (let i = 1; i <= totalCartons; i++) {
+    for (let i = 1; i <= planTotalCartons; i++) {
       cartons.push({
         inboundPlan: inboundPlan._id,
         warehouse: booking.warehouse,
@@ -56,7 +176,7 @@ export const createInboundPlan = async (req, res) => {
     await Notification.create({
       recipient: warehouse.owner,
       sender: req.user.id,
-      message: `New inbound added for your warehouse booking: ${totalCartons} carton(s) in batch "${batchName}"`,
+      message: `New inbound added for your warehouse booking: ${planTotalCartons} carton(s) in batch "${batchName}"`,
       link: `/inbound-plans/${inboundPlan._id}`,
     });
 

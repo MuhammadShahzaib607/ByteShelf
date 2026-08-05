@@ -113,7 +113,9 @@ export const getWarehouseBookingDetails = async (req, res) => {
 
 export const getMerchantBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ merchant: req.user.id }).sort({ createdAt: -1 });
+    const bookings = await Booking.find({ merchant: req.user.id })
+      .sort({ createdAt: -1 })
+      .populate("warehouse", "name location");
 
     return sendRes(res, 200, true, "Bookings fetched successfully", {
       bookings,

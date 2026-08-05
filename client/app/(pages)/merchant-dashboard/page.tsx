@@ -9,10 +9,11 @@ import {
   LayoutDashboard, Compass, CalendarDays, Package, User,
   Bell, LogOut, Menu, ArrowLeft, Loader2, MapPin, Layers,
   DollarSign, Store, Clock, CheckCircle, XCircle, CreditCard,
-  Search, ChevronDown, Ban, Plus, Send, AlertCircle,
+  Search, ChevronDown, Ban, AlertCircle,
   ChevronRight, Eye, Warehouse, TrendingUp, Building2, HardHat,
-  Copy, Check, Save, Phone, Box, Hash, CalendarDays as CalendarIcon,
-  ChevronLeft, X, Image as ImageIcon, Edit3, Mail, PlusCircle, Download
+  Copy, Check, Save, Phone, Box, CalendarDays as CalendarIcon,
+  ChevronLeft, X, Image as ImageIcon, Edit3, Mail, Download,
+  Truck, ClipboardList
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout, setUser } from "@/redux/slices/authSlice";
@@ -21,10 +22,14 @@ import { fetchProfile, updateProfile, clearProfileError, clearProfileSuccess } f
 import api from "@/lib/axios";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import InboundDetailsDrawer from "@/components/ui/InboundDetailsDrawer";
+import CreateInboundModal from "@/components/ui/CreateInboundModal";
+import CreateOrderModal from "@/components/ui/CreateOrderModal";
+import OrderTimeline from "@/components/ui/OrderTimeline";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
-type TabId = "overview" | "explore" | "my-bookings" | "inbounds" | "account";
+type TabId = "overview" | "explore" | "my-bookings" | "inbounds" | "orders" | "account";
 
 interface WarehouseData { _id: string; name: string; location: string; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; latitude: number; longitude: number; }
 
@@ -100,6 +105,7 @@ const SIDEBAR_TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "explore", label: "Explore Warehouses", icon: Compass },
   { id: "my-bookings", label: "My Bookings", icon: CalendarDays },
   { id: "inbounds", label: "Inbounds & Cartons", icon: Package },
+  { id: "orders", label: "Orders & Tracking", icon: Truck },
   { id: "account", label: "Account / Profile", icon: User },
 ];
 
@@ -678,16 +684,8 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  // ─── Inbound Creation from Booking ──────────────────────────────────────
-  const [showInboundModal, setShowInboundModal] = useState(false);
+  // ─── Inbound Creation from Booking (single entry point) ────────────────
   const [inboundBooking, setInboundBooking] = useState<BookingData | null>(null);
-  const [inboundCartons, setInboundCartons] = useState(1);
-  const [inboundArrivalDate, setInboundArrivalDate] = useState("");
-  const [inboundBatchName, setInboundBatchName] = useState("");
-  const [creatingInbound, setCreatingInbound] = useState(false);
-  const [inboundCreateError, setInboundCreateError] = useState<string | null>(null);
-  const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
-  const [showInboundSuccess, setShowInboundSuccess] = useState(false);
 
   const fetchBookings = useCallback(async () => {
     if (!accessToken) return;
@@ -712,39 +710,11 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
     } catch { } finally { setIsCancelling(false); setCancelTarget(null); }
   }, [cancelTarget, fetchBookings]);
 
-  // ─── Handle Create Inbound from Booking ─────────────────────────────────
-  const handleCreateInboundFromBooking = useCallback(async () => {
-    if (!inboundBooking || !inboundBatchName.trim() || !inboundCartons || !inboundArrivalDate) return;
-    setCreatingInbound(true);
-    setInboundCreateError(null);
-    try {
-      const res = await api.post("/inbound/create", {
-        bookingId: inboundBooking._id,
-        batchName: inboundBatchName.trim(),
-        totalCartons: inboundCartons,
-        expectedDate: inboundArrivalDate,
-      });
-      const planId = res.data.data?._id || "";
-      setCreatedPlanId(planId);
-      setShowInboundModal(false);
-      setShowInboundSuccess(true);
-      setInboundBatchName("");
-      setInboundCartons(1);
-      setInboundArrivalDate("");
-      setInboundBooking(null);
-      fetchBookings();
-    } catch (err: any) {
-      setInboundCreateError(err.response?.data?.message || "Failed to create inbound plan.");
-    } finally { setCreatingInbound(false); }
-  }, [inboundBooking, inboundBatchName, inboundCartons, inboundArrivalDate, fetchBookings]);
+
+
 
   const openInboundModal = useCallback((booking: BookingData) => {
     setInboundBooking(booking);
-    setInboundCartons(1);
-    setInboundArrivalDate("");
-    setInboundBatchName(`Shipment - ${booking.warehouseName || booking.warehouse?.name || "Warehouse"}`);
-    setInboundCreateError(null);
-    setShowInboundModal(true);
   }, []);
 
   const filteredBookings = bookings.filter((b) => {
@@ -889,103 +859,17 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         )}
       </AnimatePresence>
 
-      {/* ═══ INBOUND CREATION MODAL ═══ */}
+      {/* ═══ CREATE INBOUND MODAL (shared — item details + confirmation) ═══ */}
       <AnimatePresence>
-        {showInboundModal && inboundBooking && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/70 backdrop-blur-sm overflow-y-auto"
-            onClick={(e) => { if (e.target === e.currentTarget) { setShowInboundModal(false); setInboundBooking(null); } }}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-lg bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                    <Package size={20} className="text-emerald-400" />
-                  </div>
-                  <div>
-                    <h2 className="font-heading text-lg font-semibold text-white">Create Inbound Shipment</h2>
-                    <p className="text-xs text-neutral-400 font-body">for {inboundBooking.warehouseName || inboundBooking.warehouse?.name || "Booking"}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Batch Name</label>
-                    <input type="text" value={inboundBatchName} onChange={(e) => setInboundBatchName(e.target.value)}
-                      placeholder="e.g. Q4 Inventory Restock"
-                      className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Total Cartons</label>
-                      <input type="number" min={1} value={inboundCartons}
-                        onChange={(e) => setInboundCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Arrival Date</label>
-                      <input type="date" value={inboundArrivalDate}
-                        onChange={(e) => setInboundArrivalDate(e.target.value)}
-                        min={new Date().toISOString().split("T")[0]}
-                        className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-                    </div>
-                  </div>
-
-                  {inboundCreateError && (
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
-                      <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
-                      <p className="text-xs text-red-400 font-body">{inboundCreateError}</p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3 pt-2">
-                    <button onClick={handleCreateInboundFromBooking}
-                      disabled={creatingInbound || !inboundBatchName.trim() || !inboundArrivalDate}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                      {creatingInbound ? <><Loader2 size={16} className="animate-spin" />Creating...</> : <><Send size={16} />Create Shipment</>}
-                    </button>
-                    <button onClick={() => { setShowInboundModal(false); setInboundBooking(null); }}
-                      className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ═══ INBOUND SUCCESS MODAL ═══ */}
-      <AnimatePresence>
-        {showInboundSuccess && createdPlanId && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-            onClick={(e) => { if (e.target === e.currentTarget) setShowInboundSuccess(false); }}>
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-md bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 p-8 text-center" onClick={(e) => e.stopPropagation()}>
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={28} className="text-emerald-400" />
-              </div>
-              <h2 className="font-heading text-xl font-bold text-white mb-2">Inbound Plan Created!</h2>
-              <p className="text-sm text-neutral-400 font-body mb-5">Your shipment has been created and the warehouse owner will be notified.</p>
-              
-              <div className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 rounded-xl p-3 mb-5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[10px] text-neutral-500 uppercase font-semibold tracking-wider font-body">PLAN ID:</span>
-                  <code className="text-xs font-mono text-neutral-300 font-medium break-all">{createdPlanId}</code>
-                </div>
-                <CopyButton value={createdPlanId} />
-              </div>
-
-              <div className="flex gap-3">
-                <button onClick={() => { setShowInboundSuccess(false); onTabChange("inbounds"); }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
-                  <Package size={16} /> View Inbounds
-                </button>
-                <button onClick={() => setShowInboundSuccess(false)}
-                  className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Close</button>
-              </div>
-            </motion.div>
-          </motion.div>
+        {inboundBooking && (
+          <CreateInboundModal
+            booking={inboundBooking}
+            onClose={() => setInboundBooking(null)}
+            onCreated={() => {
+              setInboundBooking(null);
+              fetchBookings();
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -1020,36 +904,103 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<PlanDetail | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [bookings, setBookings] = useState<BookingData[]>([]);
-  const [batchName, setBatchName] = useState("");
-  const [totalCartons, setTotalCartons] = useState(1);
-  const [expectedDate, setExpectedDate] = useState("");
-  const [selectedBookingId, setSelectedBookingId] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
 
-  // ─── Search & Add Cartons state ─────────────────────────────────────────
+
   const [inboundSearch, setInboundSearch] = useState("");
-  const [addCartonsPlan, setAddCartonsPlan] = useState<InboundPlanData | null>(null);
-  const [addCartonsCount, setAddCartonsCount] = useState(1);
-  const [isAddingCartons, setIsAddingCartons] = useState(false);
-  const [addCartonsError, setAddCartonsError] = useState<string | null>(null);
+
+
+  // ─── Inbound Details Drawer state ─────────────────────────────────────
+  const [drawerPlan, setDrawerPlan] = useState<InboundPlanData | null>(null);
+
+  // ─── Dispatch / Create Order from a specific inbound (STEP 2) ─────────
+  const [dispatchSource, setDispatchSource] = useState<{
+    planId: string;
+    warehouseId: string;
+    warehouseName: string;
+    batchName: string;
+    stock: Array<{ itemName: string; sku?: string; quantity: number }>;
+  } | null>(null);
+
+  const openDispatchOrder = useCallback(async (plan: InboundPlanData) => {
+    try {
+      const res = await api.get(`/inbound/${plan._id}`);
+      const detail = res.data.data;
+      const p = detail?.plan;
+
+      // Prefer the plan's stock ledger (availableUnits) — the single source of
+      // truth for dispatch availability. Falls back to aggregating the declared
+      // carton contents for legacy plans created before stock tracking existed.
+      const stock = Array.isArray(p?.stock) && p.stock.length > 0
+        ? p.stock
+            .filter((s: any) => (s.availableUnits || 0) > 0)
+            .map((s: any) => ({
+              itemName: s.itemName,
+              sku: s.sku || "",
+              quantity: s.availableUnits || 0,
+            }))
+        : (() => {
+            const cartons = Array.isArray(p?.cartons) ? p.cartons : [];
+            const map = new Map<
+              string,
+              { itemName: string; sku: string; quantity: number }
+            >();
+            for (const carton of cartons) {
+              if (carton.status === "Dispatched") continue;
+              for (const it of carton.items || []) {
+                if (!it.itemName || it.quantity <= 0) continue;
+                // Same keying as the server's itemKey (SKU-preferred) so
+                // displayed availability matches what createOrder validates.
+                const sku = (it.sku || "").trim().toLowerCase();
+                const key = sku ? `sku:${sku}` : `name:${it.itemName.trim().toLowerCase()}`;
+                const cur = map.get(key) || {
+                  itemName: it.itemName,
+                  sku: it.sku || "",
+                  quantity: 0,
+                };
+                cur.quantity += it.quantity || 0;
+                map.set(key, cur);
+              }
+            }
+            return Array.from(map.values());
+          })();
+
+      const warehouse = p?.warehouse || plan.warehouse;
+      setDispatchSource({
+        planId: plan._id,
+        warehouseId:
+          typeof warehouse === "string" ? warehouse : warehouse?._id || "",
+        warehouseName:
+          typeof warehouse === "string"
+            ? "Warehouse"
+            : warehouse?.name || "Warehouse",
+        batchName: p?.batchName || plan.batchName,
+        stock,
+      });
+    } catch {
+      const warehouse = plan.warehouse;
+      setDispatchSource({
+        planId: plan._id,
+        warehouseId:
+          typeof warehouse === "string" ? warehouse : warehouse?._id || "",
+        warehouseName:
+          typeof warehouse === "string"
+            ? "Warehouse"
+            : warehouse?.name || "Warehouse",
+        batchName: plan.batchName,
+        stock: [],
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (!accessToken) return;
     let c = false;
     (async () => {
       try {
-        const [planRes, bkRes] = await Promise.all([
-          api.get("/inbound/my-plans"),
-          api.get("/booking/my-bookings"),
-        ]);
+        const planRes = await api.get("/inbound/my-plans");
         if (c) return;
         const planData = planRes.data.data || [];
         setPlans(Array.isArray(planData) ? planData : []);
-        const bkData = bkRes.data.data?.bookings || bkRes.data.data || [];
-        setBookings(Array.isArray(bkData) ? bkData.filter((b: BookingData) => b.status === "confirmed") : []);
       } catch { } finally { if (!c) setLoading(false); }
     })();
     return () => { c = true; };
@@ -1064,52 +1015,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
     } catch { } finally { setPlanLoading(false); }
   }, []);
 
-  const handleCreateInbound = useCallback(async () => {
-    if (!batchName.trim() || !totalCartons || !expectedDate || !selectedBookingId) return;
-    setCreating(true);
-    setCreateError(null);
-    try {
-      await api.post("/inbound/create", { bookingId: selectedBookingId, batchName: batchName.trim(), totalCartons, expectedDate });
-      setShowCreateForm(false);
-      setBatchName(""); setTotalCartons(1); setExpectedDate(""); setSelectedBookingId("");
-      const res = await api.get("/inbound/my-plans");
-      setPlans(Array.isArray(res.data.data) ? res.data.data : []);
-    } catch (err: any) {
-      setCreateError(err.response?.data?.message || "Failed to create inbound plan.");
-    } finally { setCreating(false); }
-  }, [batchName, totalCartons, expectedDate, selectedBookingId]);
 
-  // ─── Handle Add Cartons ─────────────────────────────────────────────────
-  const [addCartonsSuccess, setAddCartonsSuccess] = useState<string | null>(null);
-
-  const handleAddCartons = useCallback(async () => {
-    if (!addCartonsPlan || addCartonsCount < 1) return;
-    setIsAddingCartons(true);
-    setAddCartonsError(null);
-    setAddCartonsSuccess(null);
-    try {
-      const res = await api.post(`/carton/add/${addCartonsPlan._id}`, { count: addCartonsCount });
-      const added = res.data.data?.addedCount || addCartonsCount;
-      setAddCartonsSuccess(`${added} carton(s) added successfully!`);
-      // Close the add cartons modal
-      setAddCartonsPlan(null);
-      setAddCartonsCount(1);
-      // Update local state immediately instead of full refetch
-      setPlans((prev) =>
-        prev.map((p) =>
-          p._id === addCartonsPlan._id
-            ? { ...p, totalCartons: res.data.data?.totalCartons || p.totalCartons + addCartonsCount }
-            : p
-        )
-      );
-      // Auto-clear success toast after 3 seconds
-      setTimeout(() => setAddCartonsSuccess(null), 3000);
-    } catch (err: any) {
-      const serverMsg = err.response?.data?.message;
-      const fallbackMsg = err.message || "Failed to add cartons";
-      setAddCartonsError(serverMsg || fallbackMsg);
-    } finally { setIsAddingCartons(false); }
-  }, [addCartonsPlan, addCartonsCount]);
 
   // ─── Filtered plans (search by ID or Warehouse Name) ─────────────────────
   const filteredPlans = plans.filter((p) => {
@@ -1118,8 +1024,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
     return p._id.toLowerCase().includes(q) || (p.warehouse?.name || "").toLowerCase().includes(q) || p.batchName.toLowerCase().includes(q);
   });
 
-  const activeBookings = bookings.filter((b) => b.status === "confirmed");
-
+  
   // Summary stats
   const totalPlans = plans.length;
   const inTransitCount = plans.filter((p) => p.status === "in-transit").length;
@@ -1177,7 +1082,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       )}
 
       {/* Empty state when no plans at all */}
-      {!loading && plans.length === 0 && !showCreateForm && (
+      {!loading && plans.length === 0 && (
         <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Package size={28} className="text-[#84cc16]/40" /></div>
           <h3 className="font-heading text-lg font-semibold text-white mb-2">No inbound plans yet</h3>
@@ -1205,7 +1110,8 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               const st = stats.find((s) => s._id === "stored")?.count || 0;
               return (
                 <motion.div key={plan._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className="px-5 py-4 hover:bg-white/5 transition-colors duration-200">
+                  onClick={() => setDrawerPlan(plan)}
+                  className="px-5 py-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -1226,18 +1132,22 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {plan.status === "in-transit" && (
-                        <button onClick={() => { setAddCartonsPlan(plan); setAddCartonsCount(1); setAddCartonsError(null); }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-medium hover:bg-emerald-500/20 transition-colors">
-                          <PlusCircle size={12} /> Add Cartons
-                        </button>
-                      )}
+                    <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => handleViewPlan(plan._id)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors">
                         <Eye size={13} /> View
                       </button>
                     </div>
+                  </div>
+
+                  {/* Dispatch / Create Order from this Inbound */}
+                  <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => openDispatchOrder(plan)}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-xl text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200"
+                    >
+                      <Truck size={13} /> Dispatch / Create Order from this Inbound
+                    </button>
                   </div>
                 </motion.div>
               );
@@ -1246,115 +1156,35 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         </div>
       )}
 
-      {/* Create Form (hidden panel) */}
-      <AnimatePresence>
-        {showCreateForm && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="bg-[#111614]/90 backdrop-blur-md rounded-3xl p-6 border border-neutral-800/80 shadow-sm mb-6">
-            <h3 className="font-heading text-lg font-semibold text-white mb-5">Create Inbound Plan</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Active Booking</label>
-                <select value={selectedBookingId} onChange={(e) => setSelectedBookingId(e.target.value)}
-                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body">
-                  <option value="">Select a booking...</option>
-                  {activeBookings.map((b) => (
-                    <option key={b._id} value={b._id}>{b.warehouseName || b.warehouse?.name || "Warehouse"} – {formatDate(b.startDate)}</option>
-                  ))}
-                </select>
-                {activeBookings.length === 0 && <p className="text-xs text-amber-400 font-body mt-1">No active bookings. Book a warehouse first.</p>}
-              </div>
-              <div>
-                <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Batch Name</label>
-                <input type="text" value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="e.g. Q4 Inventory Restock"
-                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Total Cartons</label>
-                  <input type="number" min={1} value={totalCartons} onChange={(e) => setTotalCartons(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Expected Date</label>
-                  <input type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
-                    className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-                </div>
-              </div>
-              {createError && <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5"><AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" /><p className="text-xs text-red-400 font-body">{createError}</p></div>}
-              <div className="flex items-center gap-3 pt-2">
-                <button onClick={handleCreateInbound} disabled={creating || !batchName.trim() || !expectedDate || !selectedBookingId}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                  {creating ? <><Loader2 size={16} className="animate-spin" />Creating...</> : <><Send size={16} />Create Inbound Plan</>}
-                </button>
-                <button onClick={() => setShowCreateForm(false)} className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ═══ ADD CARTONS SUCCESS TOAST ═══ */}
-      <AnimatePresence>
-        {addCartonsSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3"
-          >
-            <CheckCircle size={18} className="text-emerald-400 shrink-0" />
-            <p className="text-sm font-semibold text-emerald-400 font-body">{addCartonsSuccess}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ═══ ADD CARTONS MODAL ═══ */}
-      <AnimatePresence>
-        {addCartonsPlan && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-            onClick={(e) => { if (e.target === e.currentTarget) setAddCartonsPlan(null); }}>
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-sm bg-[#111614] rounded-3xl shadow-2xl border border-neutral-800/80 p-6" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                  <Package size={20} className="text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="font-heading text-lg font-semibold text-white">Add Cartons</h3>
-                  <p className="text-xs text-neutral-400 font-body truncate">{addCartonsPlan.batchName}</p>
-                </div>
-              </div>
-              <div className="mb-4">
-                <label className="text-xs font-semibold tracking-wider text-white uppercase mb-1.5 block font-body">Number of Cartons to Add</label>
-                <input type="number" min={1} value={addCartonsCount}
-                  onChange={(e) => setAddCartonsCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-4 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-sm text-white [color-scheme:dark] focus:outline-none focus:border-[#84cc16] focus:bg-neutral-900 transition-all font-body" />
-              </div>
-              {addCartonsError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
-                  <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-400 font-body">{addCartonsError}</p>
-                </div>
-              )}
-              <div className="flex items-center gap-3 pt-1">
-                <button onClick={handleAddCartons} disabled={isAddingCartons || addCartonsCount < 1}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                  {isAddingCartons ? <><Loader2 size={16} className="animate-spin" />Adding...</> : <><PlusCircle size={16} />Add Cartons</>}
-                </button>
-                <button onClick={() => setAddCartonsPlan(null)}
-                  className="px-5 py-3 border border-neutral-800 text-neutral-400 rounded-full text-sm font-body hover:bg-white/5 transition-colors">Cancel</button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Plan Detail Modal */}
       <AnimatePresence>
         {selectedPlan && (
           <PlanDetailModal plan={selectedPlan} onClose={() => setSelectedPlan(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ INBOUND DETAILS DRAWER (STEP 2) ═══ */}
+      <AnimatePresence>
+        {drawerPlan && (
+          <InboundDetailsDrawer plan={drawerPlan} onClose={() => setDrawerPlan(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ CREATE ORDER MODAL (pre-linked to inbound stock) ═══ */}
+      <AnimatePresence>
+        {dispatchSource && (
+          <CreateOrderModal
+            sourcePlan={dispatchSource}
+            onClose={() => setDispatchSource(null)}
+            onCreated={() => {
+              setDispatchSource(null);
+              // Refresh plans so remaining stock reflects the new dispatch
+              api.get("/inbound/my-plans").then((res) => {
+                const planData = res.data.data || [];
+                setPlans(Array.isArray(planData) ? planData : []);
+              }).catch(() => {});
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
@@ -1547,6 +1377,181 @@ function PlanDetailModal({ plan, onClose }: { plan: PlanDetail; onClose: () => v
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TAB: ORDERS & TRACKING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface OrderData {
+  _id: string;
+  orderId: string;
+  warehouse?: { _id: string; name: string; location?: string };
+  customerDetails: { name: string; phone: string; address: string; city: string };
+  orderedItems: Array<{ itemName: string; sku?: string; quantity: number }>;
+  status: string;
+  trackingId?: string | null;
+  dispatchTimestamp?: string | null;
+  source?: string;
+  createdAt: string;
+}
+
+function orderStatusPill(status: string) {
+  const map: Record<string, string> = {
+    "Pending Packing": "bg-amber-500/10 border-amber-500/30 text-amber-400",
+    Packed: "bg-sky-500/10 border-sky-500/30 text-sky-400",
+    Dispatched: "bg-[#84cc16]/10 border-[#84cc16]/30 text-[#84cc16]",
+    Delivered: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+    Cancelled: "bg-red-500/10 border-red-500/30 text-red-400",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${map[status] || "bg-neutral-500/10 border-neutral-500/30 text-neutral-400"}`}>
+      <ClipboardList size={10} />
+      {status}
+    </span>
+  );
+}
+
+function OrdersTab() {
+  const { accessToken } = useAppSelector((s) => s.auth);
+  const [orders, setOrders] = useState<OrderData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+
+  const fetchOrders = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const res = await api.get("/order/merchant-orders");
+      setOrders(Array.isArray(res.data.data) ? res.data.data : []);
+    } catch { } finally { setLoading(false); }
+  }, [accessToken]);
+
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  const statusFilters = ["all", "Pending Packing", "Packed", "Dispatched", "Delivered"];
+  const filteredOrders = orders.filter((o) => filter === "all" || o.status === filter);
+
+  return (
+    <div>
+      {/* Header row */}
+      <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+        <div>
+          <h2 className="font-heading text-lg font-semibold text-white">Dispatch Orders</h2>
+          <p className="text-sm text-neutral-400 font-body">Track fulfilment of orders from your stored inventory</p>
+        </div>
+      </div>
+
+      {/* Filter pills */}
+      <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
+        {statusFilters.map((f) => {
+          const isActive = filter === f;
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}
+            >
+              {f === "all" ? "All" : f}
+            </button>
+          );
+        })}
+      </div>
+
+      {loading ? (
+        <div className="space-y-4">{[1, 2].map((i) => <div key={i} className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 p-6 animate-pulse"><div className="h-5 bg-neutral-800/60 rounded w-40 mb-4" /><div className="h-32 bg-neutral-800/60 rounded-2xl" /></div>)}</div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Truck size={28} className="text-[#84cc16]/40" /></div>
+          <h3 className="font-heading text-lg font-semibold text-white mb-2">No dispatch orders yet</h3>
+          <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">
+            Select an active Inbound inventory from “Inbounds &amp; Cartons” to dispatch an order.
+          </p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
+          <ClipboardList size={26} className="mx-auto text-[#84cc16]/30 mb-3" />
+          <p className="text-sm text-neutral-400 font-body">No orders with status “{filter}”.</p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {filteredOrders.map((order, i) => {
+            const totalQty = order.orderedItems.reduce((s, it) => s + (it.quantity || 0), 0);
+            return (
+              <motion.div
+                key={order._id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: i * 0.04 }}
+                className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-colors duration-200 p-5 sm:p-6"
+              >
+                {/* Order header */}
+                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center shrink-0">
+                      <Truck size={18} className="text-[#84cc16]" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-white font-mono">{order.orderId}</span>
+                        {order.source === "AI_PDF_Extraction" && (
+                          <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-semibold uppercase tracking-wider font-body">AI PDF</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-neutral-400 font-body truncate mt-0.5">
+                        {order.warehouse?.name || "Warehouse"} · {formatDate(order.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                  {orderStatusPill(order.status)}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {/* Left: customer + items */}
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                      <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-2 font-body">Customer</p>
+                      <p className="text-sm font-semibold text-white font-body">{order.customerDetails?.name || "—"}</p>
+                      <p className="text-xs text-neutral-400 font-body mt-1">
+                        {order.customerDetails?.phone} · {order.customerDetails?.city}
+                      </p>
+                      <p className="text-xs text-neutral-500 font-body mt-1 truncate">
+                        {order.customerDetails?.address}
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase font-body">Items ({totalQty})</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        {order.orderedItems.map((it, idx) => (
+                          <div key={`${it.itemName}-${idx}`} className="flex items-center justify-between gap-2 text-xs font-body">
+                            <span className="text-white truncate">{it.itemName}</span>
+                            <span className="text-[#84cc16] font-bold numeric shrink-0">× {it.quantity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: timeline */}
+                  <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                    <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-3 font-body">Tracking</p>
+                    <OrderTimeline
+                      status={order.status}
+                      trackingId={order.trackingId}
+                      dispatchTimestamp={order.dispatchTimestamp}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TAB: ACCOUNT / PROFILE
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1725,6 +1730,7 @@ export default function MerchantDashboardPage() {
       case "explore": return <ExploreTab />;
       case "my-bookings": return <MyBookingsTab onTabChange={setActiveTab} />;
       case "inbounds": return <InboundsTab onTabChange={setActiveTab} />;
+      case "orders": return <OrdersTab />;
       case "account": return <AccountTab />;
       default: return <OverviewTab />;
     }
@@ -1735,6 +1741,7 @@ export default function MerchantDashboardPage() {
     explore: "Explore Warehouses",
     "my-bookings": "My Bookings",
     inbounds: "Inbounds & Cartons",
+    orders: "Orders & Tracking",
     account: "Account / Profile",
   };
 
@@ -1743,6 +1750,7 @@ export default function MerchantDashboardPage() {
     explore: "Discover and book warehouse space",
     "my-bookings": "Manage your shelf bookings",
     inbounds: "Track incoming inventory shipments",
+    orders: "Track dispatch orders from your stored inventory",
     account: "Manage your account settings",
   };
 
