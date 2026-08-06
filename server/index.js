@@ -48,7 +48,7 @@ initializeSocket(server)
 
 app.use(cors({
     origin: "http://localhost:3000",
-    origin: "https://byte-shelf-frontend.vercel.app/",
+    origin: "https://byte-shelf-frontend.vercel.app",
     credentials: true,
 }))
 app.use(express.json())
