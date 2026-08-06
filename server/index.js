@@ -84,6 +84,22 @@ app.get("/health-check", (req, res) => {
     sendRes(res, 200, true, "ok")
 })
 
+// ─── Global error handler ─────────────────────────────────────────────────
+// Catches any error propagated via next(error) (e.g. from malformed JSON
+// body parsing) and returns the exact error message + stack instead of a
+// generic 500, so the real failure is visible to the client and in logs.
+app.use((err, req, res, next) => {
+    console.error("DEBUG API ERROR:", err);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || "Unhandled Internal Server Error",
+        error: err.toString(),
+        stack: err.stack,
+        data: null,
+        timeStamps: new Date().toISOString(),
+    });
+});
+
 if (process.env.NODE_ENV !== 'production') {
     const port = process.env.PORT || 8000;
     server.listen(port, () => {

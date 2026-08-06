@@ -21,6 +21,7 @@ export const verifyWarehouseOwner = async (req, res, next) => {
     req.warehouse = warehouse;
     next();
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[verifyWarehouseOwner] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

@@ -73,7 +73,8 @@ export const createBooking = async (req, res) => {
  
     return sendRes(res, 201, true, "Booking created successfully", booking);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -89,7 +90,8 @@ export const getWarehouseBookings = async (req, res) => {
       total: bookings.length,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -107,7 +109,8 @@ export const getWarehouseBookingDetails = async (req, res) => {
 
     return sendRes(res, 200, true, "Booking details fetched successfully", booking);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -122,7 +125,8 @@ export const getMerchantBookings = async (req, res) => {
       total: bookings.length,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -144,7 +148,8 @@ export const getMerchantBookingDetails = async (req, res) => {
 
     return sendRes(res, 200, true, "Booking details fetched successfully", booking);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -186,7 +191,8 @@ export const cancelBookingByMerchant = async (req, res) => {
 
     return sendRes(res, 200, true, "Booking cancelled successfully", booking);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -227,7 +233,7 @@ export const cancelBookingByOwner = async (req, res) => {
     return sendRes(res, 200, true, "Booking cancelled successfully", booking);
   } catch (error) {
     console.log(error.message)
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -265,7 +271,7 @@ export const getOwnerBookings = async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -291,6 +297,7 @@ export const markBookingAsPaid = async (req, res) => {
  
     return sendRes(res, 200, true, "Booking marked as paid successfully", booking);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[booking] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

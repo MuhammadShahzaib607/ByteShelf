@@ -34,6 +34,6 @@ export const scanCarton = async (req, res) => {
     return sendRes(res, 200, true, "Carton marked as arrived", carton);
   } catch (error) {
     console.error("[scanCarton] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

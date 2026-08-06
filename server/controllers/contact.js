@@ -19,7 +19,8 @@ export const createContact = async (req, res) => {
 
     return sendRes(res, 201, true, "Your message has been sent successfully. We'll get back to you within 24 hours.", inquiry);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[contact] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -44,7 +45,8 @@ export const getContacts = async (req, res) => {
 
     return sendRes(res, 200, true, "Contacts fetched successfully", contacts);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[contact] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -62,6 +64,7 @@ export const resolveContact = async (req, res) => {
 
     return sendRes(res, 200, true, `Contact marked as ${contact.status}`, contact);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[contact] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

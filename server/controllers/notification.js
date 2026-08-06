@@ -35,7 +35,8 @@ export const getMyNotifications = async (req, res) => {
       unread: meta.unread,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[notification] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -54,7 +55,8 @@ export const markNotificationsAsRead = async (req, res) => {
 
     return sendRes(res, 200, true, "Notifications marked as read");
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[notification] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -71,7 +73,8 @@ export const markAllNotificationsAsRead = async (req, res) => {
 
     return sendRes(res, 200, true, "All notifications marked as read");
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[notification] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -87,6 +90,7 @@ export const deleteNotifications = async (req, res) => {
 
     return sendRes(res, 200, true, "Notifications deleted successfully");
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[notification] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 }; 

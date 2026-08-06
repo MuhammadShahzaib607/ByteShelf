@@ -7,6 +7,7 @@ export const verifyWorker = (req, res, next) => {
     }
     next();
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[verifyWorker] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

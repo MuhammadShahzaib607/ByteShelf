@@ -190,7 +190,7 @@ export const createInboundPlan = async (req, res) => {
     return sendRes(res, 201, true, "Inbound plan created successfully", inboundPlan);
   } catch (error) {
     console.log(error.message)
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -224,7 +224,8 @@ export const getMyInboundPlans = async (req, res) => {
 
     return sendRes(res, 200, true, "Inbound plans fetched successfully", plans);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[inboundPlan] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -249,7 +250,8 @@ export const getInboundPlanDetails = async (req, res) => {
 
     return sendRes(res, 200, true, "Inbound plan details fetched successfully", { plan, cartons });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[inboundPlan] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -259,6 +261,7 @@ export const getWarehouseInboundPlans = async (req, res) => {
 
     return sendRes(res, 200, true, "Inbound plans fetched successfully", plans);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[inboundPlan] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

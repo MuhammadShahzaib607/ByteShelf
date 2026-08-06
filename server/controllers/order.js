@@ -116,7 +116,7 @@ export const getMerchantStock = async (req, res) => {
     return sendRes(res, 200, true, "Stock fetched successfully", data);
   } catch (error) {
     console.error("[getMerchantStock] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -286,7 +286,7 @@ export const createOrder = async (req, res) => {
     return sendRes(res, 201, true, "Order created successfully", order);
   } catch (error) {
     console.error("[createOrder] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -413,8 +413,8 @@ export const parsePdf = async (req, res) => {
       rawText: text.slice(0, 2000),
     });
   } catch (error) {
-    console.error("[parsePdf] Error:", error.message);
-    return sendRes(res, 500, false, "Failed to parse PDF. Please ensure the file is a valid text-based PDF.");
+    console.error("[parsePdf] Error:", error);
+    return sendRes(res, 500, false, "Failed to parse PDF. Please ensure the file is a valid text-based PDF.", null, error);
   }
 };
 
@@ -427,7 +427,7 @@ export const getMerchantOrders = async (req, res) => {
       .sort({ createdAt: -1 });
     return sendRes(res, 200, true, "Orders fetched successfully", orders);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -441,7 +441,8 @@ export const getWarehouseOrders = async (req, res) => {
       .sort({ createdAt: -1 });
     return sendRes(res, 200, true, "Orders fetched successfully", orders);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[order] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -468,7 +469,8 @@ export const getOrdersByWarehouse = async (req, res) => {
 
     return sendRes(res, 200, true, "Orders fetched successfully", visible);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[order] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -517,7 +519,7 @@ export const markPacked = async (req, res) => {
     return sendRes(res, 200, true, "Order marked as packed", order);
   } catch (error) {
     console.error("[markPacked] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -576,7 +578,7 @@ export const dispatchOrder = async (req, res) => {
     return sendRes(res, 200, true, "Order dispatched successfully", order);
   } catch (error) {
     console.error("[dispatchOrder] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -621,7 +623,7 @@ export const markInTransit = async (req, res) => {
     return sendRes(res, 200, true, "Order marked as in transit", order);
   } catch (error) {
     console.error("[markInTransit] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -673,6 +675,6 @@ export const markDelivered = async (req, res) => {
     return sendRes(res, 200, true, "Order marked as delivered", order);
   } catch (error) {
     console.error("[markDelivered] Error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

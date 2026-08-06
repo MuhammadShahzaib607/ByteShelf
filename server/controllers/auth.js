@@ -91,7 +91,8 @@ export const signup = async (req, res) => {
  
     return sendRes(res, 201, true, "Signup successful, OTP sent", { userId: user._id });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[auth] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -129,7 +130,8 @@ export const verifyOtp = async (req, res) => {
 
     return sendRes(res, 200, true, "Account verified successfully");
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[auth] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -169,7 +171,7 @@ export const resendOtp = async (req, res) => {
     return sendRes(res, 200, true, "OTP resent successfully");
   } catch (error) {
     console.error("Resend OTP error:", error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -214,7 +216,8 @@ export const login = async (req, res) => {
 
     return sendRes(res, 200, true, "Login successful", { accessToken, refreshToken });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[auth] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -248,7 +251,8 @@ export const refreshToken = async (req, res) => {
 
     return sendRes(res, 200, true, "Access token generated", { accessToken });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[auth] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -262,7 +266,8 @@ export const getProfile = async (req, res) => {
  
     return sendRes(res, 200, true, "Profile fetched successfully", user);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[auth] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -286,6 +291,7 @@ export const editProfile = async (req, res) => {
 
     return sendRes(res, 200, true, "Profile updated successfully", user);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[auth] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

@@ -11,7 +11,8 @@ export const getAdminContact = async (req, res) => {
     }
     return sendRes(res, 200, true, "Admin found", { _id: admin._id, name: admin.name, email: admin.email });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[admin] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -45,7 +46,7 @@ export const getVerifications = async (req, res) => {
     return sendRes(res, 200, true, "Verifications fetched", users);
   } catch (error) {
     console.error("getVerifications error:", error);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -99,6 +100,7 @@ export const updateUserVerificationStatus = async (req, res) => {
       }
     );
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[admin] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

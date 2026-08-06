@@ -33,7 +33,8 @@ export const addShelves = async (req, res) => {
 
     return sendRes(res, 201, true, "Shelves added successfully", { totalShelves: warehouse.totalShelves });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[shelf] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -70,7 +71,7 @@ export const createShelf = async (req, res) => {
     return sendRes(res, 201, true, "Shelf created successfully", shelf);
   } catch (error) {
     console.log(error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -115,7 +116,7 @@ export const updateShelf = async (req, res) => {
     return sendRes(res, 200, true, "Shelf updated successfully", shelf);
   } catch (error) {
     console.log(error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -143,7 +144,7 @@ export const deleteShelf = async (req, res) => {
     return sendRes(res, 200, true, "Shelf deleted successfully");
   } catch (error) {
     console.log(error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -169,7 +170,8 @@ export const getWarehouseShelves = async (req, res) => {
       booked: bookedCount,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[shelf] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -196,7 +198,8 @@ export const deleteShelves = async (req, res) => {
 
     return sendRes(res, 200, true, "Shelves deleted successfully", { deletedCount: result.deletedCount });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[shelf] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -216,7 +219,8 @@ export const getBookedShelvesByWarehouse = async (req, res) => {
 
     return sendRes(res, 200, true, "Booked shelves fetched successfully", shelves);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[shelf] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -228,6 +232,7 @@ export const getAvailableShelves = async (req, res) => {
 
     return sendRes(res, 200, true, "Available shelves fetched successfully", shelves);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[shelf] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

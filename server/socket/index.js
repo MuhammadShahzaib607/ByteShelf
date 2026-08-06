@@ -69,7 +69,8 @@ export const initializeSocket = (server) => {
 
         io.to(conversationId).emit("receive_message", message);
       } catch (error) {
-        socket.emit("error_message", "Something went wrong");
+        console.error("[socket:send_message] Error:", error);
+        socket.emit("error_message", error.message || String(error));
       }
     });
 
@@ -89,7 +90,8 @@ export const initializeSocket = (server) => {
           readBy: socket.userId,
         });
       } catch (error) {
-        socket.emit("error_message", "Failed to mark messages as read");
+        console.error("[socket:message_read] Error:", error);
+        socket.emit("error_message", error.message || String(error));
       }
     });
 

@@ -28,7 +28,8 @@ export const startConversation = async (req, res) => {
 
     return sendRes(res, 200, true, "Conversation fetched successfully", conversation);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[conversation] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -60,7 +61,8 @@ export const getMessages = async (req, res) => {
       totalMessages: total,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[conversation] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -121,7 +123,8 @@ export const getMyConversations = async (req, res) => {
 
     return sendRes(res, 200, true, "Conversations fetched successfully", conversations);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[conversation] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -136,6 +139,7 @@ export const markMessagesAsRead = async (req, res) => {
 
     return sendRes(res, 200, true, "Messages marked as read");
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[conversation] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

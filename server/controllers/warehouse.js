@@ -31,7 +31,8 @@ export const createWarehouse = async (req, res) => {
  
     return sendRes(res, 201, true, "Warehouse created successfully", { warehouseId: warehouse._id });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[warehouse] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -67,7 +68,7 @@ export const getMyWarehouses = async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-    return sendRes(res, 500, false, "Something went wrong");
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -107,7 +108,8 @@ export const editWarehouse = async (req, res) => {
  
     return sendRes(res, 200, true, "Warehouse updated successfully", warehouse);
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[warehouse] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -132,7 +134,8 @@ export const getAllWarehouses = async (req, res) => {
       totalWarehouses: total,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[warehouse] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
 
@@ -156,6 +159,7 @@ export const getWarehouseById = async (req, res) => {
       booked: bookedCount,
     });
   } catch (error) {
-    return sendRes(res, 500, false, "Something went wrong");
+    console.error("[warehouse] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
