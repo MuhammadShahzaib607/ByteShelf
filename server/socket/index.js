@@ -3,21 +3,24 @@ import jwt from "jsonwebtoken";
 import Message from "../models/Message.js";
 import Conversation from "../models/Conversation.js";
 import User from "../models/User.js";
+import { ensureDbConnected } from "../config/db.js";
 
-export const initializeSocket = (server) => {
+/**
+ * Wire the full Socket.io server (JWT auth, rooms, chat persistence, typing,
+ * read receipts, presence) onto an http.Server.
+ *
+ * `options` are merged over serverless-safe defaults, so the caller decides the
+ * engine details (path / transports / cors / ping timing):
+ *  - server/api/socket.js → dedicated Vercel serverless function (production)
+ *  - server/index.js       → local dev (NODE_ENV !== "production")
+ */
+export const initializeSocket = (server, options = {}) => {
   const io = new Server(server, {
-    // ─── Vercel Serverless compatibility ────────────────────────────────────
-    // Serverless functions can't hold long-lived WebSocket connections, so we
-    // force HTTP long-polling. The client (client/lib/socket.ts) uses the same
-    // transport list — with both sides polling-only, no WebSocket upgrade is
-    // ever attempted, which eliminates the 404s on serverless hosts.
-    transports: ["polling"],
-    // NOTE: `allowEIO3` was removed in socket.io >= 4.8 (this repo runs 4.8.3),
-    // so this is a no-op — kept only to match the requested config. The
-    // socket.io-client v4 on the frontend negotiates Engine.IO v4 natively.
-    allowEIO3: true,
-    // Generous keep-alive timing so long-polling survives serverless cycles
-    // (cold starts / lambda swaps) without dropping the session.
+    // Polling-first with WebSocket upgrade: the dedicated socket function
+    // (api/socket.js) supports upgrades on Vercel Fluid Compute, while
+    // long-polling stays as the automatic fallback.
+    transports: ["polling", "websocket"],
+    // Generous keep-alive timing so connections survive serverless cycles.
     pingTimeout: 60000,
     pingInterval: 25000,
     cors: {
@@ -31,13 +34,18 @@ export const initializeSocket = (server) => {
       methods: ["GET", "POST"],
       credentials: true,
     },
+    ...options,
   });
 
   // ─── Track online users: userId → Set<socketId> ─────────────────────────
   const onlineUsers = new Map();
 
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     try {
+      // Serverless-safe: guarantee a warm MongoDB connection before any model
+      // work. Reuses the cached connection across lambda invocations.
+      await ensureDbConnected();
+
       const token = socket.handshake.auth.token;
 
       if (!token) {
@@ -48,6 +56,10 @@ export const initializeSocket = (server) => {
       socket.userId = decoded.id;
       next();
     } catch (error) {
+      // Log the REAL cause — an auth failure and a MongoDB outage look identical
+      // to clients, so silence here makes production socket outages impossible
+      // to diagnose.
+      console.error("[socket:auth] Error:", error);
       next(new Error("Invalid or expired token"));
     }
   });

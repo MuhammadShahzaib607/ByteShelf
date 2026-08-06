@@ -13,9 +13,26 @@
           "socket/**"
         ]
       }
+    },
+    {
+      "src": "api/socket.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 60,
+        "includeFiles": [
+          "models/**",
+          "config/**",
+          "socket/**",
+          "utils/**"
+        ]
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/api/socket/(.*)",
+      "dest": "/api/socket.js"
+    },
     {
       "src": "/api/health",
       "dest": "/index.js"
@@ -25,4 +42,4 @@
       "dest": "/index.js"
     }
   ]
-}   
+}

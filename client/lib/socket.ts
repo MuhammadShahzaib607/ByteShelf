@@ -11,15 +11,34 @@ const toSocketOrigin = (url: string): string => {
   }
 };
 
-const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL ||
-  (process.env.NEXT_PUBLIC_API_URL
-    ? toSocketOrigin(process.env.NEXT_PUBLIC_API_URL)
-    : "") ||
-  (process.env.NEXT_PUBLIC_API_BASE_URL
-    ? toSocketOrigin(process.env.NEXT_PUBLIC_API_BASE_URL)
-    : "") ||
-  "http://localhost:8000";
+// ─── Environment-aware socket config ────────────────────────────────────────
+// Local dev connects to the local backend on the STANDARD Socket.io path
+// (/socket.io/), while production connects to the dedicated Vercel serverless
+// function at the custom routed path (/api/socket/socket.io → api/socket.js).
+// Detected via NODE_ENV plus the browser hostname so `next build && next start`
+// on localhost also behaves like dev.
+const IS_DEV =
+  process.env.NODE_ENV === "development" ||
+  (typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"));
+
+const SOCKET_URL = IS_DEV
+  ? process.env.NEXT_PUBLIC_SOCKET_URL ||
+    (process.env.NEXT_PUBLIC_LOCAL_API_URL
+      ? toSocketOrigin(process.env.NEXT_PUBLIC_LOCAL_API_URL)
+      : "") ||
+    "http://localhost:8000"
+  : process.env.NEXT_PUBLIC_SOCKET_URL ||
+    (process.env.NEXT_PUBLIC_API_URL
+      ? toSocketOrigin(process.env.NEXT_PUBLIC_API_URL)
+      : "") ||
+    (process.env.NEXT_PUBLIC_API_BASE_URL
+      ? toSocketOrigin(process.env.NEXT_PUBLIC_API_BASE_URL)
+      : "") ||
+    "https://byte-shelf-backend.vercel.app";
+
+const SOCKET_PATH = IS_DEV ? "/socket.io/" : "/api/socket/socket.io";
 
 let socket: Socket | null = null;
 
@@ -66,14 +85,16 @@ export const getSocket = (): Socket | null => {
   }
 
   // ── First time → create new socket ──
-  // Force HTTP long-polling ONLY: the backend runs on Vercel serverless, which
-  // cannot hold WebSocket upgrades. With polling-only on both ends no upgrade
-  // is ever attempted, so no 404 / 400 upgrade errors. The connection will
-  // transparently keep working via long-polling.
+  // Dev: http://localhost:8000/socket.io/ (standard path, served by the local
+  // index.js dev guard). Prod: <backend-origin>/api/socket/socket.io (routed
+  // by vercel.json to the dedicated api/socket.js serverless function).
+  // Polling-first with WebSocket upgrade — long-polling is the fallback.
   socket = io(SOCKET_URL, {
     auth: { token },
-    transports: ["polling"],
+    path: SOCKET_PATH,
+    transports: ["polling", "websocket"],
     withCredentials: true,
+    autoConnect: true,
     reconnection: true,
     // Keep retrying forever so chat recovers automatically after a serverless
     // cold start / lambda swap instead of giving up after N attempts.

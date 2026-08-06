@@ -44,10 +44,32 @@ if (process.env.NODE_ENV !== 'production') {
 dotenv.config()
 const app = express()
 const server = http.createServer(app)
-const io = initializeSocket(server)
-// Expose the Socket.io instance to Express so controllers can broadcast via
-// req.app.get("io") when needed (e.g. for real-time notifications).
-app.set("io", io)
+
+// ─── Local dev Socket.io ──────────────────────────────────────────────────────
+// In production, Socket.io runs in its own serverless function
+// (server/api/socket.js, routed via vercel.json /api/socket/*). For local dev
+// we attach the same server on the STANDARD /socket.io/ path, which is what
+// the dev client uses (see client/lib/socket.ts → IS_DEV → SOCKET_PATH).
+if (process.env.NODE_ENV !== "production") {
+  initializeSocket(server, {
+    path: "/socket.io/",
+    transports: ["polling", "websocket"],
+    cors: {
+      // Allow ANY localhost port in dev: Next.js may run on 3001+ when 3000 is
+      // busy, and a blocked origin here surfaces as a socket "xhr poll error".
+      origin: [
+        /^https?:\/\/localhost(:\d+)?$/,
+        process.env.CLIENT_URL,
+        "https://byte-shelf-frontend.vercel.app",
+        "http://localhost:3000",
+      ].filter(Boolean),
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000,
+  });
+}
 
 app.use(cors({
     // NOTE: origin must be a single string or an ARRAY — duplicate keys meant
