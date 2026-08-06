@@ -68,6 +68,8 @@ api.interceptors.request.use(
       }
       // If no token, simply don't attach auth header
     }
+    // ── Trace every outgoing API call in DevTools ──
+    console.log(`🚀 [API Request] ${config.method?.toUpperCase()} -> ${config.url}`, config.data || "");
     return config;
   },
   (error) => Promise.reject(error)
@@ -78,8 +80,16 @@ api.interceptors.request.use(
 // gracefully via router.push() instead of a hard window.location.href reload.
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // ── Trace every incoming API response in DevTools ──
+    console.log(`✅ [API Response] ${response.config.url}:`, response.data);
+    return response;
+  },
   async (error) => {
+    console.error(
+      `❌ [API Error] ${error.config?.url}:`,
+      error.response?.data || error.message
+    );
     if (error.response?.status === 401) {
       dispatchUnauthorized();
       // Don't redirect here — the AuthProvider listener will handle it

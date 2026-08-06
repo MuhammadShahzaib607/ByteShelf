@@ -108,6 +108,19 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+// Extract a readable reason from an API/socket error (exact backend message
+// when available) so errors are never silenced behind a generic fallback.
+function getErrorMessage(err: unknown, fallback: string): string {
+  if (err && typeof err === "object") {
+    const e = err as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
+    return e.response?.data?.message || e.message || fallback;
+  }
+  return fallback;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONVERSATION SIDEBAR ITEM
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -453,6 +466,7 @@ function MessagesContent() {
   const [messages, setMessages] = useState<MessageData[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
   const [msgError, setMsgError] = useState(false);
+  const [msgErrorMsg, setMsgErrorMsg] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -561,9 +575,11 @@ function MessagesContent() {
   const fetchMessages = useCallback(
     async (convId: string, pageNum: number = 1) => {
       if (!accessToken) return;
+      console.log("Fetching messages for conversation:", convId, "page", pageNum);
       try {
         setMsgLoading(true);
         setMsgError(false);
+        setMsgErrorMsg(null);
         const res = await api.get(
           `/conversation/${convId}/messages?page=${pageNum}&limit=20`
         );
@@ -575,8 +591,10 @@ function MessagesContent() {
         }
         setHasMore(data.currentPage < data.totalPages);
         setPage(pageNum);
-      } catch {
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
         setMsgError(true);
+        setMsgErrorMsg(getErrorMessage(err, "Unknown error"));
       } finally {
         setMsgLoading(false);
       }
@@ -595,8 +613,8 @@ function MessagesContent() {
             c._id === convId ? { ...c, unreadCount: 0 } : c
           )
         );
-      } catch {
-        // silently handled
+      } catch (err) {
+        console.error("Failed to mark messages as read:", err);
       }
     },
     []
@@ -866,6 +884,15 @@ function MessagesContent() {
 
     setSending(true);
     try {
+      // Guard BEFORE uploading: if the socket is down, abort immediately so no
+      // attachments are wasted on Cloudinary and the message is not silently lost.
+      const socket = getSocket();
+      if (!socket?.connected) {
+        console.warn("⚠️ Socket not connected — message not sent.");
+        setToast({ message: "Connection lost. Your message was not sent. Please try again." });
+        return;
+      }
+
       // Upload attachments to Cloudinary before sending (max 5 files)
       let attachments: Attachment[] = [];
       if (hasAttachments) {
@@ -895,17 +922,16 @@ function MessagesContent() {
         }
       }
 
-      const socket = getSocket();
-      if (socket?.connected) {
-        socket.emit("send_message", { conversationId: activeConvId, text, attachments });
-      }
+      console.log("📤 Sending message:", { conversationId: activeConvId, text, attachments });
+      socket.emit("send_message", { conversationId: activeConvId, text, attachments });
       setInputText("");
       selectedFiles.forEach((sf) => {
         if (sf.previewUrl) URL.revokeObjectURL(sf.previewUrl);
       });
       setSelectedFiles([]);
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Failed to upload attachment(s).");
+      console.error("Failed to send message:", err);
+      setToast({ message: `Failed to send message: ${getErrorMessage(err, "Unknown error")}` });
     } finally {
       setUploading(false);
       setSending(false);
@@ -921,11 +947,13 @@ function MessagesContent() {
 
   // ─── Handle conversation select ───────────────────────────────────────────
   const selectConversation = useCallback((convId: string) => {
+    const conv = conversations.find((c) => c._id === convId) || null;
+    console.log("Selected Active Chat User:", conv ? getOtherParticipant(conv, userId) : null);
     setActiveConvId(convId);
     router.replace(`/messages?conversationId=${convId}`, { scroll: false });
     setMessages([]);
     setPage(1);
-  }, [router]);
+  }, [router, conversations, userId]);
 
   // ─── Handle Enter key ─────────────────────────────────────────────────────
   const handleKeyDown = useCallback(
@@ -1100,10 +1128,16 @@ function MessagesContent() {
 
                   {/* Message Error */}
                   {msgError && (
-                    <div className="text-center py-8">
-                      <p className="text-xs text-red-400 font-body">
-                        Failed to load messages.
+                    <div className="text-center py-8 px-4">
+                      <p className="text-xs text-red-400 font-body break-words">
+                        Failed to load messages: {msgErrorMsg || "Unknown error"}
                       </p>
+                      <button
+                        onClick={() => fetchMessages(activeConvId, 1)}
+                        className="mt-2 text-xs text-[#84cc16] font-medium hover:underline font-body"
+                      >
+                        Retry
+                      </button>
                     </div>
                   )}
 

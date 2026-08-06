@@ -4,6 +4,7 @@ import Message from "../models/Message.js";
 import { sendRes } from "../utils/responseHandler.js";
 
 export const startConversation = async (req, res) => {
+  console.log("New chat message payload:", req.body);
   try {
     const { participantId, warehouseId } = req.body;
 
@@ -34,6 +35,7 @@ export const startConversation = async (req, res) => {
 };
 
 export const getMessages = async (req, res) => {
+  console.log("Fetching messages for conversation:", req.params);
   try {
     const { conversationId } = req.params;
     const page = parseInt(req.query.page) || 1;
@@ -67,6 +69,7 @@ export const getMessages = async (req, res) => {
 };
 
 export const getMyConversations = async (req, res) => {
+  console.log("Fetching conversations for user:", req.user.id);
   try {
     const userId = new mongoose.Types.ObjectId(req.user.id);
 
@@ -129,6 +132,7 @@ export const getMyConversations = async (req, res) => {
 };
 
 export const markMessagesAsRead = async (req, res) => {
+  console.log("Marking messages as read for conversation:", req.params);
   try {
     const { conversationId } = req.params;
 

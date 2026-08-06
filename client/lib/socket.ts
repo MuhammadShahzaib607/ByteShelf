@@ -50,16 +50,33 @@ export const getSocket = (): Socket | null => {
   }
 
   // ── First time → create new socket ──
+  // NOTE: polling is listed FIRST so the connection works even where WebSocket
+  // upgrades are blocked (e.g. Vercel / serverless hosts). Socket.io will start
+  // with HTTP long-polling and transparently upgrade to WebSocket when possible.
   socket = io(SOCKET_URL, {
     auth: { token },
-    transports: ["websocket", "polling"],
+    transports: ["polling", "websocket"],
     reconnection: true,
     reconnectionAttempts: 10,
-    reconnectionDelay: 2000,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+  });
+
+  // ── Lifecycle logs for debugging connection issues in DevTools ──
+  socket.on("connect", () => {
+    console.log("🟢 Socket Connected:", socket?.id);
   });
 
   socket.on("connect_error", (err) => {
-    console.error("[Socket] Connection error:", err.message);
+    console.error("🔴 Socket Connection Error:", err.message);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.warn("⚠️ Socket Disconnected:", reason);
+  });
+
+  socket.on("receive_message", (msg) => {
+    console.log("📩 Socket Message Received:", msg);
   });
 
   return socket;
