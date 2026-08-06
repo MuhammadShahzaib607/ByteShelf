@@ -66,16 +66,21 @@ export const getSocket = (): Socket | null => {
   }
 
   // ── First time → create new socket ──
-  // NOTE: polling is listed FIRST so the connection works even where WebSocket
-  // upgrades are blocked (e.g. Vercel / serverless hosts). Socket.io will start
-  // with HTTP long-polling and transparently upgrade to WebSocket when possible.
+  // Force HTTP long-polling ONLY: the backend runs on Vercel serverless, which
+  // cannot hold WebSocket upgrades. With polling-only on both ends no upgrade
+  // is ever attempted, so no 404 / 400 upgrade errors. The connection will
+  // transparently keep working via long-polling.
   socket = io(SOCKET_URL, {
     auth: { token },
-    transports: ["polling", "websocket"],
+    transports: ["polling"],
+    withCredentials: true,
     reconnection: true,
-    reconnectionAttempts: 10,
+    // Keep retrying forever so chat recovers automatically after a serverless
+    // cold start / lambda swap instead of giving up after N attempts.
+    reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
+    timeout: 20000,
   });
 
   // ── Lifecycle logs for debugging connection issues in DevTools ──

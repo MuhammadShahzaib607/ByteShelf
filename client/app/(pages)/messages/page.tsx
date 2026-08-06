@@ -643,11 +643,24 @@ function MessagesContent() {
     if (!accessToken || conversations.length === 0) return;
 
     const socket = getSocket();
-    if (!socket?.connected) return;
+    if (!socket) return;
 
-    conversations.forEach((conv) => {
-      socket.emit("join_conversation", conv._id);
-    });
+    const joinAllRooms = () => {
+      conversations.forEach((conv) => {
+        socket.emit("join_conversation", conv._id);
+      });
+    };
+
+    // Join immediately if already connected, and ALWAYS re-join on (re)connect.
+    // After a serverless reconnect the server-side socket is brand new and has
+    // no rooms, so without this the sidebar would stop receiving real-time
+    // updates (unread counts / new messages) until the next page navigation.
+    if (socket.connected) joinAllRooms();
+    socket.on("connect", joinAllRooms);
+
+    return () => {
+      socket.off("connect", joinAllRooms);
+    };
   }, [accessToken, conversations]);
 
   // ─── Socket setup for active conversation ─────────────────────────────────
@@ -657,7 +670,17 @@ function MessagesContent() {
     const socket = getSocket();
     if (!socket) return;
 
-    socket.emit("join_conversation", activeConvId);
+    // Re-join the active room whenever the socket (re)connects. After a
+    // serverless reconnect the server-side socket is brand new and in no rooms,
+    // so without re-joining, receive_message broadcasts would never arrive.
+    const handleConnect = () => {
+      console.log("🔄 Re-joining conversation room on (re)connect:", activeConvId);
+      socket.emit("join_conversation", activeConvId);
+      // Re-send the read receipt so unread state stays in sync after a reconnect.
+      socket.emit("message_read", { conversationId: activeConvId });
+    };
+    if (socket.connected) handleConnect();
+    socket.on("connect", handleConnect);
 
     const handleReceiveMessage = (message: MessageData) => {
       // Update sidebar: update lastMessage, increment unreadCount for background, reorder
@@ -739,6 +762,7 @@ function MessagesContent() {
     socket.on("error_message", handleError);
 
     return () => {
+      socket.off("connect", handleConnect);
       socket.off("receive_message", handleReceiveMessage);
       socket.off("messages_read", handleMessagesRead);
       socket.off("user_typing", handleUserTyping);

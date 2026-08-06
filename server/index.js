@@ -44,7 +44,10 @@ if (process.env.NODE_ENV !== 'production') {
 dotenv.config()
 const app = express()
 const server = http.createServer(app)
-initializeSocket(server)
+const io = initializeSocket(server)
+// Expose the Socket.io instance to Express so controllers can broadcast via
+// req.app.get("io") when needed (e.g. for real-time notifications).
+app.set("io", io)
 
 app.use(cors({
     // NOTE: origin must be a single string or an ARRAY — duplicate keys meant

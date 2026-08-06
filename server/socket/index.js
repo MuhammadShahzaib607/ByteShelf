@@ -6,8 +6,30 @@ import User from "../models/User.js";
 
 export const initializeSocket = (server) => {
   const io = new Server(server, {
+    // ─── Vercel Serverless compatibility ────────────────────────────────────
+    // Serverless functions can't hold long-lived WebSocket connections, so we
+    // force HTTP long-polling. The client (client/lib/socket.ts) uses the same
+    // transport list — with both sides polling-only, no WebSocket upgrade is
+    // ever attempted, which eliminates the 404s on serverless hosts.
+    transports: ["polling"],
+    // NOTE: `allowEIO3` was removed in socket.io >= 4.8 (this repo runs 4.8.3),
+    // so this is a no-op — kept only to match the requested config. The
+    // socket.io-client v4 on the frontend negotiates Engine.IO v4 natively.
+    allowEIO3: true,
+    // Generous keep-alive timing so long-polling survives serverless cycles
+    // (cold starts / lambda swaps) without dropping the session.
+    pingTimeout: 60000,
+    pingInterval: 25000,
     cors: {
-      origin: "*",
+      // `credentials: true` (sent by the client's polling requests) requires
+      // explicit origins — a wildcard "*" is NOT allowed with credentials.
+      origin: [
+        process.env.CLIENT_URL,
+        "https://byte-shelf-frontend.vercel.app",
+        "http://localhost:3000",
+      ].filter(Boolean),
+      methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 
@@ -32,6 +54,7 @@ export const initializeSocket = (server) => {
 
   io.on("connection", async (socket) => {
     const userId = socket.userId;
+    console.log("⚡ Socket connected:", socket.id, "userId:", userId);
 
     // ─── Track online status ───────────────────────────────────────────────
     if (!onlineUsers.has(userId)) {
@@ -113,7 +136,8 @@ export const initializeSocket = (server) => {
     });
 
     // ─── Handle disconnect ─────────────────────────────────────────────────
-    socket.on("disconnect", async () => {
+    socket.on("disconnect", async (reason) => {
+      console.log("⚠️ Socket disconnected:", socket.id, "reason:", reason);
       const userSockets = onlineUsers.get(userId);
       if (userSockets) {
         userSockets.delete(socket.id);
