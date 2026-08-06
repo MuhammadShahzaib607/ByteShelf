@@ -47,8 +47,13 @@ const server = http.createServer(app)
 initializeSocket(server)
 
 app.use(cors({
-    origin: "http://localhost:3000",
-    origin: "https://byte-shelf-frontend.vercel.app",
+    // NOTE: origin must be a single string or an ARRAY — duplicate keys meant
+    // only the last one (the Vercel frontend) was applied, silently blocking
+    // localhost:3000 and causing CORS "Network Error" on /user/login etc.
+    origin: [
+        "http://localhost:3000",
+        "https://byte-shelf-frontend.vercel.app",
+    ],
     credentials: true,
 }))
 app.use(express.json())

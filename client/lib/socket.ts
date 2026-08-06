@@ -1,8 +1,24 @@
 import { io, Socket } from "socket.io-client";
 
+// Derive a Socket.io origin from an API base URL by stripping any path segment
+// (e.g. /api/v1) down to the bare origin, so the socket always connects to the
+// host root. Robust regardless of whether the env URL ends in /api/v1 or not.
+const toSocketOrigin = (url: string): string => {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return url.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
+  }
+};
+
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "") ||
+  (process.env.NEXT_PUBLIC_API_URL
+    ? toSocketOrigin(process.env.NEXT_PUBLIC_API_URL)
+    : "") ||
+  (process.env.NEXT_PUBLIC_API_BASE_URL
+    ? toSocketOrigin(process.env.NEXT_PUBLIC_API_BASE_URL)
+    : "") ||
   "http://localhost:8000";
 
 let socket: Socket | null = null;

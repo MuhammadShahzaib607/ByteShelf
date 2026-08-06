@@ -1,6 +1,18 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1";
+// Resolve the API base URL with a robust fallback chain so requests never hit an
+// empty or broken endpoint. Priority: NEXT_PUBLIC_API_URL (canonical) →
+// NEXT_PUBLIC_API_BASE_URL (legacy) → local dev default.
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "http://localhost:8000/api/v1"
+).replace(/\/+$/, ""); // trim trailing slashes
+
+// Log once (browser only) so developers can verify where requests are firing.
+if (typeof window !== "undefined") {
+  console.log(`🌐 API base URL: ${API_BASE_URL}`);
+}
 
 // ─── Token helpers ──────────────────────────────────────────────────────────────
 
