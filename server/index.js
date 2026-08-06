@@ -17,8 +17,8 @@ if (typeof globalThis.DOMMatrix === "undefined") {
   };
 }
 
-import express from "express"
-import cors from "cors"
+import express from "express";
+import cors from "cors";
 import http from "http"
 import { initializeSocket } from "./socket/index.js"
 import dotenv from "dotenv"
