@@ -46,6 +46,67 @@ const STEPS: { key: Step; label: string }[] = [
   { key: "video", label: "Video" },
 ];
 
+// ─── NIC image compression ──────────────────────────────────────────────────
+// Downscales oversized phone photos and re-encodes them as JPEG, keeping the
+// payload comfortably under Cloudinary's upload limits and Vercel's 4.5MB
+// serverless body cap — this prevents the "Upload failed" error on Step 2.
+const MAX_NIC_UPLOAD_BYTES = 3 * 1024 * 1024;
+
+function compressImage(file: File, maxDimension = 2000): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read image file"));
+    reader.onload = () => {
+      const img = document.createElement("img");
+      img.onerror = () => reject(new Error("Could not decode image. Please use a JPG, PNG, or WebP file."));
+      img.onload = () => {
+        try {
+          // Downscale to fit within maxDimension while keeping the aspect ratio
+          let { width, height } = img;
+          const scale = Math.min(maxDimension / width, maxDimension / height);
+          if (scale < 1) {
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Image compression failed"));
+
+          // Re-encode at progressively lower quality until the JPEG fits under 3MB
+          ctx.drawImage(img, 0, 0, width, height);
+          const qualities = [0.8, 0.6, 0.4, 0.25];
+          let attempt = 0;
+          const tryEncode = () => {
+            if (attempt >= qualities.length) return reject(new Error("Image compression failed"));
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) return reject(new Error("Image compression failed"));
+                if (blob.size > MAX_NIC_UPLOAD_BYTES) {
+                  attempt += 1;
+                  tryEncode();
+                  return;
+                }
+                const base = file.name.replace(/\.[^.]+$/, "") || "nic-image";
+                resolve(new File([blob], `${base}.jpg`, { type: "image/jpeg" }));
+              },
+              "image/jpeg",
+              qualities[attempt]
+            );
+          };
+          tryEncode();
+        } catch {
+          reject(new Error("Image compression failed"));
+        }
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function StepIndicator({ current, stepKey }: { current: Step; stepKey: Step }) {
   const stepConfig = STEPS.find((s) => s.key === stepKey);
   const idx = STEPS.findIndex((s) => s.key === stepKey);
@@ -263,18 +324,33 @@ export default function SignupPage() {
 
   // ─── Handle file upload for NIC images ───────────────────────────────────
   const handleNICFile = useCallback(async (side: "front" | "back", file: File) => {
+    const errorKey = `nic${side === "front" ? "Front" : "Back"}` as const;
+
+    // Validate file type & size BEFORE uploading
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({ ...prev, [errorKey]: "Please upload a valid image file" }));
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, [errorKey]: "Image size must be less than 4MB" }));
+      return;
+    }
+
     try {
-      const url = await uploadImageFile(file);
+      // Compress before upload — avoids "Upload failed" from oversized payloads
+      const compressed = await compressImage(file);
+      const url = await uploadImageFile(compressed);
       if (side === "front") {
         setNicFront(url);
-        setNicFrontPreview(URL.createObjectURL(file));
+        setNicFrontPreview(URL.createObjectURL(compressed));
       } else {
         setNicBack(url);
-        setNicBackPreview(URL.createObjectURL(file));
+        setNicBackPreview(URL.createObjectURL(compressed));
       }
-      setErrors((prev) => ({ ...prev, [`nic${side === "front" ? "Front" : "Back"}`]: undefined }));
-    } catch {
-      setErrors((prev) => ({ ...prev, [`nic${side === "front" ? "Front" : "Back"}`]: "Upload failed" }));
+      setErrors((prev) => ({ ...prev, [errorKey]: undefined }));
+    } catch (err) {
+      console.error("KYC Upload Error:", err);
+      setErrors((prev) => ({ ...prev, [errorKey]: "Upload failed" }));
     }
   }, [uploadImageFile]);
 

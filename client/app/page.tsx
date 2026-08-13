@@ -348,11 +348,26 @@ export default function Home() {
   }, []);
 
   // ─── Fetch Featured Warehouses ───────────────────────────────────────────────
+  // /warehouse/all is a protected endpoint (requires a token), so the fetch is
+  // gated on auth: guests skip the call entirely — no 401, no bounce to /login —
+  // and instead see the friendly "Sign in to explore warehouses" state below.
 
   useEffect(() => {
+    if (isCheckingAuth) return; // wait for auth hydration to settle
+
     let cancelled = false;
 
-    const fetchWarehouses = async () => {
+    const loadFeatured = async () => {
+      // Guest mode — no token: bypass the protected fetch gracefully.
+      if (!accessToken) {
+        if (!cancelled) {
+          setWarehouses([]);
+          setWarehousesError(true);
+          setWarehousesLoading(false);
+        }
+        return;
+      }
+
       try {
         setWarehousesLoading(true);
         setWarehousesError(false);
@@ -370,9 +385,9 @@ export default function Home() {
       }
     };
 
-    fetchWarehouses();
+    loadFeatured();
     return () => { cancelled = true; };
-  }, []);
+  }, [accessToken, isCheckingAuth]);
 
   // ─── Scroll handler for nav links ────────────────────────────────────────────
 

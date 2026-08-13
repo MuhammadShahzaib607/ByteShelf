@@ -169,6 +169,17 @@ export const createOrder = async (req, res) => {
       }
     }
 
+    // Business rule: orders can only be created from shipments that have
+    // physically arrived at the warehouse (status "arrived").
+    if (sourcePlan && sourcePlan.status !== "arrived") {
+      return sendRes(
+        res,
+        400,
+        false,
+        "Order creation failed: Shipment has not arrived at the warehouse yet."
+      );
+    }
+
     const stockPlans = sourcePlan
       ? [sourcePlan]
       : await InboundPlan.find({
@@ -623,6 +634,92 @@ export const markInTransit = async (req, res) => {
     return sendRes(res, 200, true, "Order marked as in transit", order);
   } catch (error) {
     console.error("[markInTransit] Error:", error.message);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
+  }
+};
+
+// ─── Owner order status update (spec: PATCH /api/v1/owner/orders/:orderId/status) ──
+
+// Canonical order statuses with the spec's uppercase aliases normalized in.
+// Lookup is case/space-insensitive ("pending packing", "READY_FOR_PICKUP", etc).
+const ORDER_STATUS_ALIASES = {
+  PENDING: "Pending Packing",
+  PENDING_PACKING: "Pending Packing",
+  PACKED: "Packed",
+  READY_FOR_PICKUP: "Packed",
+  DISPATCHED: "Dispatched",
+  IN_TRANSIT: "In Transit",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+};
+
+// Allowed forward transitions in the fulfillment lifecycle.
+const ORDER_TRANSITIONS = {
+  "Pending Packing": ["Packed", "Cancelled"],
+  Packed: ["Dispatched", "Cancelled"],
+  Dispatched: ["In Transit"],
+  "In Transit": ["Delivered"],
+  Delivered: [],
+  Cancelled: [],
+};
+
+export const updateOwnerOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const normalizedKey = String(req.body?.status || "").trim().toUpperCase().replace(/\s+/g, "_");
+    const target = ORDER_STATUS_ALIASES[normalizedKey];
+
+    if (!target || !ORDER_TRANSITIONS[target]) {
+      return sendRes(res, 400, false, "Invalid order status value");
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return sendRes(res, 404, false, "Order not found");
+    }
+
+    const auth = await assertOwnerOfOrder(order, req);
+    if (auth.error) {
+      return sendRes(res, 403, false, auth.error);
+    }
+
+    // Idempotent — same status is a success, not an error.
+    if (order.status === target) {
+      return sendRes(res, 200, true, `Order is already ${target}`, order);
+    }
+
+    const allowed = ORDER_TRANSITIONS[order.status] || [];
+    if (!allowed.includes(target)) {
+      return sendRes(
+        res,
+        400,
+        false,
+        `Cannot move order from "${order.status}" to "${target}"`
+      );
+    }
+
+    order.status = target;
+    if (target === "Dispatched" && !order.dispatchTimestamp) {
+      order.dispatchTimestamp = new Date();
+    }
+    order.timeline.push({
+      status: target,
+      timestamp: new Date(),
+      note: "Status updated by the warehouse",
+    });
+    await order.save();
+
+    await Notification.create({
+      recipient: order.merchant,
+      sender: req.user.id,
+      title: `Order ${target}`,
+      message: `Order #${order.orderId} status updated to ${target} by the warehouse.`,
+      link: "/merchant-dashboard",
+    });
+
+    return sendRes(res, 200, true, `Order marked as ${target}`, order);
+  } catch (error) {
+    console.error("[updateOwnerOrderStatus] Error:", error.message);
     return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };

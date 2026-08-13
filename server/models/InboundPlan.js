@@ -35,8 +35,11 @@ const inboundPlanSchema = new mongoose.Schema(
       required: true,
     },
     status: {
+      // Canonical storage values (lowercase, kept for backward compatibility
+      // with existing documents/APIs). UI mapping: created/in-transit -> IN_TRANSIT,
+      // arrived -> ARRIVED, cancelled -> CANCELLED, completed -> COMPLETED.
       type: String,
-      enum: ["in-transit", "arrived", "completed"],
+      enum: ["in-transit", "arrived", "completed", "cancelled"],
       default: "in-transit",
     },
     // Declared per-carton contents (merchant-defined inventory breakdown)

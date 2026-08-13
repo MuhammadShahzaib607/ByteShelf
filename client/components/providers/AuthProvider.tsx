@@ -60,7 +60,9 @@ export default function AuthProvider({
     // Tokens already cleared by the axios interceptor
     dispatch(setCheckingAuth(false));
     const path = window.location.pathname;
-    if (path !== "/login" && path !== "/signup") {
+    // The root landing page is public — never bounce guests (or expired
+    // sessions) off it; they can keep browsing and sign in when they choose.
+    if (path !== "/" && path !== "/login" && path !== "/signup") {
       router.push("/login");
     }
   }, [dispatch, router]);

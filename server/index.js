@@ -35,6 +35,7 @@ import orderRoute from "./routes/order.js"
 import conversationRoute from "./routes/conversation.js"
 import adminRoute from "./routes/admin.js"
 import contactRoute from "./routes/contact.js"
+import ownerRoute from "./routes/owner.js"
 import dns from 'dns';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -93,6 +94,7 @@ app.use("/api/v1/order", orderRoute);
 app.use("/api/v1/conversation", conversationRoute);
 app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/contact", contactRoute);
+app.use("/api/v1/owner", ownerRoute);
 
 const connectDB = async () => {
     try {

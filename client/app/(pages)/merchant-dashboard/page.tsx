@@ -1184,14 +1184,28 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     </div>
                   </div>
 
-                  {/* Dispatch / Create Order from this Inbound */}
+                  {/* Dispatch / Create Order from this Inbound (locked until the shipment is ARRIVED) */}
                   <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => openDispatchOrder(plan)}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-xl text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200"
-                    >
-                      <Truck size={13} /> Dispatch / Create Order from this Inbound
-                    </button>
+                    {plan.status === "arrived" || plan.status === "completed" ? (
+                      <button
+                        onClick={() => openDispatchOrder(plan)}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-xl text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200"
+                      >
+                        <Truck size={13} /> Dispatch / Create Order from this Inbound
+                      </button>
+                    ) : (
+                      <div>
+                        <button
+                          disabled
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-neutral-500 border border-neutral-800 rounded-xl text-xs font-body font-semibold cursor-not-allowed opacity-60"
+                        >
+                          <Truck size={13} /> Dispatch / Create Order from this Inbound
+                        </button>
+                        <p className="mt-1.5 text-center text-[10px] font-medium text-amber-400 font-body">
+                          Awaiting Warehouse Arrival Confirmation
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );

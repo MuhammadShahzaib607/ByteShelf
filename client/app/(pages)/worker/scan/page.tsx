@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
+import CartonQRScanner from "@/components/ui/CartonQRScanner";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -88,11 +89,7 @@ export default function WorkerScanPage() {
   const [scanHistory, setScanHistory] = useState<ScanResult[]>([]);
 
   const [retryCounter, setRetryCounter] = useState(0);
-  const scannerRef = useRef<HTMLDivElement>(null);
-  const html5QrRef = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const scanningLockRef = useRef(false);
-  const handleScanResultRef = useRef<((code: string) => Promise<void>) | null>(null);
 
   // ─── Role guard ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -114,83 +111,10 @@ export default function WorkerScanPage() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // ─── Load html5-qrcode dynamically ───────────────────────────────────────
-  useEffect(() => {
-    if (!isMobile || cameraError) return;
-
-    let cancelled = false;
-    scanningLockRef.current = false;
-
-    async function initScanner() {
-      try {
-        const { Html5Qrcode } = await import("html5-qrcode");
-
-        if (cancelled) return;
-
-        // Clean up any previous instance
-        if (html5QrRef.current) {
-          try {
-            await html5QrRef.current.stop();
-            await html5QrRef.current.clear();
-          } catch {}
-        }
-
-        const html5Qr = new Html5Qrcode("byteshelf-scanner");
-        html5QrRef.current = html5Qr;
-
-        setScannerReady(true);
-
-        await html5Qr.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-          },
-          (decodedText: string) => {
-            // Use refs to avoid stale closure — always reads latest state
-            if (scanningLockRef.current) return;
-            scanningLockRef.current = true;
-            if (handleScanResultRef.current) {
-              handleScanResultRef.current(decodedText.trim());
-            }
-          },
-          () => {
-            // On non-decode - ignore frame-by-frame errors
-          }
-        );
-      } catch (err: any) {
-        if (cancelled) return;
-        const msg =
-          err?.message?.includes("NotAllowed") || err?.message?.includes("Permission")
-            ? "Camera permission denied. Please allow camera access in your browser settings."
-            : err?.message?.includes("NotFound")
-            ? "No camera found on this device."
-            : "Could not start camera scanner. Try using the manual input below.";
-        setCameraError(msg);
-      }
-    }
-
-    initScanner();
-
-    return () => {
-      cancelled = true;
-      if (html5QrRef.current) {
-        try {
-          html5QrRef.current.stop().catch(() => {});
-          html5QrRef.current.clear().catch(() => {});
-        } catch {}
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, retryCounter]);
-
-  // ─── Handle scan result (stored in ref so scanner callback is never stale) ─
+  // ─── Handle scan result (dedup is enforced by CartonQRScanner + `active`) ─
   const handleScanResult = useCallback(
     async (code: string) => {
-      if (!code) {
-        scanningLockRef.current = false;
-        return;
-      }
+      if (!code) return;
 
       setScanning(true);
       setIsScanning(false);
@@ -216,13 +140,12 @@ export default function WorkerScanPage() {
           setScanHistory((prev) => [result, ...prev].slice(0, 50));
           setManualCode("");
 
-          // Auto re-enable scanner after 1.5s
+          // Auto re-enable scanner after 1.5s (CartonQRScanner resumes via `active`)
           setTimeout(() => {
             setLastResult(null);
             setScanError(null);
             setIsScanning(true);
             setScanning(false);
-            scanningLockRef.current = false;
           }, 1500);
         } else {
           throw new Error(data.message || "Scan failed");
@@ -237,20 +160,16 @@ export default function WorkerScanPage() {
         playBeep(220, 0.4);
         vibrate(400);
 
-        // Auto re-enable after error delay
+        // Auto re-enable after error delay (CartonQRScanner resumes via `active`)
         setTimeout(() => {
           setScanError(null);
           setIsScanning(true);
           setScanning(false);
-          scanningLockRef.current = false;
         }, 2500);
       }
     },
     []
   );
-
-  // Always keep the ref in sync with the latest callback
-  handleScanResultRef.current = handleScanResult;
 
   // ─── Manual submit ──────────────────────────────────────────────────────
   const handleManualSubmit = async (e: React.FormEvent) => {
@@ -272,7 +191,6 @@ export default function WorkerScanPage() {
     setLastResult(null);
     setIsScanning(true);
     setScanning(false);
-    scanningLockRef.current = false;
   };
 
   // ─── Loading state ──────────────────────────────────────────────────────
@@ -365,7 +283,15 @@ export default function WorkerScanPage() {
             cameraError || !scannerReady ? "hidden" : ""
           }`}
         >
-          <div id="byteshelf-scanner" ref={scannerRef} className="w-full h-full" />
+          <CartonQRScanner
+            key={retryCounter}
+            elementId="byteshelf-scanner"
+            className="w-full h-full"
+            active={isScanning}
+            onScanSuccess={handleScanResult}
+            onCameraReady={() => setScannerReady(true)}
+            onCameraError={(msg) => setCameraError(msg)}
+          />
 
           {/* Scanning overlay frame */}
           <div className="absolute inset-0 pointer-events-none">

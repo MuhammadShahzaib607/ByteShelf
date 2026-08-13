@@ -14,6 +14,7 @@ import {
   Loader2,
   Layers,
   Hash,
+  Clock,
 } from "lucide-react";
 import api from "@/lib/axios";
 import CreateOrderModal from "./CreateOrderModal";
@@ -224,6 +225,11 @@ export default function InboundDetailsDrawer({
   const physicalCartons = detail?.cartons || [];
   const p = detail?.plan || plan;
 
+  // Business rule: orders can only be created from shipments the warehouse has
+  // confirmed as ARRIVED (a completed shipment necessarily arrived earlier).
+  // Until then the dispatch button stays disabled.
+  const hasArrived = p.status === "arrived" || p.status === "completed";
+
   // Only orders linked to this inbound plan belong in its "Associated Orders"
   // tab — orders created from other inbounds at the same warehouse are excluded.
   const associatedOrders = orders.filter((o) => {
@@ -407,13 +413,29 @@ export default function InboundDetailsDrawer({
             )}
 
             {/* ─── Dispatch / Create Order from this Inbound ─── */}
-            <button
-              type="button"
-              onClick={() => setShowOrderModal(true)}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-2xl text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200 mb-5"
-            >
-              <Truck size={15} /> Dispatch / Create Order from this Inbound
-            </button>
+            {hasArrived ? (
+              <button
+                type="button"
+                onClick={() => setShowOrderModal(true)}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-2xl text-sm font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200 mb-5"
+              >
+                <Truck size={15} /> Dispatch / Create Order from this Inbound
+              </button>
+            ) : (
+              <div className="mb-5">
+                <button
+                  type="button"
+                  disabled
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#1a231d] text-neutral-500 border border-neutral-800 rounded-2xl text-sm font-body font-semibold cursor-not-allowed opacity-60"
+                >
+                  <Truck size={15} /> Dispatch / Create Order from this Inbound
+                </button>
+                <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] font-body font-medium text-amber-400">
+                  <Clock size={12} className="shrink-0" />
+                  Awaiting Warehouse Arrival Confirmation
+                </div>
+              </div>
+            )}
 
             {/* ─── Tabs ─── */}
             <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-neutral-900/80 border border-neutral-800 mb-5">

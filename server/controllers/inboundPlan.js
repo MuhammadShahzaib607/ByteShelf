@@ -265,3 +265,188 @@ export const getWarehouseInboundPlans = async (req, res) => {
     return sendRes(res, 500, false, error.message || String(error), null, error);
   }
 };
+
+// ─── Warehouse Owner inbound management (spec: /api/v1/owner/*) ──────────────
+
+// Shared aggregation for warehouse-owner inbound plans. When `warehouseId` is
+// provided the list is scoped to that warehouse; otherwise it spans every
+// warehouse owned by the user. Enriches each plan with warehouse/merchant names,
+// declared carton contents and carton status counts (cartonStats).
+const fetchOwnerPlans = async (ownerId, warehouseId) => {
+  const ownerWarehouses = await Warehouse.find({ owner: ownerId }).select("_id");
+  if (ownerWarehouses.length === 0) return [];
+
+  const ownedWarehouseIds = ownerWarehouses.map((w) => w._id);
+
+  const matchQuery = {};
+  if (warehouseId) {
+    const isValid = ownedWarehouseIds.some((id) => id.toString() === String(warehouseId));
+    if (!isValid) {
+      const err = new Error("Unauthorized to view this warehouse's inbound plans");
+      err.status = 403;
+      throw err;
+    }
+    matchQuery.warehouse = new mongoose.Types.ObjectId(warehouseId);
+  } else {
+    matchQuery.warehouse = { $in: ownedWarehouseIds };
+  }
+
+  return InboundPlan.aggregate([
+    { $match: matchQuery },
+    { $sort: { createdAt: -1 } },
+    {
+      $lookup: {
+        from: "warehouses",
+        localField: "warehouse",
+        foreignField: "_id",
+        as: "warehouseInfo",
+      },
+    },
+    { $unwind: { path: "$warehouseInfo", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "merchant",
+        foreignField: "_id",
+        as: "merchantInfo",
+      },
+    },
+    { $unwind: { path: "$merchantInfo", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "cartons",
+        let: { planId: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$inboundPlan", "$$planId"] } } },
+          { $group: { _id: "$status", count: { $sum: 1 } } },
+        ],
+        as: "cartonStats",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        merchant: 1,
+        warehouse: 1,
+        booking: 1,
+        batchName: 1,
+        totalCartons: 1,
+        receivedCount: 1,
+        expectedDate: 1,
+        status: 1,
+        createdAt: 1,
+        stock: 1,
+        cartons: 1,
+        cartonStats: 1,
+        merchantName: { $ifNull: ["$merchantInfo.name", null] },
+        warehouseName: { $ifNull: ["$warehouseInfo.name", null] },
+        warehouseLocation: { $ifNull: ["$warehouseInfo.location", null] },
+      },
+    },
+  ]);
+};
+
+// GET /api/v1/inbound/owner?warehouseId= — all inbound plans across the owner's
+// warehouses (optional single-warehouse filter).
+export const getOwnerInboundPlans = async (req, res) => {
+  try {
+    const plans = await fetchOwnerPlans(req.user.id, req.query.warehouseId);
+    return sendRes(res, 200, true, "Inbound plans fetched successfully", plans);
+  } catch (error) {
+    const status = error.status === 403 ? 403 : 500;
+    console.error("[inboundPlan] Error:", error);
+    return sendRes(res, status, false, error.message || String(error), null, error);
+  }
+};
+
+// GET /api/v1/owner/warehouses/:warehouseId/inbounds — plans + cartons for one
+// owned warehouse (spec: owner warehouse inbound list).
+export const getOwnerWarehouseInbounds = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+
+    const warehouse = await Warehouse.findOne({ _id: warehouseId, owner: req.user.id });
+    if (!warehouse) {
+      return sendRes(res, 404, false, "Warehouse not found or not owned by you");
+    }
+
+    const plans = await fetchOwnerPlans(req.user.id, warehouseId);
+
+    return sendRes(res, 200, true, "Inbound plans fetched successfully", {
+      warehouse: {
+        _id: warehouse._id,
+        name: warehouse.name,
+        location: warehouse.location,
+        totalShelves: warehouse.totalShelves,
+      },
+      plans,
+    });
+  } catch (error) {
+    const status = error.status === 403 ? 403 : 500;
+    console.error("[inboundPlan] Error:", error);
+    return sendRes(res, status, false, error.message || String(error), null, error);
+  }
+};
+
+// PATCH /api/v1/owner/inbounds/:inboundId/status — mark a shipment as ARRIVED.
+// Owner-only (verified against the inbound's warehouse), flips all associated
+// in-transit cartons to arrived and notifies the merchant (arrival unlocks
+// order creation from this stock).
+export const updateInboundStatus = async (req, res) => {
+  try {
+    const { inboundId } = req.params;
+    const targetStatus = String(req.body?.status || "").toLowerCase();
+
+    // This endpoint intentionally only supports the ARRIVED transition.
+    if (targetStatus !== "arrived") {
+      return sendRes(res, 400, false, "Only status 'ARRIVED' is supported on this endpoint");
+    }
+
+    const plan = await InboundPlan.findById(inboundId);
+    if (!plan) {
+      return sendRes(res, 404, false, "Inbound plan not found");
+    }
+
+    const warehouse = await Warehouse.findById(plan.warehouse);
+    if (!warehouse || warehouse.owner.toString() !== req.user.id) {
+      return sendRes(res, 403, false, "Unauthorized to manage this inbound plan");
+    }
+
+    // Idempotent — already arrived is a success, not an error.
+    if (plan.status === "arrived") {
+      return sendRes(res, 200, true, "Inbound shipment is already marked as arrived", plan);
+    }
+
+    // Lifecycle guards — cancelled/completed shipments can't be (re)opened.
+    if (plan.status === "cancelled") {
+      return sendRes(res, 400, false, "Cannot mark a cancelled shipment as arrived");
+    }
+    if (plan.status === "completed") {
+      return sendRes(res, 400, false, "Shipment is already completed");
+    }
+
+    plan.status = "arrived";
+    plan.receivedCount = plan.totalCartons;
+    await plan.save();
+
+    // Flip every in-transit carton for this shipment to arrived.
+    await Carton.updateMany(
+      { inboundPlan: plan._id, status: "in-transit" },
+      { $set: { status: "arrived" } }
+    );
+
+    // Notify the merchant — arrival unlocks order creation from this stock.
+    await Notification.create({
+      recipient: plan.merchant,
+      sender: req.user.id,
+      title: "Shipment Arrived",
+      message: `Your inbound shipment "${plan.batchName}" has arrived at the warehouse. You can now create orders from this stock.`,
+      link: "/merchant-dashboard",
+    });
+
+    return sendRes(res, 200, true, "Inbound shipment marked as arrived", plan);
+  } catch (error) {
+    console.error("[inboundPlan] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
+  }
+};

@@ -302,6 +302,7 @@ const Navbar: React.FC = () => {
     { href: "/how-it-works", label: "How It Works", icon: Info },
     { href: "/blog", label: "Blog", icon: Newspaper },
     { href: "/help", label: "Help", icon: LifeBuoy },
+    { href: "/contact", label: "Contact", icon: Mail },
   ];
 
   // ─── Authenticated links (common, filtered by role) ─────────────────────
@@ -441,7 +442,7 @@ const Navbar: React.FC = () => {
                 href="/signup"
                 className="px-5 py-2 text-sm font-body font-semibold bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full hover:bg-[#222e26] hover:border-[#84cc16]/60 active:scale-95 transition-all duration-200"
               >
-                Join Free
+                Create Account
               </Link>
             </>
           )}
@@ -648,7 +649,7 @@ const Navbar: React.FC = () => {
                     onClick={() => setIsOpen(false)}
                     className="block px-4 py-2.5 text-sm font-body font-semibold bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 text-center rounded-xl hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-colors"
                   >
-                    Join Free
+                    Create Account
                   </Link>
                 </>
               )}

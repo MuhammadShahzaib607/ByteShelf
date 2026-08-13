@@ -13,7 +13,7 @@ import {
   Save, Check, Image as ImageIcon, Video,
   ThumbsUp, ThumbsDown, X, Search, Undo2, AlertCircle,
   Phone, HardHat, Store, Copy, ChevronLeft,
-  Truck, ClipboardList, Box,
+  Truck, ClipboardList, Box, Inbox,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout, setUser } from "@/redux/slices/authSlice";
@@ -25,6 +25,7 @@ import Input from "@/components/ui/Input";
 import MapPicker from "@/components/ui/MapPicker";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import OwnerInboundsTab from "@/components/ui/OwnerInboundsTab";
 import EditWarehouseModal from "@/components/ui/EditWarehouseModal";
 import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
 import DispatchOrderModal from "@/components/ui/DispatchOrderModal";
@@ -32,7 +33,7 @@ import DeliveryConfirmationModal from "@/components/ui/DeliveryConfirmationModal
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
-type TabId = "overview" | "warehouses" | "add-warehouse" | "orders" | "profile" | "verifications";
+type TabId = "overview" | "warehouses" | "add-warehouse" | "orders" | "inbounds" | "profile" | "verifications";
 
 interface WarehouseData { _id: string; name: string; location: string; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; }
 interface BookingData { _id: string; merchant: { _id: string; name: string; email: string; phone: string }; warehouse: { _id: string; name: string; location: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: string; paymentStatus: string; totalAmount: number; createdAt: string; }
@@ -123,11 +124,12 @@ function ImagePreview({ src, onRemove, isUploading }: { src: string; onRemove: (
 // SIDEBAR
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const SIDEBAR_TABS: { id: TabId; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
+const SIDEBAR_TABS: { id: TabId; label: string; icon: React.ElementType; adminOnly?: boolean; ownerOnly?: boolean }[] = [
   { id: "overview", label: "Dashboard", icon: LayoutDashboard },
   { id: "warehouses", label: "My Warehouses", icon: Warehouse },
   { id: "add-warehouse", label: "Add Warehouse", icon: Plus },
   { id: "orders", label: "Orders & Dispatch", icon: Truck },
+  { id: "inbounds", label: "Inbounds", icon: Inbox, ownerOnly: true },
   { id: "profile", label: "Account / Profile", icon: User },
   { id: "verifications", label: "Verify Users", icon: ShieldCheck, adminOnly: true },
 ];
@@ -139,6 +141,7 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
   const { user } = useAppSelector((s) => s.auth);
   const { unread } = useAppSelector((s) => s.notifications);
   const dispatch = useAppDispatch();
+  const isOwner = user?.role === "warehouseOwner";
   const handleLogout = () => { dispatch(logout()); localStorage.removeItem("byteshelf_access_token"); localStorage.removeItem("auth_tokens"); window.location.href = "/login"; };
 
   const content = (
@@ -157,7 +160,7 @@ function Sidebar({ activeTab, onTabChange, isOpen, onClose, isAdmin }: {
         <a href="/" className="inline-flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors font-body"><ArrowLeft size={13} /> Back to Main Site</a>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-1">
-        {SIDEBAR_TABS.filter((t) => !t.adminOnly || isAdmin).map((tab) => {
+        {SIDEBAR_TABS.filter((t) => (!t.adminOnly || isAdmin) && (!t.ownerOnly || isOwner)).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
@@ -1077,6 +1080,7 @@ interface OwnerOrderData {
   warehouse?: { _id: string; name: string; location?: string };
   customerDetails: { name: string; phone: string; address: string; city: string };
   orderedItems: Array<{ itemName: string; sku?: string; quantity: number }>;
+  inboundPlan?: string | null;
   status: string;
   trackingId?: string | null;
   dispatchTimestamp?: string | null;
@@ -1107,6 +1111,8 @@ function OrdersDispatchTab() {
   const [orders, setOrders] = useState<OwnerOrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [warehouses, setWarehouses] = useState<{ _id: string; name: string; location?: string }[]>([]);
+  const [warehouseFilter, setWarehouseFilter] = useState("ALL");
   const [actingId, setActingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -1124,6 +1130,24 @@ function OrdersDispatchTab() {
   }, [accessToken]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  // ─── Warehouse selector options (owner's warehouses for the dropdown filter) ──
+  useEffect(() => {
+    if (!accessToken) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get("/warehouse/my-warehouses");
+        const d = res.data.data;
+        if (!cancelled) setWarehouses(Array.isArray(d?.warehouses) ? d.warehouses : []);
+      } catch {
+        /* dropdown falls back to All Warehouses */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
 
   useEffect(() => {
     if (!toast) return;
@@ -1173,11 +1197,18 @@ function OrdersDispatchTab() {
     { id: "Delivered", label: "Delivered" },
   ];
   const filteredOrders = orders.filter((o) => {
-    if (filter === "all") return true;
-    if (filter === "transit") return o.status === "Dispatched" || o.status === "In Transit";
-    return o.status === filter;
+    const statusMatch =
+      filter === "all" ||
+      (filter === "transit"
+        ? o.status === "Dispatched" || o.status === "In Transit"
+        : o.status === filter);
+    if (!statusMatch) return false;
+    if (warehouseFilter !== "ALL") {
+      return (o.warehouse?._id || "") === warehouseFilter;
+    }
+    return true;
   });
-  const pendingCount = orders.filter((o) => o.status === "Pending Packing").length;
+  const pendingCount = filteredOrders.filter((o) => o.status === "Pending Packing").length;
   const courierNameFor = (o: OwnerOrderData) => o.courierDetails?.courierName || "";
 
   return (
@@ -1194,10 +1225,10 @@ function OrdersDispatchTab() {
       {/* Header stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Orders", value: orders.length, icon: ClipboardList },
+          { label: "Total Orders", value: filteredOrders.length, icon: ClipboardList },
           { label: "Pending Packing", value: pendingCount, icon: Clock },
-          { label: "Packed", value: orders.filter((o) => o.status === "Packed").length, icon: Package },
-          { label: "Dispatched / In Transit", value: orders.filter((o) => o.status === "Dispatched" || o.status === "In Transit").length, icon: Truck },
+          { label: "Packed", value: filteredOrders.filter((o) => o.status === "Packed").length, icon: Package },
+          { label: "Dispatched / In Transit", value: filteredOrders.filter((o) => o.status === "Dispatched" || o.status === "In Transit").length, icon: Truck },
         ].map((k) => (
           <div key={k.label} className="bg-[#111614]/90 backdrop-blur-md rounded-2xl p-4 border border-neutral-800/80 shadow-sm">
             <div className="flex items-center gap-3">
@@ -1208,17 +1239,32 @@ function OrdersDispatchTab() {
         ))}
       </div>
 
-      {/* Filter pills */}
-      <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
-        {filters.map((f) => {
-          const isActive = filter === f.id;
-          return (
-            <button key={f.id} onClick={() => setFilter(f.id)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}>
-              {f.label}
-            </button>
-          );
-        })}
+      {/* Filter bar: status pills + warehouse selector */}
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-6">
+        <div className="flex items-center gap-1.5 overflow-x-auto flex-1">
+          {filters.map((f) => {
+            const isActive = filter === f.id;
+            return (
+              <button key={f.id} onClick={() => setFilter(f.id)}
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}>
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+        <select
+          value={warehouseFilter}
+          onChange={(e) => setWarehouseFilter(e.target.value)}
+          aria-label="Filter orders by warehouse"
+          className="shrink-0 bg-neutral-800/80 border border-neutral-700 text-white text-sm rounded-lg p-2.5 focus:ring-[#84cc16] focus:border-[#84cc16] outline-none cursor-pointer min-w-[200px]"
+        >
+          <option value="ALL">🏢 All Warehouses</option>
+          {warehouses.map((w) => (
+            <option key={w._id} value={w._id}>
+              📍 {w.name} ({w.location || "N/A"})
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading ? (
@@ -1250,7 +1296,7 @@ function OrdersDispatchTab() {
                     <div className="min-w-0">
                       <span className="text-sm font-bold text-white font-mono">{order.orderId}</span>
                       <p className="text-xs text-neutral-400 font-body truncate mt-0.5">
-                        {order.warehouse?.name || "Warehouse"} · {order.merchant?.name || "Merchant"}
+                        {order.warehouse?.name || "Warehouse"} · {order.merchant?.name || "Merchant"} · {formatDate(order.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -1267,14 +1313,20 @@ function OrdersDispatchTab() {
                   </div>
                   {/* Items */}
                   <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between gap-2 mb-2">
                       <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase font-body">Items ({totalQty})</p>
+                      {order.inboundPlan && (
+                        <span className="text-[10px] text-neutral-500 font-mono truncate">Inbound: {String(order.inboundPlan).slice(-8)}</span>
+                      )}
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {order.orderedItems.map((it, idx) => (
-                        <div key={`${it.itemName}-${idx}`} className="flex items-center justify-between gap-2 text-xs font-body">
-                          <span className="text-white truncate">{it.itemName}</span>
-                          <span className="text-[#84cc16] font-bold numeric shrink-0">× {it.quantity}</span>
+                        <div key={`${it.itemName}-${idx}`} className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs text-white font-body truncate">{it.itemName}</p>
+                            {it.sku && <p className="text-[10px] text-neutral-500 font-mono truncate">SKU: {it.sku}</p>}
+                          </div>
+                          <span className="text-[#84cc16] font-bold numeric shrink-0 text-xs">× {it.quantity}</span>
                         </div>
                       ))}
                     </div>
@@ -1809,6 +1861,7 @@ export default function DashboardPage() {
                 {activeTab === "warehouses" && "My Warehouses"}
                 {activeTab === "add-warehouse" && "Add Warehouse"}
                 {activeTab === "orders" && "Orders & Dispatch"}
+                {activeTab === "inbounds" && "Inbound Management"}
                 {activeTab === "profile" && "Account / Profile"}
                 {activeTab === "verifications" && "KYC Verifications"}
               </h1>
@@ -1817,6 +1870,7 @@ export default function DashboardPage() {
                 {activeTab === "warehouses" && "Manage your listed properties"}
                 {activeTab === "add-warehouse" && "Create a new warehouse listing"}
                 {activeTab === "orders" && "Pack and dispatch merchant orders"}
+                {activeTab === "inbounds" && "Track inbound shipments and confirm arrivals"}
                 {activeTab === "profile" && "Manage your account settings"}
                 {activeTab === "verifications" && "Manage user identity verification requests"}
               </p>
@@ -1839,6 +1893,7 @@ export default function DashboardPage() {
             )}
             {activeTab === "add-warehouse" && <AddWarehouseTab />}
             {activeTab === "orders" && <OrdersDispatchTab />}
+            {activeTab === "inbounds" && <OwnerInboundsTab />}
             {activeTab === "profile" && <ProfileTab />}
             {activeTab === "verifications" && <VerificationsTab />}
           </motion.div>
