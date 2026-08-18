@@ -20,10 +20,13 @@ import {
   DollarSign,
   ChevronRight,
   MessageCircle,
+  Upload,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import UploadPaymentProofModal from "@/components/ui/UploadPaymentProofModal";
+import { payoutHasAnyData } from "@/components/ui/PayoutDetailsForm";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -34,16 +37,20 @@ interface BookingDetail {
     name: string;
     location: string;
     owner?: string | { _id: string };
+    payoutDetails?: any;
   };
   warehouseId?: string;
   owner?: string;
   shelves: Array<{ _id: string; shelfNumber: string }>;
   startDate: string;
   endDate: string;
-  status: "confirmed" | "pending" | "cancelled";
-  paymentStatus: "paid" | "pending";
+  status: "confirmed" | "pending" | "rejected" | "cancelled";
+  paymentStatus: "paid" | "pending" | "unpaid" | "payment_submitted" | "payment_rejected";
   totalAmount: number;
   pricePerShelf: number;
+  cancellationReason?: string;
+  paymentProofUrl?: string;
+  paymentRejectionReason?: string;
   createdAt: string;
 }
 
@@ -85,11 +92,35 @@ function StatusBadge({
       icon: <XCircle size={12} />,
       label: "Cancelled",
     },
+    rejected: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-700",
+      icon: <XCircle size={12} />,
+      label: "Rejected",
+    },
     paid: {
       bg: "bg-emerald-50 border-emerald-200",
       text: "text-emerald-700",
       icon: <CheckCircle size={12} />,
       label: "Paid",
+    },
+    unpaid: {
+      bg: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      icon: <Clock size={12} />,
+      label: "Unpaid",
+    },
+    payment_submitted: {
+      bg: "bg-sky-50 border-sky-200",
+      text: "text-sky-700",
+      icon: <Clock size={12} />,
+      label: "Verification Pending",
+    },
+    payment_rejected: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-700",
+      icon: <XCircle size={12} />,
+      label: "Payment Rejected",
     },
     "in-transit": {
       bg: "bg-blue-50 border-blue-200",
@@ -142,6 +173,7 @@ export default function BookingDetailPage() {
 
   // ─── Cancel booking state ────────────────────────────────────────────────
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showUploadProof, setShowUploadProof] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -236,7 +268,7 @@ const handleChatWithOwner = useCallback(async () => {
   const handleCancelBooking = useCallback(async (reason?: string) => {
     setIsCancelling(true);
     try {
-      await api.post(`/booking/cancel/${bookingId}`, { reason: reason || "" });
+      await api.patch(`/booking/cancel/${bookingId}`, { reason: reason || "" });
       setShowCancelConfirm(false);
       setCancelSuccess("Booking cancelled successfully.");
       fetchBooking();
@@ -286,7 +318,7 @@ const handleChatWithOwner = useCallback(async () => {
     );
   }
 
-  const canCancel = b.status !== "cancelled";
+  const canCancel = b.status !== "cancelled" && b.status !== "rejected";
   const isCancelledStatus = b.status?.includes("cancel") ?? false;
   const shelfCount = b.shelves?.length || 0;
 
@@ -334,6 +366,28 @@ const handleChatWithOwner = useCallback(async () => {
           Back to My Bookings
         </motion.button>
 
+        {/* Pending owner approval banner */}
+        <AnimatePresence>
+          {b.status === "pending" && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3"
+            >
+              <Clock size={18} className="text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-800 font-body">
+                  Pending Owner Approval
+                </p>
+                <p className="text-xs text-amber-700/80 font-body mt-1">
+                  Your booking request is awaiting confirmation from the warehouse owner. Inbound shipments can only be created once the booking is confirmed.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ═══ A. HEADER & BOOKING INFO ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -363,6 +417,21 @@ const handleChatWithOwner = useCallback(async () => {
               <StatusBadge status={b.paymentStatus} type="payment" />
             </div>
           </div>
+
+          {/* Rejection / Cancellation reason */}
+          {(b.status === "rejected" || b.status === "cancelled") && b.cancellationReason && (
+            <div className="mb-5 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3">
+              <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-red-700 font-body">
+                  {b.status === "rejected" ? "Reason for Rejection" : "Reason for Cancellation"}
+                </p>
+                <p className="mt-1 text-sm text-red-700/90 font-body leading-relaxed">
+                  {b.cancellationReason}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Booking details grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
@@ -394,6 +463,107 @@ const handleChatWithOwner = useCallback(async () => {
               Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}
             </span>
           </div>
+
+          {/* ═══ PAYMENT INSTRUCTIONS & PROOF UPLOAD ═══ */}
+          {b.paymentStatus !== "paid" && (
+            <div className="mt-5 p-5 rounded-2xl bg-[#F8FAFC]/60 border border-[#E2E8F0]">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <CreditCard size={16} className="text-[#0284C7]" />
+                  <span className="text-sm font-semibold text-[#1E293B] font-body">
+                    Payment Instructions
+                  </span>
+                </div>
+                {b.paymentStatus === "payment_submitted" && (
+                  <StatusBadge status="payment_submitted" type="payment" />
+                )}
+              </div>
+
+              {/* Verification pending notice */}
+              {b.paymentStatus === "payment_submitted" && (
+                <div className="p-4 rounded-xl bg-sky-50 border border-sky-200 flex items-start gap-3 mb-4">
+                  <Clock size={16} className="text-sky-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-sky-800 font-body">
+                      Payment Verification Pending
+                    </p>
+                    <p className="text-xs text-sky-700/80 font-body mt-1">
+                      Your payment proof has been submitted. The warehouse owner will verify it shortly — inbound creation unlocks once payment is confirmed.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Rejection notice */}
+              {b.paymentStatus === "payment_rejected" && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 mb-4">
+                  <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-700 font-body">
+                      Payment Proof Rejected
+                    </p>
+                    <p className="text-xs text-red-600/80 font-body mt-1">
+                      {b.paymentRejectionReason ||
+                        "Your payment proof was rejected. Please upload a new screenshot below."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Owner payout details */}
+              {payoutHasAnyData(b.warehouse?.payoutDetails) && (
+                <div className="space-y-3 mb-5">
+                  <p className="text-[10px] font-semibold tracking-wider text-[#0F172A]/50 uppercase font-body">
+                    Pay to the warehouse owner
+                  </p>
+                  {(() => {
+                    const pd = b.warehouse?.payoutDetails || {};
+                    const bank = pd.bankDetails || {};
+                    const wallet = pd.walletDetails || {};
+                    const rows: { label: string; value: string }[] = [];
+                    if (pd.payoutType === "bank_account" || pd.payoutType === "both") {
+                      if (bank.accountTitle) rows.push({ label: "Account Title", value: bank.accountTitle });
+                      if (bank.bankName) rows.push({ label: "Bank Name", value: bank.bankName });
+                      if (bank.accountNumber) rows.push({ label: "Account Number", value: bank.accountNumber });
+                      if (bank.iban) rows.push({ label: "IBAN", value: bank.iban });
+                    }
+                    if (pd.payoutType === "mobile_wallet" || pd.payoutType === "both") {
+                      if (wallet.easyPaisaNumber) rows.push({ label: "EasyPaisa", value: wallet.easyPaisaTitle ? `${wallet.easyPaisaTitle} · ${wallet.easyPaisaNumber}` : wallet.easyPaisaNumber });
+                      if (wallet.jazzCashNumber) rows.push({ label: "JazzCash", value: wallet.jazzCashTitle ? `${wallet.jazzCashTitle} · ${wallet.jazzCashNumber}` : wallet.jazzCashNumber });
+                      if (wallet.sadaPayTagOrNumber) rows.push({ label: "SadaPay", value: wallet.sadaPayTagOrNumber });
+                      if (wallet.nayaPayTagOrNumber) rows.push({ label: "NayaPay", value: wallet.nayaPayTagOrNumber });
+                    }
+                    return rows.length > 0 ? (
+                      <div className="overflow-hidden rounded-xl border border-[#E2E8F0]">
+                        {rows.map((r, i) => (
+                          <div
+                            key={r.label}
+                            className={`flex items-center justify-between gap-3 px-4 py-2.5 text-xs font-body ${
+                              i % 2 === 0 ? "bg-white" : "bg-[#F8FAFC]"
+                            }`}
+                          >
+                            <span className="text-[#0F172A]/50">{r.label}</span>
+                            <span className="font-semibold text-[#1E293B] text-right break-all">{r.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
+
+              {/* Upload button */}
+              {(b.paymentStatus === "pending" || b.paymentStatus === "unpaid" || b.paymentStatus === "payment_rejected") && (
+                <button
+                  onClick={() => setShowUploadProof(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
+                >
+                  <Upload size={16} />
+                  Upload Payment Proof
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Booked Shelves */}
           {b.shelves && b.shelves.length > 0 && (
@@ -533,16 +703,35 @@ const handleChatWithOwner = useCallback(async () => {
       <AnimatePresence>
         {showCancelConfirm && (
           <ConfirmationModal
-            title="Cancel Booking?"
+            title="Cancel Booking"
             message="Are you sure you want to cancel this booking? This action cannot be undone."
-            confirmLabel="Yes, Cancel Booking"
-            cancelLabel="No, Keep Booking"
+            confirmLabel="Confirm Cancellation"
+            cancelLabel="Back"
             variant="danger"
             showReasonInput
-            reasonPlaceholder="Reason for cancellation (Optional)"
+            reasonPlaceholder="Please state the reason for cancellation"
+            requireReason
             onConfirm={handleCancelBooking}
             onCancel={() => setShowCancelConfirm(false)}
             isLoading={isCancelling}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Upload Payment Proof Modal */}
+      <AnimatePresence>
+        {showUploadProof && (
+          <UploadPaymentProofModal
+            booking={{
+              _id: bookingId,
+              warehouseName: b.warehouse?.name,
+              totalAmount: b.totalAmount,
+            }}
+            onClose={() => setShowUploadProof(false)}
+            onUploaded={() => {
+              setShowUploadProof(false);
+              fetchBooking();
+            }}
           />
         )}
       </AnimatePresence>

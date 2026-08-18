@@ -30,13 +30,15 @@ import EditWarehouseModal from "@/components/ui/EditWarehouseModal";
 import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
 import DispatchOrderModal from "@/components/ui/DispatchOrderModal";
 import DeliveryConfirmationModal from "@/components/ui/DeliveryConfirmationModal";
+import PaymentProofModal from "@/components/ui/PaymentProofModal";
+import PayoutDetailsForm, { emptyPayoutDetails, type PayoutDetailsData } from "@/components/ui/PayoutDetailsForm";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type TabId = "overview" | "warehouses" | "add-warehouse" | "orders" | "inbounds" | "profile" | "verifications";
 
 interface WarehouseData { _id: string; name: string; location: string; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; }
-interface BookingData { _id: string; merchant: { _id: string; name: string; email: string; phone: string }; warehouse: { _id: string; name: string; location: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: string; paymentStatus: string; totalAmount: number; createdAt: string; }
+interface BookingData { _id: string; merchant: { _id: string; name: string; email: string; phone: string }; warehouse: { _id: string; name: string; location: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: string; paymentStatus: string; totalAmount: number; cancellationReason?: string; paymentProofUrl?: string; paymentRejectionReason?: string; createdAt: string; }
 interface WarehouseDetail { warehouse: { _id: string; name: string; location: string; latitude: number; longitude: number; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; owner?: string; }; available: number; booked: number; }
 interface ShelfData { _id: string; shelfNumber: number; pricePerMonth: number; status: "available" | "booked"; }
 interface WarehouseBooking { _id: string; merchant: { _id: string; name: string; phone: string; email: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: "confirmed" | "cancelled" | "completed"; paymentStatus: "pending" | "paid"; totalAmount: number; pricePerShelf: number; createdAt: string; }
@@ -58,10 +60,30 @@ function formatDateTime(d: string) { return new Date(d).toLocaleString("en-PK", 
 function calcMonths(start: Date, end: Date): number { return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44))); }
 function toDateInputValue(date: Date): string { return date.toISOString().split("T")[0]; }
 
+function paymentBadge(status: string) {
+  const paid = status === "paid";
+  const rejected = status === "payment_rejected";
+  const submitted = status === "payment_submitted";
+  const cls = paid
+    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+    : rejected
+    ? "bg-red-500/10 border-red-500/20 text-red-400"
+    : submitted
+    ? "bg-sky-500/10 border-sky-500/20 text-sky-400"
+    : "bg-amber-500/10 border-amber-500/20 text-amber-400";
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${cls}`}>
+      {paid ? <CheckCircle size={11} /> : rejected ? <XCircle size={11} /> : <Clock size={11} />}
+      {paid ? "Paid" : rejected ? "Payment Rejected" : submitted ? "Verification Pending" : "Unpaid"}
+    </span>
+  );
+}
+
 function statusBadge(status: string) {
   const c: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
     confirmed: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Confirmed" },
     cancelled: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Cancelled" },
+    rejected: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Rejected" },
     completed: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <CheckCircle size={11} />, label: "Completed" },
     paid: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CreditCard size={11} />, label: "Paid" },
     pending: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Pending" },
@@ -269,6 +291,10 @@ function OverviewTab() {
   const [activeBk, setActiveBk] = useState(0);
   const [totalRev, setTotalRev] = useState(0);
   const [bkLoading, setBkLoading] = useState(true);
+  const [approveTarget, setApproveTarget] = useState<BookingData | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<BookingData | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/warehouse/my-warehouses"); const d = r.data.data; if (!c) { setWarehouses(d.warehouses || []); setTotalWh(d.totalWarehouses || 0); setTotalSh(d.totalShelves || 0); } } catch {} finally { if (!c) setWhLoading(false); } })(); return () => { c = true; }; }, [accessToken]);
   useEffect(() => { if (!accessToken) return; let c = false; (async () => { try { const r = await api.get("/booking/owner-bookings"); const d = r.data.data; if (!c) { setBookings(d.bookings || []); setActiveBk(d.activeBookings || 0); setTotalRev(d.totalRevenue || 0); } } catch {} finally { if (!c) setBkLoading(false); } })(); return () => { c = true; }; }, [accessToken]);
@@ -285,6 +311,37 @@ function OverviewTab() {
     });
   }, []);
 
+  const handleApprove = useCallback(async (b: BookingData) => {
+    if (!b.warehouse?._id) return;
+    setActionLoading(b._id);
+    setActionError(null);
+    try {
+      await api.patch(`/booking/warehouse/${b.warehouse._id}/approve/${b._id}`);
+      handleBookingUpdated({ ...b, status: "confirmed" });
+    } catch {
+      setActionError("Failed to confirm booking. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [handleBookingUpdated]);
+
+  const handleReject = useCallback(async (reason?: string) => {
+    if (!rejectTarget?.warehouse?._id) return;
+    const b = rejectTarget;
+    setActionLoading(b._id);
+    setActionError(null);
+    setRejectTarget(null);
+    try {
+      await api.patch(`/booking/warehouse/${b.warehouse._id}/reject/${b._id}`, { reason: reason || "" });
+      handleBookingUpdated({ ...b, status: "rejected", cancellationReason: (reason || "").trim() });
+    } catch {
+      setActionError("Failed to decline booking. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [rejectTarget, handleBookingUpdated]);
+
+  const pendingBookings = bookings.filter((b) => b.status === "pending");
   const isLoading = whLoading || bkLoading;
   const occShelves = bookings.filter((b) => b.status === "confirmed").reduce((s, b) => s + (b.shelves?.length || 0), 0);
   const occRate = totalSh > 0 ? Math.round((occShelves / totalSh) * 100) : 0;
@@ -319,6 +376,85 @@ function OverviewTab() {
           ))}
         </div>
       )}
+      {/* ═══ BOOKING REQUESTS (pending approval) ═══ */}
+      {!bkLoading && pendingBookings.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="mb-8">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="font-heading text-xl font-semibold text-white">Booking Requests</h2>
+              <p className="text-sm text-neutral-400 font-body mt-0.5">Pending merchant requests awaiting your approval</p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold font-body">
+              <Clock size={12} /> {pendingBookings.length} pending
+            </span>
+          </div>
+
+          {actionError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2.5">
+              <AlertCircle size={14} className="text-red-400 shrink-0" />
+              <p className="text-xs text-red-400 font-body">{actionError}</p>
+            </div>
+          )}
+
+          <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-amber-500/20 shadow-sm overflow-hidden">
+            <div className="hidden lg:grid grid-cols-[1.2fr_1fr_90px_120px_130px_auto] gap-3 px-6 py-3.5 bg-neutral-900/80 border-b border-neutral-800">
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Merchant</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Warehouse</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Shelves</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body">Dates</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body text-right">Amount</span>
+              <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase font-body text-right">Actions</span>
+            </div>
+            <div className="divide-y divide-neutral-800/80">
+              {pendingBookings.map((b, i) => (
+                <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
+                  className="px-6 py-4 hover:bg-white/5 transition-colors duration-200">
+                  <div className="lg:hidden space-y-2 mb-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div>
+                        <span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span>
+                      </div>
+                      {statusBadge(b.status)}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-neutral-400 font-body">
+                      <span className="truncate">{b.warehouse?.name || "Warehouse"}</span>
+                      <span className="font-semibold text-white numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-neutral-500 font-body">
+                      <span>{b.shelves?.length || 0} shelf(ves)</span><span>·</span>
+                      <span>{formatDate(b.startDate)} – {formatDate(b.endDate)}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                    <div className="hidden lg:flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div>
+                      <span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span>
+                    </div>
+                    <div className="hidden lg:block text-sm text-neutral-300 font-body truncate flex-1">{b.warehouse?.name || "—"}</div>
+                    <div className="hidden lg:flex items-center gap-1.5 text-sm text-neutral-400 font-body"><Layers size={13} className="text-[#84cc16]/60" /><span>{b.shelves?.length || 0}</span></div>
+                    <div className="hidden lg:block text-xs text-neutral-400 font-body">{formatDate(b.startDate)} – {formatDate(b.endDate)}</div>
+                    <div className="hidden lg:block text-sm font-semibold text-white font-body numeric text-right">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</div>
+                    <div className="flex items-center gap-2 mt-3 lg:mt-0 lg:justify-end shrink-0">
+                      <button onClick={() => setApproveTarget(b)} disabled={actionLoading === b._id}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold font-body hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {actionLoading === b._id ? <Loader2 size={13} className="animate-spin" /> : <ThumbsUp size={13} />}
+                        Confirm
+                      </button>
+                      <button onClick={() => setRejectTarget(b)} disabled={actionLoading === b._id}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 border-2 border-red-500/30 text-red-400 rounded-full text-xs font-medium font-body hover:bg-red-500/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <ThumbsDown size={13} />
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
         <div className="flex items-center justify-between mb-5">
           <div><h2 className="font-heading text-xl font-semibold text-white">Recent Activity</h2><p className="text-sm text-neutral-400 font-body mt-0.5">Latest bookings across your properties</p></div>
@@ -344,16 +480,18 @@ function OverviewTab() {
               {bookings.slice(0, 10).map((b, i) => (
                 <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
                   className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_120px_130px_140px] gap-2 lg:gap-3 items-center px-6 py-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer"
-                  onClick={() => setSelectedBooking(b)}>
-                  <div className="lg:hidden space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
+                  onClick={() => setSelectedBooking(b)}>                    <div className="lg:hidden space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0"><div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span></div>
                       {statusBadge(b.status)}
                     </div>
                     <div className="flex items-center justify-between text-xs text-neutral-400 font-body"><span className="truncate">{b.warehouse?.name || "Warehouse"}</span><span className="font-semibold text-white numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span></div>
                     <div className="flex items-center gap-3 text-[11px] text-neutral-500 font-body"><span>{b.shelves?.length || 0} shelf(ves)</span><span>·</span><span>{formatDate(b.createdAt)}</span></div>
+                    {(b.status === "cancelled" || b.status === "rejected") && b.cancellationReason && (
+                      <p className="text-[11px] text-neutral-500 font-body truncate">{b.status === "rejected" ? "Rejected: " : "Cancelled: "}{b.cancellationReason}</p>
+                    )}
                   </div>
-                  <div className="hidden lg:flex items-center gap-2.5 min-w-0"><div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span><span className="text-[11px] text-neutral-500 font-body hidden xl:inline">{b.merchant?.email || ""}</span></div>
+                  <div className="hidden lg:flex items-center gap-2.5 min-w-0"><div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0"><span className="text-[10px] font-semibold text-black font-body">{b.merchant?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "M"}</span></div><div className="min-w-0"><div className="flex items-center gap-2"><span className="text-sm font-medium text-white font-body truncate">{b.merchant?.name || "Unknown"}</span><span className="text-[11px] text-neutral-500 font-body hidden xl:inline">{b.merchant?.email || ""}</span></div>{(b.status === "cancelled" || b.status === "rejected") && b.cancellationReason && <p className="text-[11px] text-neutral-500 font-body truncate" title={b.cancellationReason}>{b.status === "rejected" ? "Rejected: " : "Cancelled: "}{b.cancellationReason}</p>}</div></div>
                   <div className="hidden lg:block text-sm text-neutral-300 font-body truncate">{b.warehouse?.name || "—"}</div>
                   <div className="hidden lg:flex items-center gap-1.5 text-sm text-neutral-400 font-body"><Layers size={13} className="text-[#84cc16]/60" /><span>{b.shelves?.length || 0}</span></div>
                   <div className="hidden lg:block">{statusBadge(b.status)}</div>
@@ -365,6 +503,41 @@ function OverviewTab() {
           </div>
         )}
       </motion.div>
+
+      {/* ═══ Approve Booking Confirmation ═══ */}
+      <AnimatePresence>
+        {approveTarget && (
+          <ConfirmationModal
+            title="Confirm Booking Request?"
+            message={`Approve ${approveTarget.merchant?.name || "the merchant"}'s booking for ${approveTarget.shelves?.length || 0} shelf(ves) worth Rs. ${(approveTarget.totalAmount || 0).toLocaleString("en-PK")}? The merchant will be notified and can start inbound shipments.`}
+            confirmLabel="Yes, Confirm Booking"
+            cancelLabel="Not Yet"
+            variant="info"
+            onConfirm={() => { const t = approveTarget; setApproveTarget(null); handleApprove(t); }}
+            onCancel={() => setApproveTarget(null)}
+            isLoading={actionLoading === approveTarget._id}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Decline Booking Confirmation ═══ */}
+      <AnimatePresence>
+        {rejectTarget && (
+          <ConfirmationModal
+            title="Decline Booking Request"
+            message={`Decline ${rejectTarget.merchant?.name || "the merchant"}'s booking request? The reserved shelves will be released back to available.`}
+            confirmLabel="Confirm Rejection"
+            cancelLabel="Cancel"
+            variant="danger"
+            showReasonInput
+            reasonPlaceholder="Please provide a reason for declining this request (e.g. Space unavailable, Maintenance, Insufficient capacity)"
+            requireReason
+            onConfirm={handleReject}
+            onCancel={() => setRejectTarget(null)}
+            isLoading={actionLoading === rejectTarget._id}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ═══ Booking Details Modal ═══ */}
       <AnimatePresence>
@@ -390,6 +563,8 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showPaidConfirm, setShowPaidConfirm] = useState(false);
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [showProofModal, setShowProofModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
@@ -422,7 +597,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
     setShowCancelConfirm(false);
     try {
       await api.patch(`/booking/warehouse/${booking.warehouse._id}/cancel/${booking._id}`, { reason: reason || "" });
-      const updated = { ...booking, status: "cancelled" };
+      const updated = { ...booking, status: "cancelled", cancellationReason: (reason || "").trim() };
       onBookingUpdated?.(updated);
       setToast({ message: "Booking cancelled successfully", type: "success" });
     } catch {
@@ -432,14 +607,47 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
     }
   }, [booking._id, booking.warehouse?._id]);
 
+  const handleConfirmBooking = useCallback(async () => {
+    if (!booking.warehouse?._id) return;
+    setActionLoading("confirm");
+    setActionError(null);
+    try {
+      await api.patch(`/booking/warehouse/${booking.warehouse._id}/approve/${booking._id}`);
+      const updated = { ...booking, status: "confirmed" };
+      onBookingUpdated?.(updated);
+      setToast({ message: "Booking confirmed — merchant notified", type: "success" });
+    } catch {
+      setActionError("Failed to confirm booking");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [booking, onBookingUpdated]);
+
+  const handleRejectBooking = useCallback(async (reason?: string) => {
+    if (!booking.warehouse?._id) return;
+    setActionLoading("reject");
+    setActionError(null);
+    setShowRejectConfirm(false);
+    try {
+      await api.patch(`/booking/warehouse/${booking.warehouse._id}/reject/${booking._id}`, { reason: reason || "" });
+      const updated = { ...booking, status: "rejected", cancellationReason: (reason || "").trim() };
+      onBookingUpdated?.(updated);
+      setToast({ message: "Booking request declined", type: "success" });
+    } catch {
+      setActionError("Failed to decline booking");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [booking, onBookingUpdated]);
+
   const b = booking;
   const shelfCount = b.shelves?.length || 0;
   const start = new Date(b.startDate);
   const end = new Date(b.endDate);
   const months = calcMonths(start, end);
   const isActive = b.status === "confirmed";
-  const canMarkPaid = isActive && b.paymentStatus === "pending";
-  const canCancel = b.status !== "cancelled" && b.status !== "completed";
+  const canMarkPaid = isActive && (b.paymentStatus === "pending" || b.paymentStatus === "unpaid");
+  const canCancel = b.status === "confirmed";
 
   return (
     <motion.div
@@ -497,12 +705,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {statusBadge(b.status)}
-              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${
-                b.paymentStatus === "paid" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-              }`}>
-                {b.paymentStatus === "paid" ? <CheckCircle size={11} /> : <Clock size={11} />}
-                {b.paymentStatus === "paid" ? "Paid" : "Pending"}
-              </span>
+              {paymentBadge(b.paymentStatus)}
             </div>
           </div>
 
@@ -573,6 +776,44 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
             </div>
           </div>
 
+          {/* ═══ PAYMENT PROOF (awaiting verification) ═══ */}
+          {b.paymentStatus === "payment_submitted" && (
+            <div className="mb-5 p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold tracking-wider text-sky-400 uppercase font-body">Payment Proof Uploaded</p>
+                <p className="text-sm text-neutral-200 font-body mt-0.5">The merchant submitted a payment screenshot. Review and verify it.</p>
+              </div>
+              <button onClick={() => setShowProofModal(true)}
+                className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-sky-500/15 text-sky-300 border border-sky-500/30 rounded-full text-xs font-semibold font-body hover:bg-sky-500/25 transition-all">
+                <Eye size={13} /> View Payment Proof
+              </button>
+            </div>
+          )}
+
+          {/* ═══ PAYMENT REJECTION REASON ═══ */}
+          {b.paymentStatus === "payment_rejected" && b.paymentRejectionReason && (
+            <div className="mb-5 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
+              <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold tracking-wider text-red-400 uppercase font-body">Payment Rejected</p>
+                <p className="text-sm text-neutral-200 font-body mt-0.5">{b.paymentRejectionReason}</p>
+              </div>
+            </div>
+          )}
+
+          {/* ═══ REJECTION / CANCELLATION REASON ═══ */}
+          {(b.status === "cancelled" || b.status === "rejected") && b.cancellationReason && (
+            <div className="mb-5 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
+              <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold tracking-wider text-red-400 uppercase font-body">
+                  {b.status === "rejected" ? "Reason for Rejection" : "Reason for Cancellation"}
+                </p>
+                <p className="text-sm text-neutral-200 font-body mt-0.5">{b.cancellationReason}</p>
+              </div>
+            </div>
+          )}
+
           {/* ═══ ACTION BUTTONS ═══ */}
           {actionError && (
             <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5">
@@ -582,6 +823,20 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
           )}
 
           <div className="flex flex-col sm:flex-row gap-3">
+            {b.status === "pending" && (
+              <>
+                <button onClick={handleConfirmBooking} disabled={actionLoading === "confirm"}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  {actionLoading === "confirm" ? <Loader2 size={16} className="animate-spin" /> : <ThumbsUp size={16} />}
+                  Confirm Booking
+                </button>
+                <button onClick={() => setShowRejectConfirm(true)} disabled={actionLoading === "reject"}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 border-2 border-red-500/30 text-red-400 rounded-full font-body text-sm font-medium hover:bg-red-500/10 active:scale-95 transition-all duration-200 disabled:opacity-50">
+                  {actionLoading === "reject" ? <Loader2 size={16} className="animate-spin" /> : <ThumbsDown size={16} />}
+                  Decline Booking
+                </button>
+              </>
+            )}
             {canMarkPaid && (
               <button onClick={() => setShowPaidConfirm(true)} disabled={actionLoading === "paid"}
                 className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full font-body text-sm font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
@@ -604,13 +859,14 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
       <AnimatePresence>
         {showCancelConfirm && (
           <ConfirmationModal
-            title="Cancel Booking?"
+            title="Cancel Booking"
             message="Are you sure you want to cancel this booking? The merchant will be notified and the shelves will become available again."
-            confirmLabel="Yes, Cancel Booking"
-            cancelLabel="No, Keep Booking"
+            confirmLabel="Confirm Cancellation"
+            cancelLabel="Back"
             variant="danger"
             showReasonInput
-            reasonPlaceholder="Reason for cancellation (Optional)"
+            reasonPlaceholder="Please state the reason for cancellation"
+            requireReason
             onConfirm={handleCancelBooking}
             onCancel={() => setShowCancelConfirm(false)}
             isLoading={actionLoading === "cancel"}
@@ -628,6 +884,40 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
             onConfirm={handleConfirmPaid}
             onCancel={() => setShowPaidConfirm(false)}
             isLoading={actionLoading === "paid"}
+          />
+        )}
+
+        {/* Reject Confirmation */}
+        {showRejectConfirm && (
+          <ConfirmationModal
+            title="Decline Booking Request"
+            message="Decline this booking request? The reserved shelves will be released back to available."
+            confirmLabel="Confirm Rejection"
+            cancelLabel="Cancel"
+            variant="danger"
+            showReasonInput
+            reasonPlaceholder="Please provide a reason for declining this request (e.g. Space unavailable, Maintenance, Insufficient capacity)"
+            requireReason
+            onConfirm={handleRejectBooking}
+            onCancel={() => setShowRejectConfirm(false)}
+            isLoading={actionLoading === "reject"}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Payment Proof Modal */}
+      <AnimatePresence>
+        {showProofModal && (
+          <PaymentProofModal
+            booking={{
+              _id: b._id,
+              merchant: b.merchant,
+              warehouse: b.warehouse,
+              paymentProofUrl: b.paymentProofUrl,
+              totalAmount: b.totalAmount,
+            }}
+            onClose={() => setShowProofModal(false)}
+            onUpdated={(updated) => onBookingUpdated?.({ ...b, ...updated } as BookingData)}
           />
         )}
       </AnimatePresence>
@@ -900,6 +1190,7 @@ function AddWarehouseTab() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [payout, setPayout] = useState<PayoutDetailsData>(emptyPayoutDetails);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ─── File handler ────────────────────────────────────────────────────────────
@@ -964,18 +1255,20 @@ function AddWarehouseTab() {
         longitude,
         pricePerShelf: parseFloat(pricePerShelf),
         images: finalUrls,
+        payoutDetails: payout,
       });
       setSuccess(true);
       // Reset form
       setName(""); setLocation(""); setPricePerShelf(""); setLatitude(null); setLongitude(null);
       setImageFiles([]); setImagePreviews([]); setUploadedUrls([]);
+      setPayout(emptyPayoutDetails());
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
       setApiError(err.response?.data?.message || "Failed to create warehouse");
     } finally {
       setIsSubmitting(false);
     }
-  }, [name, location, pricePerShelf, latitude, longitude, imageFiles, uploadedUrls]);
+  }, [name, location, pricePerShelf, latitude, longitude, imageFiles, uploadedUrls, payout]);
 
   return (
     <div className="max-w-4xl mx-auto py-6">
@@ -1048,6 +1341,11 @@ function AddWarehouseTab() {
             )}
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={handleFileSelect} />
             {errors.images && <p className="text-red-400 text-xs mt-2 font-body">{errors.images}</p>}
+          </div>
+
+          {/* Payout & Bank Details */}
+          <div className="pt-2">
+            <PayoutDetailsForm value={payout} onChange={setPayout} />
           </div>
 
           {/* Submit */}

@@ -298,7 +298,7 @@ const WarehouseDetailsModal: React.FC<WarehouseDetailsModalProps> = ({
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 mb-5">
                   <CheckCircle size={20} className="text-emerald-500 shrink-0" />
                   <p className="text-sm text-emerald-700 font-body">
-                    Booking confirmed! Redirecting to your bookings...
+                    Booking request submitted! Awaiting owner approval...
                   </p>
                 </div>
               )}

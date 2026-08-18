@@ -35,6 +35,7 @@ import api from "@/lib/axios";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import Link from "next/link";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import PaymentProofModal from "@/components/ui/PaymentProofModal";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -84,10 +85,13 @@ interface WarehouseBooking {
   shelves: Array<{ _id: string; shelfNumber: string }>;
   startDate: string;
   endDate: string;
-  status: "confirmed" | "cancelled" | "completed";
-  paymentStatus: "pending" | "paid";
+  status: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
+  paymentStatus: "pending" | "unpaid" | "payment_submitted" | "paid" | "payment_rejected";
   totalAmount: number;
   pricePerShelf: number;
+  cancellationReason?: string;
+  paymentProofUrl?: string;
+  paymentRejectionReason?: string;
   createdAt: string;
 }
 
@@ -110,6 +114,25 @@ function calcMonths(start: Date, end: Date): number {
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().split("T")[0];
+}
+
+function paymentBadge(status: string) {
+  const paid = status === "paid";
+  const rejected = status === "payment_rejected";
+  const submitted = status === "payment_submitted";
+  const cls = paid
+    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+    : rejected
+    ? "bg-red-500/10 border-red-500/30 text-red-400"
+    : submitted
+    ? "bg-sky-500/10 border-sky-500/30 text-sky-400"
+    : "bg-amber-500/10 border-amber-500/30 text-amber-400";
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-medium ${cls}`}>
+      {paid ? <CheckCircle size={9} /> : rejected ? <XCircle size={9} /> : <Clock size={9} />}
+      {paid ? "Paid" : rejected ? "Payment Rejected" : submitted ? "Verification Pending" : "Pending"}
+    </span>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -162,6 +185,8 @@ export default function WarehouseDetailPage() {
   // ─── Action modal states ─────────────────────────────────────────────────
   const [showMarkPaidConfirm, setShowMarkPaidConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [showProofModal, setShowProofModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -412,6 +437,48 @@ export default function WarehouseDetailPage() {
       setActionLoading(false);
     }
   }, [selectedBookingId, warehouseId]);
+
+  // ─── Handle approve (confirm) a pending booking ──────────────────────────
+  const handleApproveBooking = useCallback(async (bookingId: string) => {
+    setActionLoading(true);
+    try {
+      await api.patch(`/booking/warehouse/${warehouseId}/approve/${bookingId}`);
+      setActionSuccess("Booking confirmed successfully!");
+      const detailRes = await api.get(`/booking/warehouse/${warehouseId}/${bookingId}`);
+      setSelectedBooking(detailRes.data.data);
+      const listRes = await api.get(`/booking/warehouse/${warehouseId}`);
+      setWarehouseBookings(listRes.data.data?.bookings || []);
+    } catch (err: any) {
+      setSelectedBookingError(
+        err.response?.data?.message || "Failed to confirm booking."
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  }, [warehouseId]);
+
+  // ─── Handle reject (decline) a pending booking ───────────────────────────
+  const handleRejectBooking = useCallback(async (bookingId: string, reason?: string) => {
+    setActionLoading(true);
+    try {
+      await api.patch(`/booking/warehouse/${warehouseId}/reject/${bookingId}`, {
+        reason: reason || "",
+      });
+      setShowRejectConfirm(false);
+      setActionSuccess("Booking request declined.");
+      const detailRes = await api.get(`/booking/warehouse/${warehouseId}/${bookingId}`);
+      setSelectedBooking(detailRes.data.data);
+      const listRes = await api.get(`/booking/warehouse/${warehouseId}`);
+      setWarehouseBookings(listRes.data.data?.bookings || []);
+    } catch (err: any) {
+      setSelectedBookingError(
+        err.response?.data?.message || "Failed to decline booking."
+      );
+      setShowRejectConfirm(false);
+    } finally {
+      setActionLoading(false);
+    }
+  }, [warehouseId]);
 
   // ─── Handle cancel booking ──────────────────────────────────────────────────
   const handleCancelBooking = useCallback(async (reason?: string) => {
@@ -782,36 +849,66 @@ export default function WarehouseDetailPage() {
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-medium ${
                           booking.status === "confirmed"
                             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                            : booking.status === "pending"
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
                             : booking.status === "completed"
                             ? "bg-neutral-700/40 border-neutral-600 text-neutral-400"
+                            : booking.status === "rejected"
+                            ? "bg-red-500/10 border-red-500/30 text-red-400"
                             : "bg-red-500/10 border-red-500/30 text-red-400"
                         }`}>
                           {booking.status === "confirmed" ? (
                             <CheckCircle size={9} />
+                          ) : booking.status === "pending" ? (
+                            <Clock size={9} />
                           ) : booking.status === "completed" ? (
                             <CheckCircle size={9} />
                           ) : (
                             <XCircle size={9} />
                           )}
-                          {booking.status === "confirmed" ? "Active" : booking.status === "completed" ? "Completed" : "Cancelled"}
+                          {booking.status === "confirmed" ? "Active" : booking.status === "pending" ? "Pending" : booking.status === "completed" ? "Completed" : booking.status === "rejected" ? "Rejected" : "Cancelled"}
                         </span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-medium ${
-                          booking.paymentStatus === "paid"
-                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                            : "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                        }`}>
-                          {booking.paymentStatus === "paid" ? <CheckCircle size={9} /> : <Clock size={9} />}
-                          {booking.paymentStatus === "paid" ? "Paid" : "Pending"}
-                        </span>
+                        {paymentBadge(booking.paymentStatus)}
+                        {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellationReason && (
+                          <span
+                            className="basis-full w-full text-[11px] text-neutral-500 font-body truncate mt-1"
+                            title={booking.cancellationReason}
+                          >
+                            {booking.status === "rejected" ? "Reason for Rejection: " : "Reason for Cancellation: "}
+                            {booking.cancellationReason}
+                          </span>
+                        )}
                       </div>
 
-                      <button
-                        onClick={() => handleViewBookingDetail(booking._id)}
-                        className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/5 border border-white/10 rounded-full text-[11px] font-body font-medium text-neutral-200 hover:border-[#99cc00]/40 hover:text-[#99cc00] transition-all duration-200 shrink-0"
-                      >
-                        <Eye size={13} />
-                        View Details
-                      </button>
+                      <div className="ml-auto flex items-center gap-2 shrink-0">
+                        {booking.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() => handleApproveBooking(booking._id)}
+                              disabled={actionLoading}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#99cc00] text-black rounded-full text-[11px] font-body font-semibold hover:bg-[#8ab800] hover:shadow-lg hover:shadow-[#99cc00]/15 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                            >
+                              <Check size={13} />
+                              Confirm
+                            </button>
+                            <button
+                              onClick={() => { setSelectedBookingId(booking._id); setShowRejectConfirm(true); }}
+                              disabled={actionLoading}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 border border-red-500/40 text-red-400 rounded-full text-[11px] font-body font-medium hover:bg-red-500/10 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                            >
+                              <XCircle size={13} />
+                              Decline
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => handleViewBookingDetail(booking._id)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/5 border border-white/10 rounded-full text-[11px] font-body font-medium text-neutral-200 hover:border-[#99cc00]/40 hover:text-[#99cc00] transition-all duration-200 shrink-0"
+                        >
+                          <Eye size={13} />
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -874,7 +971,7 @@ export default function WarehouseDetailPage() {
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 mb-5">
                   <CheckCircle size={20} className="text-emerald-500 shrink-0" />
                   <p className="text-sm text-emerald-400 font-body">
-                    Booking confirmed! Redirecting to home...
+                    Booking request submitted! The warehouse owner will confirm your booking.
                   </p>
                 </div>
               )}
@@ -1361,24 +1458,21 @@ export default function WarehouseDetailPage() {
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-body font-medium ${
                             selectedBooking.status === "confirmed"
                               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                              : selectedBooking.status === "pending"
+                              ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
                               : selectedBooking.status === "completed"
                               ? "bg-neutral-700/40 border-neutral-600 text-neutral-400"
+                              : selectedBooking.status === "rejected"
+                              ? "bg-red-500/10 border-red-500/30 text-red-400"
                               : "bg-red-500/10 border-red-500/30 text-red-400"
                           }`}>
-                            {selectedBooking.status === "confirmed" ? <CheckCircle size={10} /> : selectedBooking.status === "completed" ? <CheckCircle size={10} /> : <XCircle size={10} />}
-                            {selectedBooking.status === "confirmed" ? "Active" : selectedBooking.status === "completed" ? "Completed" : "Cancelled"}
+                            {selectedBooking.status === "confirmed" ? <CheckCircle size={10} /> : selectedBooking.status === "pending" ? <Clock size={10} /> : selectedBooking.status === "completed" ? <CheckCircle size={10} /> : <XCircle size={10} />}
+                            {selectedBooking.status === "confirmed" ? "Active" : selectedBooking.status === "pending" ? "Pending" : selectedBooking.status === "completed" ? "Completed" : selectedBooking.status === "rejected" ? "Rejected" : "Cancelled"}
                           </span>
                         </div>
                         <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                           <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase font-body mb-1">Payment</p>
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-body font-medium ${
-                            selectedBooking.paymentStatus === "paid"
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                              : "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                          }`}>
-                            {selectedBooking.paymentStatus === "paid" ? <CheckCircle size={10} /> : <Clock size={10} />}
-                            {selectedBooking.paymentStatus === "paid" ? "Paid" : "Pending"}
-                          </span>
+                          {paymentBadge(selectedBooking.paymentStatus)}
                         </div>
                       </div>
 
@@ -1409,6 +1503,18 @@ export default function WarehouseDetailPage() {
                           </span>
                         </div>
                       </div>
+
+                      {/* Rejection / Cancellation Reason */}
+                      {(selectedBooking.status === "cancelled" || selectedBooking.status === "rejected") && selectedBooking.cancellationReason && (
+                        <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20">
+                          <p className="text-[10px] font-semibold tracking-wider text-red-400 uppercase font-body mb-1">
+                            {selectedBooking.status === "rejected" ? "Reason for Rejection" : "Reason for Cancellation"}
+                          </p>
+                          <p className="text-sm text-neutral-200 font-body">
+                            {selectedBooking.cancellationReason}
+                          </p>
+                        </div>
+                      )}
 
                       {/* Inbound Shipments */}
                       <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
@@ -1465,6 +1571,62 @@ export default function WarehouseDetailPage() {
                         )}
                       </div>
 
+                      {/* Payment Proof awaiting verification */}
+                      {selectedBooking.paymentStatus === "payment_submitted" && (
+                        <div className="p-5 rounded-2xl bg-sky-500/10 border border-sky-500/30">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-semibold tracking-wider text-sky-400 uppercase font-body mb-1">
+                                Payment Proof Uploaded
+                              </p>
+                              <p className="text-xs text-neutral-300 font-body">
+                                The merchant submitted a payment screenshot. Review and verify it to confirm the booking.
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => setShowProofModal(true)}
+                              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-sky-500/15 text-sky-300 border border-sky-500/30 rounded-full text-xs font-semibold font-body hover:bg-sky-500/25 transition-all"
+                            >
+                              <Eye size={13} /> View Payment Proof
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Payment rejection reason */}
+                      {selectedBooking.paymentStatus === "payment_rejected" && selectedBooking.paymentRejectionReason && (
+                        <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20">
+                          <p className="text-[10px] font-semibold tracking-wider text-red-400 uppercase font-body mb-1">
+                            Payment Rejected
+                          </p>
+                          <p className="text-sm text-neutral-200 font-body">
+                            {selectedBooking.paymentRejectionReason}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Owner Action Buttons — Pending booking: approve / decline */}
+                      {selectedBooking.status === "pending" && (
+                        <div className="flex items-center gap-3 pt-2">
+                          <button
+                            onClick={() => handleApproveBooking(selectedBooking._id)}
+                            disabled={actionLoading}
+                            className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-body font-semibold transition-all duration-200 shadow-sm bg-[#99cc00] text-black hover:bg-[#8ab800] active:scale-[0.98] disabled:opacity-50"
+                          >
+                            <Check size={16} />
+                            Confirm Booking
+                          </button>
+                          <button
+                            onClick={() => setShowRejectConfirm(true)}
+                            disabled={actionLoading}
+                            className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-body font-medium transition-all duration-200 border-2 border-red-500/40 text-red-400 hover:bg-red-500/10 active:scale-[0.98] disabled:opacity-50"
+                          >
+                            <XCircle size={16} />
+                            Decline Booking
+                          </button>
+                        </div>
+                      )}
+
                       {/* Owner Action Buttons */}
                       {selectedBooking.status === "confirmed" && (
                         <div className="flex items-center gap-3 pt-2">
@@ -1518,14 +1680,56 @@ export default function WarehouseDetailPage() {
             <ConfirmationModal
               title="Cancel Booking"
               message="Are you sure you want to cancel this booking? This action cannot be undone."
-              confirmLabel="Yes, Cancel Booking"
-              cancelLabel="Go Back"
+              confirmLabel="Confirm Cancellation"
+              cancelLabel="Back"
               variant="danger"
               showReasonInput={true}
-              reasonPlaceholder="Enter cancellation reason (required)"
+              reasonPlaceholder="Please state the reason for cancellation"
+              requireReason
               onConfirm={handleCancelBooking}
               onCancel={() => setShowCancelConfirm(false)}
               isLoading={actionLoading}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showRejectConfirm && (
+            <ConfirmationModal
+              title="Decline Booking Request"
+              message="Are you sure you want to decline this booking request? The reserved shelves will be released back to available."
+              confirmLabel="Confirm Rejection"
+              cancelLabel="Cancel"
+              variant="danger"
+              showReasonInput={true}
+              reasonPlaceholder="Please provide a reason for declining this request (e.g. Space unavailable, Maintenance, Insufficient capacity)"
+              requireReason
+              onConfirm={(reason) =>
+                handleRejectBooking(selectedBookingId || "", reason)
+              }
+              onCancel={() => setShowRejectConfirm(false)}
+              isLoading={actionLoading}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Payment Proof Modal */}
+        <AnimatePresence>
+          {showProofModal && (
+            <PaymentProofModal
+              booking={{
+                _id: selectedBookingId || "",
+                merchant: selectedBooking?.merchant,
+                warehouse: { _id: warehouseId },
+                paymentProofUrl: selectedBooking?.paymentProofUrl,
+                totalAmount: selectedBooking?.totalAmount,
+              }}
+              onClose={() => setShowProofModal(false)}
+              onUpdated={(updated) => {
+                setShowProofModal(false);
+                setSelectedBooking((prev: any) => ({ ...prev, ...updated }));
+                handleViewBookingDetail(selectedBookingId || "");
+              }}
             />
           )}
         </AnimatePresence>

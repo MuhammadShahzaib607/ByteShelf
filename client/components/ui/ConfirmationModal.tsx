@@ -12,6 +12,8 @@ interface ConfirmationModalProps {
   variant?: "danger" | "warning" | "info";
   showReasonInput?: boolean;
   reasonPlaceholder?: string;
+  // When true, the confirm action stays disabled until a non-empty reason is typed.
+  requireReason?: boolean;
   isDestructive?: boolean;
   onConfirm: (reason?: string) => void | Promise<void>;
   onCancel: () => void;
@@ -26,6 +28,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   variant = "danger",
   showReasonInput = false,
   reasonPlaceholder = "Reason (Optional)",
+  requireReason = false,
   onConfirm,
   onCancel,
   isLoading = false,
@@ -55,13 +58,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden"
+        className="w-full max-w-md bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden"
       >
         {/* Close button */}
         <button
           onClick={onCancel}
           disabled={isLoading}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#F8FAFC]/60 flex items-center justify-center text-[#0F172A]/50 hover:bg-[#F8FAFC] transition-colors z-10"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-400 hover:bg-slate-700 hover:text-white transition-colors z-10"
         >
           <X size={16} />
         </button>
@@ -71,10 +74,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <div
             className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
               accentColor === "red"
-                ? "bg-red-50"
+                ? "bg-red-500/10"
                 : accentColor === "amber"
-                ? "bg-amber-50"
-                : "bg-[#84cc16]/10"
+                ? "bg-amber-500/10"
+                : "bg-emerald-500/10"
             }`}
           >
             <AlertTriangle
@@ -83,19 +86,19 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 accentColor === "red"
                   ? "text-red-500"
                   : accentColor === "amber"
-                  ? "text-[#F59E0B]"
-                  : "text-[#84cc16]"
+                  ? "text-amber-400"
+                  : "text-emerald-400"
               }
             />
           </div>
 
           {/* Title */}
-          <h3 className="font-heading text-lg font-semibold text-[#1E293B] text-center mb-2">
+          <h3 className="font-heading text-lg font-semibold text-white text-center mb-2">
             {title}
           </h3>
 
           {/* Message */}
-          <p className="text-sm text-[#0F172A]/60 font-body text-center leading-relaxed">
+          <p className="text-sm text-slate-300 font-body text-center leading-relaxed">
             {message}
           </p>
 
@@ -108,8 +111,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 placeholder={reasonPlaceholder}
                 rows={3}
                 disabled={isLoading}
-                className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] placeholder:text-[#0F172A]/30 focus:outline-none focus:border-[#84cc16] focus:bg-white transition-all text-sm font-body resize-none"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all text-sm font-body resize-none"
               />
+              {requireReason && !reason.trim() && (
+                <p className="mt-1.5 text-xs text-red-600 font-body">
+                  Please provide a reason to continue.
+                </p>
+              )}
             </div>
           )}
 
@@ -118,19 +126,19 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <button
               onClick={onCancel}
               disabled={isLoading}
-              className="flex-1 px-5 py-3 border-2 border-[#E2E8F0] text-[#1E293B] rounded-full font-body text-sm font-medium hover:bg-[#F8FAFC]/60 transition-all duration-200 disabled:opacity-50"
+              className="flex-1 px-5 py-3 border-2 border-slate-700 text-slate-300 rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:border-slate-600 transition-all duration-200 disabled:opacity-50"
             >
               {cancelLabel}
             </button>
             <button
               onClick={() => onConfirm(showReasonInput ? reason : undefined)}
-              disabled={isLoading}
-              className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full font-body text-sm font-medium transition-all duration-200 shadow-sm disabled:opacity-50 ${
+              disabled={isLoading || (requireReason && !reason.trim())}
+              className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full font-body text-sm font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                 accentColor === "red"
                   ? "bg-red-600 text-white hover:bg-red-700"
                   : accentColor === "amber"
-                  ? "bg-[#F59E0B] text-white hover:bg-[#F59E0B]/90"
-                  : "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 hover:bg-[#222e26] hover:border-[#84cc16]/60"
+                  ? "bg-amber-500 text-white hover:bg-amber-600"
+                  : "bg-emerald-500 text-white hover:bg-emerald-600"
               }`}
             >
               {isLoading ? (

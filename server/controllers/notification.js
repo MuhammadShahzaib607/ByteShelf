@@ -6,11 +6,27 @@ export const getMyNotifications = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user.id);
 
+    const { limit, status } = req.query;
+
+    // Optional limit (e.g. ?limit=4 for the navbar dropdown) and status filter
+    // (?status=unread). The limit applies to the returned list only — meta
+    // counts (total/read/unread) always reflect the full set.
+    const parsedLimit = limit ? parseInt(limit, 10) : null;
+    const match =
+      status === "unread"
+        ? { $or: [{ recipient: userId }, { sender: userId }], isRead: false }
+        : { $or: [{ recipient: userId }, { sender: userId }] };
+
     const result = await Notification.aggregate([
-      { $match: { $or: [{ recipient: userId }, { sender: userId }] } },
+      { $match: match },
       {
         $facet: {
-          notifications: [{ $sort: { createdAt: -1 } }],
+          notifications: [
+            { $sort: { createdAt: -1 } },
+            ...(parsedLimit && parsedLimit > 0
+              ? [{ $limit: parsedLimit }]
+              : []),
+          ],
           meta: [
             {
               $group: {
@@ -34,6 +50,33 @@ export const getMyNotifications = async (req, res) => {
       read: meta.read,
       unread: meta.unread,
     });
+  } catch (error) {
+    console.error("[notification] Error:", error);
+    return sendRes(res, 500, false, error.message || String(error), null, error);
+  }
+};
+
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return sendRes(res, 400, false, "Notification id is required");
+    }
+
+    const result = await Notification.updateOne(
+      {
+        _id: id,
+        $or: [{ recipient: req.user.id }, { sender: req.user.id }],
+      },
+      { $set: { isRead: true } }
+    );
+
+    if (result.matchedCount === 0) {
+      return sendRes(res, 404, false, "Notification not found");
+    }
+
+    return sendRes(res, 200, true, "Notification marked as read");
   } catch (error) {
     console.error("[notification] Error:", error);
     return sendRes(res, 500, false, error.message || String(error), null, error);

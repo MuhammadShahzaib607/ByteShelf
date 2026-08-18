@@ -5,7 +5,7 @@ import Shelf from "../models/Shelf.js";
 
 export const createWarehouse = async (req, res) => {
   try {
-    const { name, location, latitude, longitude, pricePerShelf, images } = req.body;
+    const { name, location, latitude, longitude, pricePerShelf, images, payoutDetails } = req.body;
  
     if (!name || !location || !latitude || !longitude || !pricePerShelf) {
       return sendRes(res, 400, false, "All fields are required");
@@ -26,6 +26,7 @@ export const createWarehouse = async (req, res) => {
       longitude,
       pricePerShelf,
       images,
+      payoutDetails: payoutDetails || {},
       owner: req.user.id,
     });
  
@@ -75,9 +76,9 @@ export const getMyWarehouses = async (req, res) => {
 export const editWarehouse = async (req, res) => {
   try {
     const { warehouseId } = req.params;
-    const { name, location, latitude, longitude, pricePerShelf, images } = req.body;
+    const { name, location, latitude, longitude, pricePerShelf, images, payoutDetails } = req.body;
  
-    if (!name && !location && !latitude && !longitude && !pricePerShelf && !images) {
+    if (!name && !location && !latitude && !longitude && !pricePerShelf && !images && !payoutDetails) {
       return sendRes(res, 400, false, "At least one field is required to update");
     }
  
@@ -91,6 +92,23 @@ export const editWarehouse = async (req, res) => {
     if (latitude) warehouse.latitude = latitude;
     if (longitude) warehouse.longitude = longitude;
     if (Array.isArray(images)) warehouse.images = images;
+
+    // ─── Payout details update (deep-merge so untouched sub-fields survive) ──
+    if (payoutDetails && typeof payoutDetails === "object") {
+      const current = warehouse.payoutDetails || {};
+      warehouse.payoutDetails = {
+        ...current,
+        ...payoutDetails,
+        bankDetails: {
+          ...(current.bankDetails || {}),
+          ...(payoutDetails.bankDetails || {}),
+        },
+        walletDetails: {
+          ...(current.walletDetails || {}),
+          ...(payoutDetails.walletDetails || {}),
+        },
+      };
+    }
  
     // ─── Price update with shelf sync ──────────────────────────────────────
     if (pricePerShelf) {

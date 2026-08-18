@@ -45,9 +45,12 @@ const initialState: NotificationState = {
 
 export const fetchNotifications = createAsyncThunk(
   "notifications/fetchNotifications",
-  async (_, { rejectWithValue }) => {
+  async (options: { limit?: number; status?: "unread" } | undefined, { rejectWithValue }) => {
     try {
-      const res = await api.get("/notification/my-notifications");
+      const params: Record<string, string> = {};
+      if (options?.limit) params.limit = String(options.limit);
+      if (options?.status) params.status = options.status;
+      const res = await api.get("/notification/my-notifications", { params });
       const data = res.data.data;
       return {
         notifications: data.notifications || [],
@@ -72,6 +75,20 @@ export const markNotificationsAsRead = createAsyncThunk(
     } catch (error: any) {
       const message =
         error.response?.data?.message || "Failed to mark notifications as read.";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const markNotificationAsRead = createAsyncThunk(
+  "notifications/markOneAsRead",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await api.patch(`/notification/${id}/read`);
+      return id;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to mark notification as read.";
       return rejectWithValue(message);
     }
   }
@@ -135,6 +152,17 @@ const notificationSlice = createSlice({
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      });
+
+    // ── Mark Single as Read ──────────────────────────────────────────────────────
+    builder
+      .addCase(markNotificationAsRead.fulfilled, (state, action) => {
+        const id = action.payload;
+        state.notifications = state.notifications.map((n) =>
+          n._id === id ? { ...n, isRead: true } : n
+        );
+        state.unread = Math.max(0, state.unread - 1);
+        state.read = Math.min(state.total, state.read + 1);
       });
 
     // ── Mark as Read ─────────────────────────────────────────────────────────────

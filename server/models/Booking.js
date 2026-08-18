@@ -29,13 +29,32 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["confirmed", "cancelled", "completed"],
-      default: "confirmed",
+      // New bookings start as "pending" until the warehouse owner confirms them.
+      enum: ["pending", "confirmed", "rejected", "cancelled", "completed"],
+      default: "pending",
+    },
+    // Saved reason for why a booking was rejected or cancelled.
+    cancellationReason: {
+      type: String,
+      default: "",
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid"],
+      // "pending"/"unpaid" = merchant hasn't paid yet;
+      // "payment_submitted" = merchant uploaded proof, awaiting owner verification;
+      // "paid" = verified; "payment_rejected" = proof declined by owner.
+      enum: ["pending", "unpaid", "payment_submitted", "paid", "payment_rejected"],
       default: "pending",
+    },
+    // Cloudinary / image URL of the merchant's payment transfer screenshot.
+    paymentProofUrl: {
+      type: String,
+      default: "",
+    },
+    // Reason saved when the owner rejects a submitted payment proof.
+    paymentRejectionReason: {
+      type: String,
+      default: "",
     },
     totalAmount: {
       type: Number,

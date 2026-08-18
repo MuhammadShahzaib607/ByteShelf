@@ -13,7 +13,7 @@ import {
   ChevronRight, Eye, Warehouse, TrendingUp, Building2, HardHat,
   Copy, Check, Save, Phone, Box, CalendarDays as CalendarIcon,
   ChevronLeft, X, Image as ImageIcon, Edit3, Mail, Download,
-  Truck, ClipboardList
+  Truck, ClipboardList, Upload
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout, setUser } from "@/redux/slices/authSlice";
@@ -22,6 +22,8 @@ import { fetchProfile, updateProfile, clearProfileError, clearProfileSuccess } f
 import api from "@/lib/axios";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import UploadPaymentProofModal from "@/components/ui/UploadPaymentProofModal";
+import { payoutHasAnyData } from "@/components/ui/PayoutDetailsForm";
 import InboundDetailsDrawer from "@/components/ui/InboundDetailsDrawer";
 import CreateInboundModal from "@/components/ui/CreateInboundModal";
 import CreateOrderModal from "@/components/ui/CreateOrderModal";
@@ -36,11 +38,12 @@ interface WarehouseData { _id: string; name: string; location: string; pricePerS
 
 interface BookingData {
   _id: string;
-  warehouse?: { _id: string; name: string; location: string };
+  warehouse?: { _id: string; name: string; location: string; payoutDetails?: any };
   warehouseName?: string; warehouseLocation?: string;
   shelfIds?: string[]; shelves?: Array<{ _id: string; shelfNumber: string }>;
   startDate: string; endDate: string; status: string; paymentStatus: string;
-  totalAmount: number; pricePerShelf?: number; createdAt: string;
+  totalAmount: number; pricePerShelf?: number; cancellationReason?: string;
+  paymentRejectionReason?: string; createdAt: string;
 }
 
 interface InboundPlanData {
@@ -73,10 +76,14 @@ function statusBadge(status: string) {
   const c: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
     confirmed: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Confirmed" },
     cancelled: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Cancelled" },
+    rejected: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Rejected" },
     completed: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <CheckCircle size={11} />, label: "Completed" },
     "in-transit": { bg: "bg-sky-500/10 border-sky-500/20", text: "text-sky-400", icon: <Clock size={11} />, label: "In Transit" },
     arrived: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Arrived" },
     paid: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CreditCard size={11} />, label: "Paid" },
+    unpaid: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Unpaid" },
+    payment_submitted: { bg: "bg-sky-500/10 border-sky-500/20", text: "text-sky-400", icon: <Clock size={11} />, label: "Verification Pending" },
+    payment_rejected: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Payment Rejected" },
     pending: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Pending" },
   };
   const s = c[status] || c.pending;
@@ -679,7 +686,7 @@ function WarehouseDetailSlideover({ warehouseId, onClose }: { warehouseId: strin
                 {bookingSuccess ? (
                   <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
                     <CheckCircle size={20} className="text-emerald-400 shrink-0" />
-                    <p className="text-sm font-semibold text-emerald-400 font-body">Booking confirmed! Redirecting...</p>
+                    <p className="text-sm font-semibold text-emerald-400 font-body">Booking request submitted! Awaiting owner approval...</p>
                   </div>
                 ) : (
                   <button onClick={handleBooking} disabled={selectedCount === 0 || isBooking}
@@ -711,6 +718,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [showUploadProof, setShowUploadProof] = useState(false);
 
   // ─── Inbound Creation from Booking (single entry point) ────────────────
   const [inboundBooking, setInboundBooking] = useState<BookingData | null>(null);
@@ -730,7 +738,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
     if (!cancelTarget) return;
     setIsCancelling(true);
     try {
-      await api.post(`/booking/cancel/${cancelTarget}`, { reason: reason || "" });
+      await api.patch(`/booking/cancel/${cancelTarget}`, { reason: reason || "" });
       setShowCancelConfirm(false);
       setCancelSuccess("Booking cancelled successfully.");
       fetchBookings();
@@ -763,7 +771,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
-        {["all", "confirmed", "pending", "cancelled"].map((tab) => {
+        {["all", "confirmed", "pending", "rejected", "cancelled"].map((tab) => {
           const isActive = filterStatus === tab;
           return (
             <button key={tab} onClick={() => setFilterStatus(tab)}
@@ -796,7 +804,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     {statusBadge(b.status)}
-                    {statusBadge(b.paymentStatus === "paid" ? "paid" : "pending")}
+                    {statusBadge(b.paymentStatus)}
                   </div>
                   <h3 className="font-heading text-lg font-semibold text-white">{b.warehouseName || b.warehouse?.name || "Warehouse Booking"}</h3>
                   {(b.warehouseLocation || b.warehouse?.location) && (
@@ -811,6 +819,49 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     <span className="font-heading text-lg font-bold text-white numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
                     <span className="text-[10px] text-neutral-500 font-body">ID: {b._id.slice(-8)}</span>
                   </div>
+                  {/* Pending owner approval notice */}
+                  {b.status === "pending" && (
+                    <div className="mt-3 w-full flex items-center gap-2 px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <Clock size={13} className="text-amber-400 shrink-0" />
+                      <p className="text-[11px] text-amber-300 font-body leading-snug">
+                        Pending owner approval — inbound creation unlocks once the warehouse owner confirms this booking.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Payment proof verification notice */}
+                  {b.paymentStatus === "payment_submitted" && b.status !== "confirmed" && (
+                    <div className="mt-3 w-full flex items-center gap-2 px-3.5 py-2.5 bg-sky-500/10 border border-sky-500/20 rounded-xl">
+                      <Clock size={13} className="text-sky-400 shrink-0" />
+                      <p className="text-[11px] text-sky-300 font-body leading-snug">
+                        Payment proof submitted — awaiting owner verification.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Payment rejected notice */}
+                  {b.paymentStatus === "payment_rejected" && (
+                    <div className="mt-3 w-full flex items-start gap-2 px-3.5 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl">
+                      <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-red-300 font-body leading-snug">
+                        <span className="font-semibold">Payment Rejected: </span>
+                        {b.paymentRejectionReason || "Please upload a new payment proof."}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Rejection / Cancellation reason */}
+                  {(b.status === "rejected" || b.status === "cancelled") && b.cancellationReason && (
+                    <div className="mt-3 w-full flex items-start gap-2 px-3.5 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl">
+                      <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-red-300 font-body leading-snug">
+                        <span className="font-semibold">
+                          {b.status === "rejected" ? "Reason for Rejection: " : "Reason for Cancellation: "}
+                        </span>
+                        {b.cancellationReason}
+                      </p>
+                    </div>
+                  )}
                   <div className="mt-3 flex gap-2">
                     <button onClick={() => setSelectedBooking(b)}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors">
@@ -836,10 +887,16 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     )}
                   </div>
                   {inboundLocked && (
-                    <div className="mt-2.5 flex items-center gap-2 px-3 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                      <Clock size={13} className="text-amber-400 shrink-0" />
-                      <p className="text-[11px] text-amber-300 font-body leading-snug">
-                        Payment Pending – Inbound creation unlocks after booking payment is confirmed.
+                    <div className={`mt-2.5 flex items-center gap-2 px-3 py-2.5 rounded-xl border ${
+                      b.paymentStatus === "payment_submitted"
+                        ? "bg-sky-500/10 border-sky-500/20"
+                        : "bg-amber-500/10 border-amber-500/20"
+                    }`}>
+                      <Clock size={13} className={`shrink-0 ${b.paymentStatus === "payment_submitted" ? "text-sky-400" : "text-amber-400"}`} />
+                      <p className={`text-[11px] font-body leading-snug ${b.paymentStatus === "payment_submitted" ? "text-sky-300" : "text-amber-300"}`}>
+                        {b.paymentStatus === "payment_submitted"
+                          ? "Payment proof submitted – awaiting owner verification. Inbound creation unlocks once payment is confirmed."
+                          : "Payment Pending – Inbound creation unlocks after booking payment is confirmed."}
                       </p>
                     </div>
                   )}
@@ -871,8 +928,16 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                 </div>
                 <div className="flex items-center gap-2 mb-4">
                   {statusBadge(selectedBooking.status)}
-                  {statusBadge(selectedBooking.paymentStatus === "paid" ? "paid" : "pending")}
+                  {statusBadge(selectedBooking.paymentStatus)}
                 </div>
+                {(selectedBooking.status === "rejected" || selectedBooking.status === "cancelled") && selectedBooking.cancellationReason && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <p className="text-[10px] font-semibold tracking-wider text-red-400 uppercase font-body mb-1">
+                      {selectedBooking.status === "rejected" ? "Reason for Rejection" : "Reason for Cancellation"}
+                    </p>
+                    <p className="text-xs text-neutral-200 font-body leading-relaxed">{selectedBooking.cancellationReason}</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800">
                     <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1 font-body">Start Date</p>
@@ -887,6 +952,65 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                   <span className="text-sm font-medium text-white font-body">Total Amount</span>
                   <span className="font-heading text-xl font-bold text-white numeric">Rs. {(selectedBooking.totalAmount || 0).toLocaleString("en-PK")}</span>
                 </div>
+
+                {/* Payment instructions & proof upload */}
+                {selectedBooking.paymentStatus !== "paid" && (
+                  <div className="mt-4 p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                    {selectedBooking.paymentStatus === "payment_submitted" && (
+                      <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                        <Clock size={13} className="text-sky-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-sky-300 font-body leading-snug">Payment proof submitted — awaiting owner verification.</p>
+                      </div>
+                    )}
+                    {selectedBooking.paymentStatus === "payment_rejected" && (
+                      <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-red-300 font-body leading-snug">Payment rejected: {selectedBooking.paymentRejectionReason || "Please upload a new proof."}</p>
+                      </div>
+                    )}
+                    {payoutHasAnyData(selectedBooking.warehouse?.payoutDetails) && (
+                      <div className="mb-3">
+                        <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Pay to the warehouse owner</p>
+                        {(() => {
+                          const pd = selectedBooking.warehouse?.payoutDetails || {};
+                          const bank = pd.bankDetails || {};
+                          const wallet = pd.walletDetails || {};
+                          const rows: { label: string; value: string }[] = [];
+                          if (pd.payoutType === "bank_account" || pd.payoutType === "both") {
+                            if (bank.accountTitle) rows.push({ label: "Account Title", value: bank.accountTitle });
+                            if (bank.bankName) rows.push({ label: "Bank Name", value: bank.bankName });
+                            if (bank.accountNumber) rows.push({ label: "Account Number", value: bank.accountNumber });
+                            if (bank.iban) rows.push({ label: "IBAN", value: bank.iban });
+                          }
+                          if (pd.payoutType === "mobile_wallet" || pd.payoutType === "both") {
+                            if (wallet.easyPaisaNumber) rows.push({ label: "EasyPaisa", value: wallet.easyPaisaTitle ? `${wallet.easyPaisaTitle} · ${wallet.easyPaisaNumber}` : wallet.easyPaisaNumber });
+                            if (wallet.jazzCashNumber) rows.push({ label: "JazzCash", value: wallet.jazzCashTitle ? `${wallet.jazzCashTitle} · ${wallet.jazzCashNumber}` : wallet.jazzCashNumber });
+                            if (wallet.sadaPayTagOrNumber) rows.push({ label: "SadaPay", value: wallet.sadaPayTagOrNumber });
+                            if (wallet.nayaPayTagOrNumber) rows.push({ label: "NayaPay", value: wallet.nayaPayTagOrNumber });
+                          }
+                          return rows.length > 0 ? (
+                            <div className="space-y-1.5">
+                              {rows.map((r) => (
+                                <div key={r.label} className="flex items-center justify-between gap-3 text-xs font-body">
+                                  <span className="text-neutral-400">{r.label}</span>
+                                  <span className="font-semibold text-white text-right break-all">{r.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+                    {(selectedBooking.paymentStatus === "pending" || selectedBooking.paymentStatus === "unpaid" || selectedBooking.paymentStatus === "payment_rejected") && (
+                      <button
+                        onClick={() => setShowUploadProof(true)}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all duration-200"
+                      >
+                        <Upload size={13} /> Upload Payment Proof
+                      </button>
+                    )}
+                  </div>
+                )}
                 {selectedBooking.shelves && selectedBooking.shelves.length > 0 && (
                   <div className="mt-4">
                     <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Booked Shelves</p>
@@ -900,6 +1024,24 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ UPLOAD PAYMENT PROOF MODAL ═══ */}
+      <AnimatePresence>
+        {showUploadProof && selectedBooking && (
+          <UploadPaymentProofModal
+            booking={{
+              _id: selectedBooking._id,
+              warehouseName: selectedBooking.warehouseName || selectedBooking.warehouse?.name,
+              totalAmount: selectedBooking.totalAmount,
+            }}
+            onClose={() => setShowUploadProof(false)}
+            onUploaded={() => {
+              setShowUploadProof(false);
+              fetchBookings();
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -921,13 +1063,14 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       <AnimatePresence>
         {showCancelConfirm && (
           <ConfirmationModal
-            title="Cancel Booking?"
+            title="Cancel Booking"
             message="Are you sure you want to cancel this booking? This action cannot be undone."
-            confirmLabel="Yes, Cancel Booking"
-            cancelLabel="No, Keep Booking"
+            confirmLabel="Confirm Cancellation"
+            cancelLabel="Back"
             variant="danger"
             showReasonInput
-            reasonPlaceholder="Reason for cancellation (Optional)"
+            reasonPlaceholder="Please state the reason for cancellation"
+            requireReason
             onConfirm={handleCancelBooking}
             onCancel={() => { setShowCancelConfirm(false); setCancelTarget(null); }}
             isLoading={isCancelling}

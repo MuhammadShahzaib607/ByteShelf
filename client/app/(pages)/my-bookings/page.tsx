@@ -32,10 +32,11 @@ interface BookingData {
   shelves?: Array<{ _id: string; shelfNumber: string }>;
   startDate: string;
   endDate: string;
-  status: "confirmed" | "pending" | "cancelled";
-  paymentStatus: "paid" | "pending";
+  status: "confirmed" | "pending" | "rejected" | "cancelled";
+  paymentStatus: "paid" | "pending" | "unpaid" | "payment_submitted" | "payment_rejected";
   totalAmount: number;
   pricePerShelf?: number;
+  cancellationReason?: string;
   createdAt: string;
 }
 
@@ -85,11 +86,35 @@ function StatusBadge({
       icon: <XCircle size={12} />,
       label: "Cancelled",
     },
+    rejected: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-700",
+      icon: <XCircle size={12} />,
+      label: "Rejected",
+    },
     paid: {
       bg: "bg-[#84cc16]/10 border-[#84cc16]/30",
       text: "text-[#84cc16]",
       icon: <CheckCircle size={12} />,
       label: "Paid",
+    },
+    unpaid: {
+      bg: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      icon: <Clock size={12} />,
+      label: "Unpaid",
+    },
+    payment_submitted: {
+      bg: "bg-sky-50 border-sky-200",
+      text: "text-sky-700",
+      icon: <Clock size={12} />,
+      label: "Verification Pending",
+    },
+    payment_rejected: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-700",
+      icon: <XCircle size={12} />,
+      label: "Payment Rejected",
     },
   };
 
@@ -258,7 +283,7 @@ export default function MyBookingsPage() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {bookings.map((booking, i) => {
-              const canCancel = booking.status !== "cancelled";
+              const canCancel = booking.status !== "cancelled" && booking.status !== "rejected";
 
               return (
                 <motion.div
@@ -307,6 +332,38 @@ export default function MyBookingsPage() {
                         ID: {booking._id.slice(-8)}
                       </span>
                     </div>
+
+                    {/* Pending owner approval notice */}
+                    {booking.status === "pending" && (
+                      <div className="mt-3 w-full flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+                        <Clock size={13} className="text-amber-600 shrink-0" />
+                        <p className="text-[11px] text-amber-700 font-body leading-snug">
+                          Pending owner approval — inbound creation unlocks once the warehouse owner confirms this booking.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Payment verification pending notice */}
+                    {booking.paymentStatus === "payment_submitted" && (
+                      <div className="mt-3 w-full flex items-center gap-2 px-3.5 py-2.5 bg-sky-50 border border-sky-200 rounded-xl">
+                        <Clock size={13} className="text-sky-600 shrink-0" />
+                        <p className="text-[11px] text-sky-700 font-body leading-snug">
+                          Payment proof submitted — awaiting owner verification.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Rejection / Cancellation reason */}
+                    {(booking.status === "rejected" || booking.status === "cancelled") && booking.cancellationReason && (
+                      <div className="mt-3 w-full px-3.5 py-2.5 bg-red-50 border border-red-200 rounded-xl">
+                        <p className="text-[11px] text-red-700 font-body leading-snug">
+                          <span className="font-semibold">
+                            {booking.status === "rejected" ? "Reason for Rejection: " : "Reason for Cancellation: "}
+                          </span>
+                          {booking.cancellationReason}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Create Inbound — active bookings only, locked until payment is confirmed */}
                     {booking.status === "confirmed" &&

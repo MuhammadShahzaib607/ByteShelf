@@ -17,6 +17,7 @@ import { useAppSelector } from "@/redux/hooks";
 import api from "@/lib/axios";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import MapPicker from "@/components/ui/MapPicker";
+import PayoutDetailsForm, { emptyPayoutDetails, type PayoutDetailsData } from "@/components/ui/PayoutDetailsForm";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -102,6 +103,7 @@ export default function EditWarehouseModal({
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [shelfCount, setShelfCount] = useState(0);
+  const [payout, setPayout] = useState<PayoutDetailsData>(emptyPayoutDetails);
 
   // ─── Images ──────────────────────────────────────────────────────────────
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
@@ -132,6 +134,31 @@ export default function EditWarehouseModal({
           setLongitude(w.longitude ?? null);
           setShelfCount(w.totalShelves ?? 0);
           setExistingUrls(Array.isArray(w.images) ? w.images : []);
+          if (w.payoutDetails && typeof w.payoutDetails === "object") {
+            const p = w.payoutDetails;
+            setPayout({
+              payoutType:
+                (["bank_account", "mobile_wallet", "both"] as const).includes(
+                  p.payoutType
+                )
+                  ? p.payoutType
+                  : "bank_account",
+              bankDetails: {
+                accountTitle: p.bankDetails?.accountTitle || "",
+                bankName: p.bankDetails?.bankName || "",
+                accountNumber: p.bankDetails?.accountNumber || "",
+                iban: p.bankDetails?.iban || "",
+              },
+              walletDetails: {
+                easyPaisaNumber: p.walletDetails?.easyPaisaNumber || "",
+                easyPaisaTitle: p.walletDetails?.easyPaisaTitle || "",
+                jazzCashNumber: p.walletDetails?.jazzCashNumber || "",
+                jazzCashTitle: p.walletDetails?.jazzCashTitle || "",
+                sadaPayTagOrNumber: p.walletDetails?.sadaPayTagOrNumber || "",
+                nayaPayTagOrNumber: p.walletDetails?.nayaPayTagOrNumber || "",
+              },
+            });
+          }
         }
       } catch {
         if (!cancelled) setFetchError(true);
@@ -227,6 +254,7 @@ export default function EditWarehouseModal({
           longitude,
           pricePerShelf: parseFloat(pricePerShelf),
           images: finalUrls,
+          payoutDetails: payout,
         });
         onSaved();
       } catch (err: unknown) {
@@ -247,6 +275,7 @@ export default function EditWarehouseModal({
       pricePerShelf,
       imageFiles,
       existingUrls,
+      payout,
       warehouseId,
       onSaved,
       validate,
@@ -473,6 +502,9 @@ export default function EditWarehouseModal({
                   onChange={handleFileSelect}
                 />
               </div>
+
+              {/* Payout & Bank Details */}
+              <PayoutDetailsForm value={payout} onChange={setPayout} />
 
               {/* API Error */}
               {apiError && (
