@@ -157,6 +157,10 @@ export const getMerchantBookingDetails = async (req, res) => {
 // ─── Merchant payment proof upload ────────────────────────────────────────
 // Merchant uploads a screenshot of their bank/wallet transfer. Flips the
 // booking's payment status to "payment_submitted" for owner verification.
+// Only CONFIRMED bookings accept proof, and each booking allows a maximum of
+// 2 submission attempts (paymentAttemptsCount).
+const MAX_PAYMENT_ATTEMPTS = 2;
+
 export const uploadPaymentProof = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -175,9 +179,32 @@ export const uploadPaymentProof = async (req, res) => {
       return sendRes(res, 400, false, "Payment proof cannot be uploaded for this booking");
     }
 
+    // Payment submission unlocks only after the warehouse owner approves the
+    // booking request (booking must be CONFIRMED).
+    if (booking.status !== "confirmed") {
+      return sendRes(
+        res,
+        400,
+        false,
+        "Payment submission will unlock once the warehouse owner approves your booking request."
+      );
+    }
+
+    // Strict 2-attempt limit per booking.
+    if ((booking.paymentAttemptsCount || 0) >= MAX_PAYMENT_ATTEMPTS) {
+      return sendRes(
+        res,
+        400,
+        false,
+        `Maximum payment submission attempts reached (${MAX_PAYMENT_ATTEMPTS}/${MAX_PAYMENT_ATTEMPTS}). Contact the warehouse owner for manual verification.`
+      );
+    }
+
     booking.paymentProofUrl = paymentProofUrl;
+    booking.proofScreenshots = [...(booking.proofScreenshots || []), paymentProofUrl];
     booking.paymentStatus = "payment_submitted";
     booking.paymentRejectionReason = "";
+    booking.paymentAttemptsCount = (booking.paymentAttemptsCount || 0) + 1;
     await booking.save();
 
     const warehouse = await Warehouse.findById(booking.warehouse);

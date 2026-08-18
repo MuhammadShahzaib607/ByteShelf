@@ -81,7 +81,7 @@ export default function UploadPaymentProofModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/70 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/80 backdrop-blur-md overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && !uploading) onClose();
       }}
@@ -91,12 +91,11 @@ export default function UploadPaymentProofModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="w-full max-w-lg bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden"
+        className="w-full max-w-lg bg-[#0e130e] rounded-3xl shadow-2xl border border-[#1f291f] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
-          <div className="p-8 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
+          <div className="p-8 text-center">              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-900/40 flex items-center justify-center mx-auto mb-4">
               <CheckCircle size={28} className="text-emerald-400" />
             </div>
             <h2 className="font-heading text-xl font-bold text-white mb-2">
@@ -111,7 +110,7 @@ export default function UploadPaymentProofModal({
           <div className="p-6 sm:p-8">
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-900/40 flex items-center justify-center">
                 <Wallet size={20} className="text-emerald-400" />
               </div>
               <div className="min-w-0 flex-1">
@@ -126,7 +125,7 @@ export default function UploadPaymentProofModal({
               <button
                 onClick={onClose}
                 disabled={uploading}
-                className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-700 hover:text-white transition-all disabled:opacity-50 shrink-0"
+                className="w-8 h-8 rounded-full bg-[#121612] border border-[#1f291f] flex items-center justify-center text-slate-400 hover:bg-[#1a221a] hover:text-white transition-all disabled:opacity-50 shrink-0"
               >
                 <X size={16} />
               </button>
@@ -144,7 +143,7 @@ export default function UploadPaymentProofModal({
               className={`relative rounded-2xl border-2 border-dashed transition-all duration-200 overflow-hidden ${
                 preview
                   ? "border-emerald-500/40"
-                  : "border-slate-700 hover:border-emerald-500/40 cursor-pointer"
+                  : "border-[#1f291f] hover:border-emerald-500/40 cursor-pointer"
               }`}
             >
               {preview ? (
@@ -152,7 +151,7 @@ export default function UploadPaymentProofModal({
                   <img
                     src={preview}
                     alt="Payment proof preview"
-                    className="w-full h-56 object-contain bg-slate-800/60 p-2"
+                    className="w-full h-56 object-contain bg-[#080c08] p-2"
                   />
                   <button
                     type="button"
@@ -170,7 +169,7 @@ export default function UploadPaymentProofModal({
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-[#080c08]">
                   <ImagePlus size={32} className="text-slate-500 mb-3" />
                   <p className="text-sm text-slate-300 font-body font-medium">
                     Click to select a screenshot
@@ -200,14 +199,14 @@ export default function UploadPaymentProofModal({
               <button
                 onClick={onClose}
                 disabled={uploading}
-                className="flex-1 px-5 py-3 border-2 border-slate-700 text-slate-300 rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:border-slate-600 transition-all duration-200 disabled:opacity-50"
+                className="flex-1 px-5 py-3 border border-[#1f291f] text-slate-300 rounded-full font-body text-sm font-medium hover:bg-white/5 hover:border-[#2a352a] transition-all duration-200 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={uploading || !file}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 text-white rounded-full font-body text-sm font-medium hover:bg-emerald-600 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 text-black rounded-full font-body text-sm font-semibold hover:bg-emerald-600 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? (
                   <>

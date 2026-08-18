@@ -48,7 +48,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isLoading) onCancel();
       }}
@@ -58,13 +58,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="w-full max-w-md bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden"
+        className="w-full max-w-md bg-[#0e130e] rounded-3xl shadow-2xl border border-[#1f291f] overflow-hidden"
       >
         {/* Close button */}
         <button
           onClick={onCancel}
           disabled={isLoading}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-400 hover:bg-slate-700 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#121612] border border-[#1f291f] flex items-center justify-center text-slate-400 hover:bg-[#1a221a] hover:text-white transition-colors z-10"
         >
           <X size={16} />
         </button>
@@ -111,7 +111,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 placeholder={reasonPlaceholder}
                 rows={3}
                 disabled={isLoading}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all text-sm font-body resize-none"
+                className="w-full px-4 py-3 bg-[#121612] border border-[#1f291f] rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all text-sm font-body resize-none"
               />
               {requireReason && !reason.trim() && (
                 <p className="mt-1.5 text-xs text-red-600 font-body">
@@ -126,7 +126,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <button
               onClick={onCancel}
               disabled={isLoading}
-              className="flex-1 px-5 py-3 border-2 border-slate-700 text-slate-300 rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:border-slate-600 transition-all duration-200 disabled:opacity-50"
+              className="flex-1 px-5 py-3 border border-[#1f291f] text-slate-300 rounded-full font-body text-sm font-medium hover:bg-white/5 hover:border-[#2a352a] transition-all duration-200 disabled:opacity-50"
             >
               {cancelLabel}
             </button>
@@ -138,7 +138,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   ? "bg-red-600 text-white hover:bg-red-700"
                   : accentColor === "amber"
                   ? "bg-amber-500 text-white hover:bg-amber-600"
-                  : "bg-emerald-500 text-white hover:bg-emerald-600"
+                  : "bg-emerald-500 text-black hover:bg-emerald-600"
               }`}
             >
               {isLoading ? (

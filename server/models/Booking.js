@@ -51,10 +51,21 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // All submitted payment proof screenshots (attempt history). Each upload
+    // appends a URL, so the owner can review every attempt side-by-side.
+    proofScreenshots: {
+      type: [String],
+      default: [],
+    },
     // Reason saved when the owner rejects a submitted payment proof.
     paymentRejectionReason: {
       type: String,
       default: "",
+    },
+    // Number of payment proof screenshots the merchant has submitted (max 2).
+    paymentAttemptsCount: {
+      type: Number,
+      default: 0,
     },
     totalAmount: {
       type: Number,

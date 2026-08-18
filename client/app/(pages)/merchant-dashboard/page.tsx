@@ -22,8 +22,11 @@ import { fetchProfile, updateProfile, clearProfileError, clearProfileSuccess } f
 import api from "@/lib/axios";
 import ImageCarousel from "@/components/ui/ImageCarousel";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import NotificationBell from "@/components/ui/NotificationBell";
+import UserProfileDropdown from "@/components/ui/UserProfileDropdown";
 import UploadPaymentProofModal from "@/components/ui/UploadPaymentProofModal";
 import { payoutHasAnyData } from "@/components/ui/PayoutDetailsForm";
+import MerchantBookingDetailsModal from "@/components/ui/MerchantBookingDetailsModal";
 import InboundDetailsDrawer from "@/components/ui/InboundDetailsDrawer";
 import CreateInboundModal from "@/components/ui/CreateInboundModal";
 import CreateOrderModal from "@/components/ui/CreateOrderModal";
@@ -42,6 +45,7 @@ interface BookingData {
   warehouseName?: string; warehouseLocation?: string;
   shelfIds?: string[]; shelves?: Array<{ _id: string; shelfNumber: string }>;
   startDate: string; endDate: string; status: string; paymentStatus: string;
+  paymentAttemptsCount?: number;
   totalAmount: number; pricePerShelf?: number; cancellationReason?: string;
   paymentRejectionReason?: string; createdAt: string;
 }
@@ -87,6 +91,32 @@ function statusBadge(status: string) {
     pending: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Pending" },
   };
   const s = c[status] || c.pending;
+  return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${s.bg} ${s.text}`}>{s.icon}{s.label}</span>;
+}
+
+// Distinct prefixed badge for the BOOKING status.
+function bookingBadge(status: string) {
+  const c: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
+    confirmed: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Booking: Confirmed" },
+    cancelled: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Booking: Cancelled" },
+    rejected: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Booking: Rejected" },
+    completed: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <CheckCircle size={11} />, label: "Booking: Completed" },
+    pending: { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", icon: <Clock size={11} />, label: "Booking: Pending" },
+  };
+  const s = c[status] || c.pending;
+  return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${s.bg} ${s.text}`}>{s.icon}{s.label}</span>;
+}
+
+// Distinct prefixed badge for the PAYMENT status.
+function paymentBadge(status: string) {
+  const c: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
+    paid: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", icon: <CheckCircle size={11} />, label: "Payment: Paid" },
+    payment_rejected: { bg: "bg-red-500/10 border-red-500/20", text: "text-red-400", icon: <XCircle size={11} />, label: "Payment: Rejected" },
+    payment_submitted: { bg: "bg-sky-500/10 border-sky-500/20", text: "text-sky-400", icon: <Clock size={11} />, label: "Payment: Under Review" },
+    unpaid: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <Clock size={11} />, label: "Payment: Unpaid" },
+    pending: { bg: "bg-neutral-500/10 border-neutral-500/20", text: "text-neutral-400", icon: <Clock size={11} />, label: "Payment: Unpaid" },
+  };
+  const s = c[status] || c.unpaid;
   return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${s.bg} ${s.text}`}>{s.icon}{s.label}</span>;
 }
 
@@ -209,10 +239,7 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
           <h1 className="text-sm font-semibold text-white font-body hidden sm:block">Welcome, {user?.name?.split(" ")[0] || "Merchant"}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/notifications" className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-colors">
-            <Bell size={17} className="text-neutral-300" />
-            {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
-          </Link>
+          <NotificationBell unreadCount={unread} />
           {/* Avatar opens the drawer on mobile — profile access in one tap */}
           <button type="button" onClick={onMenuToggle} aria-label="Open menu"
             className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-all">
@@ -220,12 +247,7 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
               <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
           </button>
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
-            <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center">
-              <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
-            </div>
-            <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
-          </div>
+          <UserProfileDropdown />
         </div>
       </div>
     </header>
@@ -241,32 +263,32 @@ function OverviewTab() {
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [stats, setStats] = useState({ activeBookings: 0, totalSpend: 0, pendingInbounds: 0, totalInbounds: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
+  const [inboundBooking, setInboundBooking] = useState<BookingData | null>(null);
 
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     if (!accessToken) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const [bkRes, inboundRes] = await Promise.all([
-          api.get("/booking/my-bookings"),
-          api.get("/inbound/my-plans"),
-        ]);
-        if (cancelled) return;
-        const bkData = bkRes.data.data?.bookings || bkRes.data.data || [];
-        const bookings: BookingData[] = Array.isArray(bkData) ? bkData : [];
-        const inboundData = inboundRes.data.data || [];
+    setLoading(true);
+    try {
+      const [bkRes, inboundRes] = await Promise.all([
+        api.get("/booking/my-bookings"),
+        api.get("/inbound/my-plans"),
+      ]);
+      const bkData = bkRes.data.data?.bookings || bkRes.data.data || [];
+      const bookings: BookingData[] = Array.isArray(bkData) ? bkData : [];
+      const inboundData = inboundRes.data.data || [];
 
-        const active = bookings.filter((b) => b.status === "confirmed").length;
-        const spend = bookings.filter((b) => b.status === "confirmed").reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-        const pendingIn = Array.isArray(inboundData) ? inboundData.filter((p: any) => p.status === "in-transit").length : 0;
-        const totalIn = Array.isArray(inboundData) ? inboundData.length : 0;
+      const active = bookings.filter((b) => b.status === "confirmed").length;
+      const spend = bookings.filter((b) => b.status === "confirmed").reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const pendingIn = Array.isArray(inboundData) ? inboundData.filter((p: any) => p.status === "in-transit").length : 0;
+      const totalIn = Array.isArray(inboundData) ? inboundData.length : 0;
 
-        setBookings(bookings);
-        setStats({ activeBookings: active, totalSpend: spend, pendingInbounds: pendingIn, totalInbounds: totalIn });
-      } catch { } finally { if (!cancelled) setLoading(false); }
-    })();
-    return () => { cancelled = true; };
+      setBookings(bookings);
+      setStats({ activeBookings: active, totalSpend: spend, pendingInbounds: pendingIn, totalInbounds: totalIn });
+    } catch { } finally { setLoading(false); }
   }, [accessToken]);
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   const recentBookings = bookings.slice(0, 5);
 
@@ -319,7 +341,8 @@ function OverviewTab() {
             <div className="divide-y divide-neutral-800/80">
               {recentBookings.map((b, i) => (
                 <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors duration-200">
+                  onClick={() => setSelectedBooking(b)}
+                  className="group flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-8 h-8 rounded-lg bg-neutral-800/60 flex items-center justify-center shrink-0">
                       <Store size={16} className="text-[#84cc16]" />
@@ -336,6 +359,7 @@ function OverviewTab() {
                   <div className="flex items-center gap-3 shrink-0">
                     {statusBadge(b.status)}
                     <span className="text-sm font-semibold text-white font-body numeric">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</span>
+                    <ChevronRight size={15} className="text-neutral-600 group-hover:text-[#84cc16] transition-colors" />
                   </div>
                 </motion.div>
               ))}
@@ -343,6 +367,29 @@ function OverviewTab() {
           </div>
         )}
       </motion.div>
+
+      {/* ═══ BOOKING DETAILS MODAL (Recent Bookings) ═══ */}
+      <AnimatePresence>
+        {selectedBooking && (
+          <MerchantBookingDetailsModal
+            booking={selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            onUploaded={loadData}
+            onViewInbound={(bk) => { setSelectedBooking(null); setInboundBooking(bk); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ CREATE INBOUND MODAL (from booking details) ═══ */}
+      <AnimatePresence>
+        {inboundBooking && (
+          <CreateInboundModal
+            booking={inboundBooking}
+            onClose={() => setInboundBooking(null)}
+            onCreated={() => setInboundBooking(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -720,6 +767,11 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showUploadProof, setShowUploadProof] = useState(false);
 
+  // Local payment state so a successful upload reflects instantly in the
+  // details modal (payment status + attempt count) without a refetch.
+  const [localPaymentStatus, setLocalPaymentStatus] = useState<string | null>(null);
+  const [localAttempts, setLocalAttempts] = useState<number | null>(null);
+
   // ─── Inbound Creation from Booking (single entry point) ────────────────
   const [inboundBooking, setInboundBooking] = useState<BookingData | null>(null);
 
@@ -752,6 +804,12 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
   const openInboundModal = useCallback((booking: BookingData) => {
     setInboundBooking(booking);
   }, []);
+
+  // Effective payment state for the details modal (local override wins after
+  // an upload so the UI updates instantly; otherwise falls back to server data).
+  const effPaymentStatus = localPaymentStatus ?? selectedBooking?.paymentStatus ?? "pending";
+  const effAttempts = localAttempts ?? selectedBooking?.paymentAttemptsCount ?? 0;
+  const effBookingConfirmed = selectedBooking?.status === "confirmed";
 
   const filteredBookings = bookings.filter((b) => {
     if (filterStatus === "all") return true;
@@ -863,7 +921,7 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                     </div>
                   )}
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => setSelectedBooking(b)}
+                    <button onClick={() => { setSelectedBooking(b); setLocalPaymentStatus(null); setLocalAttempts(null); }}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[#84cc16]/30 text-[#84cc16] rounded-full text-xs font-medium hover:bg-[#84cc16]/10 transition-colors">
                       <Eye size={13} /> View Details
                     </button>
@@ -927,8 +985,8 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mb-4">
-                  {statusBadge(selectedBooking.status)}
-                  {statusBadge(selectedBooking.paymentStatus)}
+                  {bookingBadge(selectedBooking.status)}
+                  {paymentBadge(effPaymentStatus)}
                 </div>
                 {(selectedBooking.status === "rejected" || selectedBooking.status === "cancelled") && selectedBooking.cancellationReason && (
                   <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
@@ -954,15 +1012,15 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                 </div>
 
                 {/* Payment instructions & proof upload */}
-                {selectedBooking.paymentStatus !== "paid" && (
+                {effPaymentStatus !== "paid" && (
                   <div className="mt-4 p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
-                    {selectedBooking.paymentStatus === "payment_submitted" && (
+                    {effPaymentStatus === "payment_submitted" && (
                       <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
                         <Clock size={13} className="text-sky-400 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-sky-300 font-body leading-snug">Payment proof submitted — awaiting owner verification.</p>
                       </div>
                     )}
-                    {selectedBooking.paymentStatus === "payment_rejected" && (
+                    {effPaymentStatus === "payment_rejected" && (
                       <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                         <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-red-300 font-body leading-snug">Payment rejected: {selectedBooking.paymentRejectionReason || "Please upload a new proof."}</p>
@@ -1001,12 +1059,47 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                         })()}
                       </div>
                     )}
-                    {(selectedBooking.paymentStatus === "pending" || selectedBooking.paymentStatus === "unpaid" || selectedBooking.paymentStatus === "payment_rejected") && (
+                    {/* Booking not confirmed yet → payment locked */}
+                    {!effBookingConfirmed && (
+                      <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <Clock size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-amber-200 font-body leading-snug">
+                          ⏳ Payment submission will unlock once the warehouse owner approves your booking request.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Attempt warning — 1 remaining */}
+                    {effBookingConfirmed && effAttempts === 1 && (
+                      <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <AlertCircle size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-amber-200 font-body leading-snug">
+                          ⚠️ 1 attempt remaining. Please ensure screenshot details are legible.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Max attempts reached → upload disabled */}
+                    {effBookingConfirmed && effAttempts >= 2 && (
+                      <div className="mb-3 flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <XCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-red-300 font-body leading-snug">
+                          ❌ Maximum payment submission attempts reached (2/2). Contact warehouse owner for manual verification.
+                        </p>
+                      </div>
+                    )}
+
+                    {effBookingConfirmed &&
+                      effAttempts < 2 &&
+                      effPaymentStatus !== "paid" && (
                       <button
                         onClick={() => setShowUploadProof(true)}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 transition-all duration-200"
                       >
-                        <Upload size={13} /> Upload Payment Proof
+                        <Upload size={13} />
+                        {effAttempts === 0
+                          ? `Upload Payment Proof (1 of 2)`
+                          : `Re-upload Payment Proof (Final Attempt ${effAttempts + 1} of 2)`}
                       </button>
                     )}
                   </div>
@@ -1039,6 +1132,9 @@ function MyBookingsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
             onClose={() => setShowUploadProof(false)}
             onUploaded={() => {
               setShowUploadProof(false);
+              // Reflect the upload instantly in the open details modal.
+              setLocalPaymentStatus("payment_submitted");
+              setLocalAttempts((selectedBooking?.paymentAttemptsCount ?? 0) + 1);
               fetchBookings();
             }}
           />

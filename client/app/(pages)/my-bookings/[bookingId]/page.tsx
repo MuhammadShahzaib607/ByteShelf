@@ -46,6 +46,7 @@ interface BookingDetail {
   endDate: string;
   status: "confirmed" | "pending" | "rejected" | "cancelled";
   paymentStatus: "paid" | "pending" | "unpaid" | "payment_submitted" | "payment_rejected";
+  paymentAttemptsCount?: number;
   totalAmount: number;
   pricePerShelf: number;
   cancellationReason?: string;
@@ -143,10 +144,14 @@ function StatusBadge({
   };
 
   const c = config[status] || config.pending;
+  // Prefix badges so booking vs payment statuses are never ambiguous.
+  const prefix =
+    type === "booking" ? "Booking: " : type === "payment" ? "Payment: " : "";
 
   return (
     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${c.bg} ${c.text}`}>
       {c.icon}
+      {prefix}
       {c.label}
     </span>
   );
@@ -552,14 +557,46 @@ const handleChatWithOwner = useCallback(async () => {
                 </div>
               )}
 
-              {/* Upload button */}
-              {(b.paymentStatus === "pending" || b.paymentStatus === "unpaid" || b.paymentStatus === "payment_rejected") && (
+              {/* Booking not confirmed yet → payment locked */}
+              {b.status !== "confirmed" && (
+                <div className="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+                  <Clock size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700/80 font-body leading-relaxed">
+                    ⏳ Payment submission will unlock once the warehouse owner approves your booking request.
+                  </p>
+                </div>
+              )}
+
+              {/* Attempt warning — 1 remaining */}
+              {b.status === "confirmed" && (b.paymentAttemptsCount || 0) === 1 && (
+                <div className="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+                  <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700/80 font-body leading-relaxed">
+                    ⚠️ 1 attempt remaining. Please ensure screenshot details are legible.
+                  </p>
+                </div>
+              )}
+
+              {/* Max attempts reached → upload disabled */}
+              {b.status === "confirmed" && (b.paymentAttemptsCount || 0) >= 2 && (
+                <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+                  <XCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-600/80 font-body leading-relaxed">
+                    ❌ Maximum payment submission attempts reached (2/2). Contact warehouse owner for manual verification.
+                  </p>
+                </div>
+              )}
+
+              {/* Upload button — always visible while attempts remain (incl. attempt 2) */}
+              {b.status === "confirmed" && (b.paymentAttemptsCount || 0) < 2 && (
                 <button
                   onClick={() => setShowUploadProof(true)}
                   className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-full font-body text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 active:scale-95 transition-all duration-200"
                 >
                   <Upload size={16} />
-                  Upload Payment Proof
+                  {(b.paymentAttemptsCount || 0) === 0
+                    ? `Upload Payment Proof (1 of 2)`
+                    : `Re-upload Payment Proof (Final Attempt ${(b.paymentAttemptsCount || 0) + 1} of 2)`}
                 </button>
               )}
             </div>

@@ -91,6 +91,8 @@ interface WarehouseBooking {
   pricePerShelf: number;
   cancellationReason?: string;
   paymentProofUrl?: string;
+  proofScreenshots?: string[];
+  paymentAttemptsCount?: number;
   paymentRejectionReason?: string;
   createdAt: string;
 }
@@ -1593,6 +1595,25 @@ export default function WarehouseDetailPage() {
                         </div>
                       )}
 
+                      {/* Awaiting payment proof (no screenshot yet) */}
+                      {selectedBooking.status === "confirmed" &&
+                        !(selectedBooking.paymentProofUrl || (selectedBooking.proofScreenshots && selectedBooking.proofScreenshots.length > 0)) &&
+                        (selectedBooking.paymentStatus === "pending" || selectedBooking.paymentStatus === "unpaid") && (
+                        <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                          <div className="flex items-start gap-3">
+                            <Clock size={15} className="text-amber-400 shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-semibold tracking-wider text-amber-400 uppercase font-body mb-1">
+                                Awaiting Merchant Payment Proof
+                              </p>
+                              <p className="text-xs text-neutral-300 font-body">
+                                ⏳ The merchant has been notified to submit their payment screenshot. Verification options will unlock here once uploaded.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Payment rejection reason */}
                       {selectedBooking.paymentStatus === "payment_rejected" && selectedBooking.paymentRejectionReason && (
                         <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20">
@@ -1627,15 +1648,19 @@ export default function WarehouseDetailPage() {
                         </div>
                       )}
 
-                      {/* Owner Action Buttons */}
+                      {/* Owner Action Buttons — Mark as Paid only unlocks with a screenshot attached */}
                       {selectedBooking.status === "confirmed" && (
                         <div className="flex items-center gap-3 pt-2">
                           <button
                             onClick={() => setShowMarkPaidConfirm(true)}
-                            disabled={selectedBooking.paymentStatus === "paid"}
+                            disabled={
+                              selectedBooking.paymentStatus === "paid" ||
+                              !(selectedBooking.paymentProofUrl || (selectedBooking.proofScreenshots && selectedBooking.proofScreenshots.length > 0))
+                            }
                             className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-body font-medium transition-all duration-200 shadow-sm ${
-                              selectedBooking.paymentStatus === "paid"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
+                              selectedBooking.paymentStatus === "paid" ||
+                              !(selectedBooking.paymentProofUrl || (selectedBooking.proofScreenshots && selectedBooking.proofScreenshots.length > 0))
+                                ? "bg-neutral-500/10 text-neutral-500 border border-neutral-500/30 cursor-not-allowed"
                                 : "bg-[#99cc00] text-black hover:bg-[#8ab800] active:scale-[0.98]"
                             }`}
                           >
@@ -1722,6 +1747,7 @@ export default function WarehouseDetailPage() {
                 merchant: selectedBooking?.merchant,
                 warehouse: { _id: warehouseId },
                 paymentProofUrl: selectedBooking?.paymentProofUrl,
+                proofScreenshots: selectedBooking?.proofScreenshots,
                 totalAmount: selectedBooking?.totalAmount,
               }}
               onClose={() => setShowProofModal(false)}

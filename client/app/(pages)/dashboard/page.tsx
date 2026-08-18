@@ -31,6 +31,8 @@ import ManageShelvesModal from "@/components/ui/ManageShelvesModal";
 import DispatchOrderModal from "@/components/ui/DispatchOrderModal";
 import DeliveryConfirmationModal from "@/components/ui/DeliveryConfirmationModal";
 import PaymentProofModal from "@/components/ui/PaymentProofModal";
+import NotificationBell from "@/components/ui/NotificationBell";
+import UserProfileDropdown from "@/components/ui/UserProfileDropdown";
 import PayoutDetailsForm, { emptyPayoutDetails, type PayoutDetailsData } from "@/components/ui/PayoutDetailsForm";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -38,7 +40,7 @@ import PayoutDetailsForm, { emptyPayoutDetails, type PayoutDetailsData } from "@
 type TabId = "overview" | "warehouses" | "add-warehouse" | "orders" | "inbounds" | "profile" | "verifications";
 
 interface WarehouseData { _id: string; name: string; location: string; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; }
-interface BookingData { _id: string; merchant: { _id: string; name: string; email: string; phone: string }; warehouse: { _id: string; name: string; location: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: string; paymentStatus: string; totalAmount: number; cancellationReason?: string; paymentProofUrl?: string; paymentRejectionReason?: string; createdAt: string; }
+interface BookingData { _id: string; merchant: { _id: string; name: string; email: string; phone: string }; warehouse: { _id: string; name: string; location: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: string; paymentStatus: string; totalAmount: number; cancellationReason?: string; paymentProofUrl?: string; proofScreenshots?: string[]; paymentAttemptsCount?: number; paymentRejectionReason?: string; createdAt: string; }
 interface WarehouseDetail { warehouse: { _id: string; name: string; location: string; latitude: number; longitude: number; pricePerShelf: number; totalShelves: number; images: string[]; createdAt: string; owner?: string; }; available: number; booked: number; }
 interface ShelfData { _id: string; shelfNumber: number; pricePerMonth: number; status: "available" | "booked"; }
 interface WarehouseBooking { _id: string; merchant: { _id: string; name: string; phone: string; email: string }; shelves: Array<{ _id: string; shelfNumber: string }>; startDate: string; endDate: string; status: "confirmed" | "cancelled" | "completed"; paymentStatus: "pending" | "paid"; totalAmount: number; pricePerShelf: number; createdAt: string; }
@@ -253,10 +255,7 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
           <h1 className="text-sm font-semibold text-white font-body hidden sm:block">Welcome back, {user?.name?.split(" ")[0] || "User"}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/notifications" className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-colors">
-            <Bell size={17} className="text-neutral-300" />
-            {unread > 0 && <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-[#0a0d0c] text-[9px] font-bold text-white font-body shadow-sm">{unread > 99 ? "99+" : unread}</span>}
-          </Link>
+          <NotificationBell unreadCount={unread} />
           {/* Avatar opens the drawer on mobile — profile access in one tap */}
           <button type="button" onClick={onMenuToggle} aria-label="Open menu"
             className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-all">
@@ -264,12 +263,7 @@ function TopHeader({ onMenuToggle, unread }: { onMenuToggle: () => void; unread:
               <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
             </div>
           </button>
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
-            <div className="w-7 h-7 rounded-full bg-[#84cc16] flex items-center justify-center">
-              <span className="text-[11px] font-semibold text-black font-body">{user?.name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U"}</span>
-            </div>
-            <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
-          </div>
+          <UserProfileDropdown />
         </div>
       </div>
     </header>
@@ -408,7 +402,8 @@ function OverviewTab() {
             <div className="divide-y divide-neutral-800/80">
               {pendingBookings.map((b, i) => (
                 <motion.div key={b._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className="px-6 py-4 hover:bg-white/5 transition-colors duration-200">
+                  onClick={() => setSelectedBooking(b)}
+                  className="px-6 py-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer">
                   <div className="lg:hidden space-y-2 mb-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 min-w-0">
@@ -436,12 +431,12 @@ function OverviewTab() {
                     <div className="hidden lg:block text-xs text-neutral-400 font-body">{formatDate(b.startDate)} – {formatDate(b.endDate)}</div>
                     <div className="hidden lg:block text-sm font-semibold text-white font-body numeric text-right">Rs. {(b.totalAmount || 0).toLocaleString("en-PK")}</div>
                     <div className="flex items-center gap-2 mt-3 lg:mt-0 lg:justify-end shrink-0">
-                      <button onClick={() => setApproveTarget(b)} disabled={actionLoading === b._id}
+                      <button onClick={(e) => { e.stopPropagation(); setApproveTarget(b); }} disabled={actionLoading === b._id}
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-semibold font-body hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         {actionLoading === b._id ? <Loader2 size={13} className="animate-spin" /> : <ThumbsUp size={13} />}
                         Confirm
                       </button>
-                      <button onClick={() => setRejectTarget(b)} disabled={actionLoading === b._id}
+                      <button onClick={(e) => { e.stopPropagation(); setRejectTarget(b); }} disabled={actionLoading === b._id}
                         className="inline-flex items-center gap-1.5 px-4 py-2 border-2 border-red-500/30 text-red-400 rounded-full text-xs font-medium font-body hover:bg-red-500/10 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <ThumbsDown size={13} />
                         Decline
@@ -646,7 +641,10 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
   const end = new Date(b.endDate);
   const months = calcMonths(start, end);
   const isActive = b.status === "confirmed";
-  const canMarkPaid = isActive && (b.paymentStatus === "pending" || b.paymentStatus === "unpaid");
+  const hasPaymentProof = !!(b.paymentProofUrl || (b.proofScreenshots && b.proofScreenshots.length > 0));
+  // Manual "Mark as Paid" only unlocks once a screenshot is actually attached
+  // — before that we wait for the merchant's proof instead of bypassing.
+  const canMarkPaid = isActive && hasPaymentProof && (b.paymentStatus === "pending" || b.paymentStatus === "unpaid");
   const canCancel = b.status === "confirmed";
 
   return (
@@ -775,6 +773,19 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
               <span className="font-medium text-white numeric">Rs. {(shelfCount > 0 ? Math.round(b.totalAmount / shelfCount / months) : 0).toLocaleString("en-PK")}/shelf/mo</span>
             </div>
           </div>
+
+          {/* ═══ AWAITING PAYMENT PROOF (no screenshot yet) ═══ */}
+          {isActive && !hasPaymentProof && (b.paymentStatus === "pending" || b.paymentStatus === "unpaid") && (
+            <div className="mb-5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+              <Clock size={14} className="text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold tracking-wider text-amber-400 uppercase font-body">Awaiting Merchant Payment Proof</p>
+                <p className="text-sm text-neutral-200 font-body mt-0.5">
+                  ⏳ The merchant has been notified to submit their payment screenshot. Verification options will unlock here once uploaded.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* ═══ PAYMENT PROOF (awaiting verification) ═══ */}
           {b.paymentStatus === "payment_submitted" && (
@@ -914,6 +925,7 @@ function BookingDetailsModal({ booking, onClose, onBookingUpdated }: { booking: 
               merchant: b.merchant,
               warehouse: b.warehouse,
               paymentProofUrl: b.paymentProofUrl,
+              proofScreenshots: b.proofScreenshots,
               totalAmount: b.totalAmount,
             }}
             onClose={() => setShowProofModal(false)}
