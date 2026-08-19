@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import { sendRes } from "../utils/responseHandler.js";
 import { sendEmail } from "../utils/otp/sendMail.js";
 import { otpEmailTemplate } from "../utils/otp/otpMailTemplate.js";
+import { ensureDbConnected } from "../config/db.js";
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -25,6 +26,9 @@ const validateEmailDomain = (email) => {
 
 export const signup = async (req, res) => {
   try {
+    // Ensure DB connection is ready before any query
+    await ensureDbConnected();
+
     const { name, email, password, role, nicFront, nicBack, livePhoto, liveVideo } = req.body;
  
     if (!name || !email || !password || !role) {
@@ -98,6 +102,8 @@ export const signup = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
+    await ensureDbConnected();
+
     const { email, otp } = req.body;
 
     if (!email || typeof email !== "string" || !otp || typeof otp !== "string") {
@@ -137,6 +143,8 @@ export const verifyOtp = async (req, res) => {
 
 export const resendOtp = async (req, res) => {
   try {
+    await ensureDbConnected();
+
     const { email } = req.body;
 
     if (!email || typeof email !== "string" || !email.trim()) {
@@ -183,7 +191,28 @@ export const login = async (req, res) => {
       return sendRes(res, 400, false, "Email and password are required");
     }
 
-    const user = await User.findOne({ email });
+    // Ensure DB connection is ready before any query.
+    // Retry once on transient connection failures (stale socket / cold start).
+    let user;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await ensureDbConnected();
+        user = await User.findOne({ email });
+        break; // Success — exit retry loop
+      } catch (dbErr) {
+        const isTransient =
+          dbErr.name === "ServerSelectionError" ||
+          dbErr.name === "MongoServerError" ||
+          dbErr.name === "MongoNetworkError" ||
+          dbErr.message?.includes("buffering timed out") ||
+          dbErr.message?.includes("connection.*closed");
+        if (isTransient && attempt < 2) {
+          console.warn(`[auth] Login DB error (attempt ${attempt}), retrying...`);
+          continue;
+        }
+        throw dbErr; // Non-transient or final attempt — propagate
+      }
+    }
     if (!user) {
       return sendRes(res, 404, false, "User not found");
     }
@@ -241,6 +270,8 @@ export const refreshToken = async (req, res) => {
       return sendRes(res, 401, false, "Invalid refresh token");
     }
 
+    await ensureDbConnected();
+
     // Fetch user from DB to get isAdmin (refresh token may not have it for older sessions)
     const refreshUser = await User.findById(decoded.id).select("isAdmin");
     const isAdmin = refreshUser ? refreshUser.isAdmin : decoded.isAdmin || false;
@@ -258,6 +289,7 @@ export const refreshToken = async (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
+    await ensureDbConnected();
     const user = await User.findById(req.user.id).select("-password");
  
     if (!user) {
@@ -273,6 +305,8 @@ export const getProfile = async (req, res) => {
 
 export const editProfile = async (req, res) => {
   try {
+    await ensureDbConnected();
+
     const { role, phone } = req.body;
 
     if (!role && !phone) {
