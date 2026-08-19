@@ -340,7 +340,7 @@ export default function MerchantBookingDetailsModal({
                 <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Booked Shelves</p>
                 <div className="flex flex-wrap gap-1.5">
                   {b.shelves.map((shelf, idx) => (
-                    <span key={shelf?._id || shelf?.id || `shelf-${idx}`} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body">
+                    <span key={shelf?._id || `shelf-${idx}`} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body">
                       <Layers size={11} className="text-[#84cc16]" />
                       <span className="font-medium text-white">{shelf.shelfNumber}</span>
                     </span>
