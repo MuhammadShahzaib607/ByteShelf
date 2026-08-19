@@ -126,7 +126,7 @@ export default function UserProfileDropdown({
         aria-expanded={open}
         className={`items-center gap-2 px-3 py-1.5 rounded-full transition-all ${triggerClassName}`}
       >
-        {isCheckingAuth ? (
+        {isCheckingAuth && !user ? (
           <div className={`w-7 h-7 rounded-full animate-pulse ${avatarClassName}`} />
         ) : (
           <div className={`w-7 h-7 rounded-full flex items-center justify-center ${avatarClassName}`}>
@@ -154,7 +154,7 @@ export default function UserProfileDropdown({
             {/* Header — identity + role badge */}
             <div className="px-4 py-3.5 border-b border-[#1f291f] bg-[#111611]">
               <div className="flex items-center gap-3">
-                {isCheckingAuth ? (
+                {isCheckingAuth && !user ? (
                   <div className="w-9 h-9 rounded-full bg-[#84cc16] animate-pulse shrink-0" />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0">
@@ -162,7 +162,7 @@ export default function UserProfileDropdown({
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white font-body truncate">{isCheckingAuth ? "" : (user?.name || "User")}</p>
+                  <p className="text-sm font-semibold text-white font-body truncate">{isCheckingAuth && !user ? "" : (user?.name || "User")}</p>
                   <p className="text-[11px] text-slate-400 font-body truncate">{user?.email || "—"}</p>
                 </div>
               </div>

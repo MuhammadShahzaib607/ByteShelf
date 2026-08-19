@@ -178,7 +178,7 @@ const Navbar: React.FC = () => {
     }`;
 
   // ─── Show nothing while checking auth (prevent flash) ────────────────────
-  if (isCheckingAuth) {
+  if (isCheckingAuth && !user) {
     return (
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 pt-4">
         <div className="w-full max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between rounded-full bg-[#0D0F0A]/80 border border-[#84cc16]/20 backdrop-blur-md">
@@ -295,7 +295,7 @@ const Navbar: React.FC = () => {
             <div className="p-3 space-y-1">
               {isLoggedIn ? (
                 <>
-              {isCheckingAuth ? (
+              {isCheckingAuth && !user ? (
                     <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-white/[0.04] border border-[#84cc16]/10">
                       <div className="w-8 h-8 rounded-full bg-[#1a231d] border border-[#84cc16]/30 animate-pulse" />
                       <div className="min-w-0 flex-1">
