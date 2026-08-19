@@ -150,8 +150,8 @@ function ImagePreview({ src, onRemove, isUploading }: { src: string; onRemove: (
 
 const SIDEBAR_TABS: { id: TabId; label: string; icon: React.ElementType; adminOnly?: boolean; ownerOnly?: boolean }[] = [
   { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-  { id: "warehouses", label: "My Warehouses", icon: Warehouse },
-  { id: "add-warehouse", label: "Add Warehouse", icon: Plus },
+  { id: "warehouses", label: "My Warehouses", icon: Warehouse, ownerOnly: true },
+  { id: "add-warehouse", label: "Add Warehouse", icon: Plus, ownerOnly: true },
   { id: "orders", label: "Orders & Dispatch", icon: Truck },
   { id: "inbounds", label: "Inbounds", icon: Inbox, ownerOnly: true },
   { id: "profile", label: "Account / Profile", icon: User },

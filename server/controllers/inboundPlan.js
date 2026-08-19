@@ -211,6 +211,15 @@ export const getMyInboundPlans = async (req, res) => {
       { $sort: { createdAt: -1 } },
       {
         $lookup: {
+          from: "warehouses",
+          localField: "warehouse",
+          foreignField: "_id",
+          as: "warehouseInfo",
+        },
+      },
+      { $unwind: { path: "$warehouseInfo", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
           from: "cartons",
           let: { planId: "$_id" },
           pipeline: [
@@ -218,6 +227,26 @@ export const getMyInboundPlans = async (req, res) => {
             { $group: { _id: "$status", count: { $sum: 1 } } },
           ],
           as: "cartonStats",
+        },
+      },
+      {
+        $project: {
+          merchant: 1,
+          warehouse: {
+            _id: "$warehouseInfo._id",
+            name: "$warehouseInfo.name",
+            location: "$warehouseInfo.location",
+          },
+          booking: 1,
+          batchName: 1,
+          totalCartons: 1,
+          receivedCount: 1,
+          expectedDate: 1,
+          status: 1,
+          createdAt: 1,
+          stock: 1,
+          cartons: 1,
+          cartonStats: 1,
         },
       },
     ]);

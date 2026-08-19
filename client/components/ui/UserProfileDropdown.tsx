@@ -114,7 +114,7 @@ export default function UserProfileDropdown({
   const links: ProfileLink[] = [
     { label: "Profile", icon: User, href: "/profile" },
     ...(isMerchant ? [{ label: "Explore Warehouses", icon: Compass, href: "/explore" }] : []),
-    ...(isOwner || isAdmin ? [{ label: "My Warehouses", icon: Warehouse, href: "/warehouses" }] : []),
+    ...(!isMerchant && (isOwner || isAdmin) ? [{ label: "My Warehouses", icon: Warehouse, href: "/warehouses" }] : []),
     primaryLink,
   ];
 
