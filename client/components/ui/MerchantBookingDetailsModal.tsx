@@ -269,8 +269,8 @@ export default function MerchantBookingDetailsModal({
                       }
                       return rows.length > 0 ? (
                         <div className="space-y-1.5">
-                          {rows.map((r) => (
-                            <div key={r.label} className="flex items-center justify-between gap-3 text-xs font-body">
+                          {rows.map((r, idx) => (
+                            <div key={r.label || `payout-${idx}`} className="flex items-center justify-between gap-3 text-xs font-body">
                               <span className="text-neutral-400">{r.label}</span>
                               <span className="font-semibold text-white text-right break-all">{r.value}</span>
                             </div>
@@ -339,8 +339,8 @@ export default function MerchantBookingDetailsModal({
               <div className="mt-4">
                 <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-2 font-body">Booked Shelves</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {b.shelves.map((shelf) => (
-                    <span key={shelf._id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body">
+                  {b.shelves.map((shelf, idx) => (
+                    <span key={shelf?._id || shelf?.id || `shelf-${idx}`} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-[11px] font-body">
                       <Layers size={11} className="text-[#84cc16]" />
                       <span className="font-medium text-white">{shelf.shelfNumber}</span>
                     </span>

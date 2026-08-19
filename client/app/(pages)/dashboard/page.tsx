@@ -1154,7 +1154,20 @@ function WarehousesTab({ onViewWarehouse, onEditWarehouse, onManageShelves, refr
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {warehouses.map((w) => (
         <div key={w._id} className="group bg-[#111614]/90 backdrop-blur-md border border-neutral-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 hover:border-[#84cc16]/40 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col">
-          <div className="h-2 bg-gradient-to-r from-[#84cc16] to-[#84cc16]/40" />
+          {/* Image section */}
+          {w.images && w.images.length > 0 ? (
+            <div className="relative">
+              <ImageCarousel images={w.images} alt={w.name} aspectRatio="h-40" className="rounded-t-none rounded-b-none" />
+              <div className="h-2 bg-gradient-to-r from-[#84cc16] to-[#84cc16]/40" />
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="h-40 bg-[#121612] border-b border-[#1f291f] flex items-center justify-center">
+                <Warehouse size={36} className="text-[#84cc16]/20" />
+              </div>
+              <div className="h-2 bg-gradient-to-r from-[#84cc16] to-[#84cc16]/40" />
+            </div>
+          )}
           <div className="p-5 flex flex-col flex-1">
             <h3 className="font-heading text-lg font-semibold text-white mb-1">{w.name}</h3>
             <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-body mb-3"><MapPin size={12} /><span className="truncate">{w.location}</span></div>
@@ -1185,7 +1198,7 @@ function WarehousesTab({ onViewWarehouse, onEditWarehouse, onManageShelves, refr
 // TAB: ADD WAREHOUSE — Full Creation Form
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function AddWarehouseTab() {
+function AddWarehouseTab({ onCreated }: { onCreated?: () => void }) {
   const { accessToken } = useAppSelector((s) => s.auth);
 
   // ─── Form State ──────────────────────────────────────────────────────────────
@@ -1275,12 +1288,14 @@ function AddWarehouseTab() {
       setImageFiles([]); setImagePreviews([]); setUploadedUrls([]);
       setPayout(emptyPayoutDetails());
       setTimeout(() => setSuccess(false), 3000);
+      // Notify parent to switch tab
+      onCreated?.();
     } catch (err: any) {
       setApiError(err.response?.data?.message || "Failed to create warehouse");
     } finally {
       setIsSubmitting(false);
     }
-  }, [name, location, pricePerShelf, latitude, longitude, imageFiles, uploadedUrls, payout]);
+  }, [name, location, pricePerShelf, latitude, longitude, imageFiles, uploadedUrls, payout, onCreated]);
 
   return (
     <div className="max-w-4xl mx-auto py-6">
@@ -2149,6 +2164,13 @@ export default function DashboardPage() {
     setToast({ message: "Warehouse updated successfully", type: "success" });
   }, []);
 
+  // ─── Handle new warehouse created: switch tab + refetch ──────────────────
+  const handleWarehouseCreated = useCallback(() => {
+    setWarehousesRefreshKey((k) => k + 1);
+    setActiveTab("warehouses");
+    setToast({ message: "Warehouse created successfully!", type: "success" });
+  }, []);
+
   // When switching away from warehouses tab, reset selected warehouse
   useEffect(() => {
     if (activeTab !== "warehouses") setSelectedWarehouseId(null);
@@ -2201,7 +2223,7 @@ export default function DashboardPage() {
                 />
               )
             )}
-            {activeTab === "add-warehouse" && <AddWarehouseTab />}
+            {activeTab === "add-warehouse" && <AddWarehouseTab onCreated={handleWarehouseCreated} />}
             {activeTab === "orders" && <OrdersDispatchTab />}
             {activeTab === "inbounds" && <OwnerInboundsTab />}
             {activeTab === "profile" && <ProfileTab />}

@@ -98,14 +98,36 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
+    const status = error.response?.status;
+    const url = error.config?.url || "";
+
     console.error(
-      `❌ [API Error] ${error.config?.url}:`,
+      `❌ [API Error] ${status || "network"} ${url}:`,
       error.response?.data || error.message
     );
-    if (error.response?.status === 401) {
+
+    // ── 401 Unauthorized: clear tokens and dispatch event ──
+    if (status === 401) {
       dispatchUnauthorized();
       // Don't redirect here — the AuthProvider listener will handle it
     }
+
+    // ── 503 Service Unavailable (DB cold-start / connection draining) ──
+    // Instead of rejecting and crashing the UI, return a soft empty response
+    // so dashboard data-fetching hooks degrade gracefully to empty states.
+    if (status === 503) {
+      console.warn(
+        `⚠️ [API] 503 on ${url} — returning soft fallback (server may be cold-starting)`
+      );
+      return {
+        data: { success: false, data: [], message: "Service temporarily unavailable" },
+        status: 503,
+        statusText: "Service Unavailable",
+        headers: error.response?.headers || {},
+        config: error.config,
+      };
+    }
+
     return Promise.reject(error);
   }
 );

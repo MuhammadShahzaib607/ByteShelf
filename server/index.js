@@ -22,8 +22,8 @@ import cors from "cors";
 import http from "http"
 import { initializeSocket } from "./socket/index.js"
 import dotenv from "dotenv"
-import mongoose from "mongoose"
 import { sendRes } from "./utils/responseHandler.js"
+import { connectDB, ensureDbConnected } from "./config/db.js"
 import authRoute from "./routes/auth.js"
 import warehouseRoute from "./routes/warehouse.js"
 import shelfRoute from "./routes/shelf.js"
@@ -83,6 +83,32 @@ app.use(cors({
     credentials: true,
 }))
 app.use(express.json())
+
+// Establish the cached DB connection on cold start.
+// Warm invocations reuse the singleton — no redundant handshakes.
+connectDB().catch((err) => {
+    console.error("[db] Initial connection failed (will retry on first request):", err.message);
+});
+
+// Middleware: ensure the DB connection is alive before every route handler.
+// On warm invocations this is a no-op (readyState === 1).
+// On cold starts it awaits the connection promise with retries, preventing
+// Mongoose command-buffering timeouts.
+app.use(async (req, res, next) => {
+    try {
+        await ensureDbConnected();
+        next();
+    } catch (err) {
+        console.error("[db] Connection guard failed:", err.message);
+        // Return a clear, actionable error instead of a generic 503
+        return res.status(503).json({
+            success: false,
+            message: "Database connection unavailable. Please try again.",
+            error: process.env.NODE_ENV !== 'production' ? err.message : undefined,
+        });
+    }
+});
+
 app.use("/api/v1/user", authRoute);
 app.use("/api/v1/warehouse", warehouseRoute);
 app.use("/api/v1/shelf", shelfRoute);
@@ -95,18 +121,6 @@ app.use("/api/v1/conversation", conversationRoute);
 app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/contact", contactRoute);
 app.use("/api/v1/owner", ownerRoute);
-
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI)
-        console.log("server connected to DB Successfully")
-    } catch (error) {
-        console.log("something went wrong with db connection")
-        console.log(error.message)
-    }
-}
-
-connectDB()
 
 app.get("/", (req, res) => {
     sendRes(res, 200, true, "API Hit Successfully")
