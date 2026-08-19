@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -1187,20 +1187,15 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<PlanDetail | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
-
-
   const [inboundSearch, setInboundSearch] = useState("");
-
-
-  // ─── Inbound Details Drawer state ─────────────────────────────────────
   const [drawerPlan, setDrawerPlan] = useState<InboundPlanData | null>(null);
 
-  // ─── Dispatch / Create Order from a specific inbound (STEP 2) ─────────
+  // ─── Hierarchical navigation: Warehouses → Plans ──────────────────────
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
+
+  // ─── Dispatch / Create Order from a specific inbound ──────────────────
   const [dispatchSource, setDispatchSource] = useState<{
-    planId: string;
-    warehouseId: string;
-    warehouseName: string;
-    batchName: string;
+    planId: string; warehouseId: string; warehouseName: string; batchName: string;
     stock: Array<{ itemName: string; sku?: string; quantity: number }>;
   } | null>(null);
 
@@ -1209,53 +1204,29 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       const res = await api.get(`/inbound/${plan._id}`);
       const detail = res.data.data;
       const p = detail?.plan;
-
-      // Prefer the plan's stock ledger (availableUnits) — the single source of
-      // truth for dispatch availability. Falls back to aggregating the declared
-      // carton contents for legacy plans created before stock tracking existed.
       const stock = Array.isArray(p?.stock) && p.stock.length > 0
-        ? p.stock
-            .filter((s: any) => (s.availableUnits || 0) > 0)
-            .map((s: any) => ({
-              itemName: s.itemName,
-              sku: s.sku || "",
-              quantity: s.availableUnits || 0,
-            }))
+        ? p.stock.filter((s: any) => (s.availableUnits || 0) > 0).map((s: any) => ({ itemName: s.itemName, sku: s.sku || "", quantity: s.availableUnits || 0 }))
         : (() => {
             const cartons = Array.isArray(p?.cartons) ? p.cartons : [];
-            const map = new Map<
-              string,
-              { itemName: string; sku: string; quantity: number }
-            >();
+            const map = new Map<string, { itemName: string; sku: string; quantity: number }>();
             for (const carton of cartons) {
               if (carton.status === "Dispatched") continue;
               for (const it of carton.items || []) {
                 if (!it.itemName || it.quantity <= 0) continue;
-                // Same keying as the server's itemKey (SKU-preferred) so
-                // displayed availability matches what createOrder validates.
                 const sku = (it.sku || "").trim().toLowerCase();
                 const key = sku ? `sku:${sku}` : `name:${it.itemName.trim().toLowerCase()}`;
-                const cur = map.get(key) || {
-                  itemName: it.itemName,
-                  sku: it.sku || "",
-                  quantity: 0,
-                };
+                const cur = map.get(key) || { itemName: it.itemName, sku: it.sku || "", quantity: 0 };
                 cur.quantity += it.quantity || 0;
                 map.set(key, cur);
               }
             }
             return Array.from(map.values());
           })();
-
       const warehouse = p?.warehouse || plan.warehouse;
       setDispatchSource({
         planId: plan._id,
-        warehouseId:
-          typeof warehouse === "string" ? warehouse : warehouse?._id || "",
-        warehouseName:
-          typeof warehouse === "string"
-            ? "Warehouse"
-            : warehouse?.name || "Warehouse",
+        warehouseId: typeof warehouse === "string" ? warehouse : warehouse?._id || "",
+        warehouseName: typeof warehouse === "string" ? "Warehouse" : warehouse?.name || "Warehouse",
         batchName: p?.batchName || plan.batchName,
         stock,
       });
@@ -1263,12 +1234,8 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       const warehouse = plan.warehouse;
       setDispatchSource({
         planId: plan._id,
-        warehouseId:
-          typeof warehouse === "string" ? warehouse : warehouse?._id || "",
-        warehouseName:
-          typeof warehouse === "string"
-            ? "Warehouse"
-            : warehouse?.name || "Warehouse",
+        warehouseId: typeof warehouse === "string" ? warehouse : warehouse?._id || "",
+        warehouseName: typeof warehouse === "string" ? "Warehouse" : warehouse?.name || "Warehouse",
         batchName: plan.batchName,
         stock: [],
       });
@@ -1298,16 +1265,42 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
     } catch { } finally { setPlanLoading(false); }
   }, []);
 
+  const refreshPlans = useCallback(() => {
+    api.get("/inbound/my-plans").then((res) => {
+      const planData = res.data.data || [];
+      setPlans(Array.isArray(planData) ? planData : []);
+    }).catch(() => {});
+  }, []);
 
+  // ─── Group plans by warehouse ──────────────────────────────────────────
+  const warehouseGroups = useMemo(() => {
+    const map = new Map<string, { warehouseId: string; warehouseName: string; plans: InboundPlanData[] }>();
+    for (const p of plans) {
+      const wid = p.warehouse?._id || "unknown";
+      const wname = p.warehouse?.name || "Unknown Warehouse";
+      if (!map.has(wid)) map.set(wid, { warehouseId: wid, warehouseName: wname, plans: [] });
+      map.get(wid)!.plans.push(p);
+    }
+    return Array.from(map.values());
+  }, [plans]);
 
-  // ─── Filtered plans (search by ID or Warehouse Name) ─────────────────────
-  const filteredPlans = plans.filter((p) => {
+  const selectedWarehouse = warehouseGroups.find((w) => w.warehouseId === selectedWarehouseId) || null;
+
+  const filteredWarehousePlans = (selectedWarehouse?.plans || []).filter((p) => {
     if (!inboundSearch.trim()) return true;
     const q = inboundSearch.toLowerCase();
-    return p._id.toLowerCase().includes(q) || (p.warehouse?.name || "").toLowerCase().includes(q) || p.batchName.toLowerCase().includes(q);
+    return p._id.toLowerCase().includes(q) || p.batchName.toLowerCase().includes(q);
   });
 
-  
+  // Global search: when no warehouse selected, search across all plans for filtering warehouse cards
+  const filteredWarehouseGroups = !selectedWarehouseId
+    ? warehouseGroups.filter((g) => {
+        if (!inboundSearch.trim()) return true;
+        const q = inboundSearch.toLowerCase();
+        return g.warehouseName.toLowerCase().includes(q) || g.plans.some((p) => p._id.toLowerCase().includes(q) || p.batchName.toLowerCase().includes(q));
+      })
+    : warehouseGroups;
+
   // Summary stats
   const totalPlans = plans.length;
   const inTransitCount = plans.filter((p) => p.status === "in-transit").length;
@@ -1334,33 +1327,44 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         ))}
       </motion.div>
 
+      {/* Breadcrumb */}
+      {selectedWarehouse && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 mb-4 text-sm font-body">
+          <button onClick={() => { setSelectedWarehouseId(null); setInboundSearch(""); }}
+            className="text-[#84cc16] hover:underline">Warehouses</button>
+          <ChevronRight size={14} className="text-neutral-500" />
+          <span className="text-white font-medium">{selectedWarehouse.warehouseName}</span>
+        </motion.div>
+      )}
+
       {/* Search Bar */}
       <div className="relative mb-5">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
         <input type="text" value={inboundSearch} onChange={(e) => setInboundSearch(e.target.value)}
-          placeholder="Search by Plan ID, Warehouse Name, or Batch Name..."
+          placeholder={selectedWarehouse ? "Search by Plan ID or Batch Name..." : "Search by Warehouse Name, Plan ID, or Batch Name..."}
           className="w-full pl-10 pr-4 py-2.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:ring-2 focus:ring-[#84cc16]/10 focus:bg-neutral-900 transition-all font-body shadow-sm shadow-black/20" />
       </div>
 
-      {/* Create Button & results count */}
+      {/* Results count */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="font-heading text-lg font-semibold text-white">Inbound Plans</h2>
+          <h2 className="font-heading text-lg font-semibold text-white">
+            {selectedWarehouse ? `${selectedWarehouse.warehouseName} Inbounds` : "Warehouses"}
+          </h2>
           <p className="text-sm text-neutral-400 font-body">
-            Track incoming inventory
-            {inboundSearch.trim() && filteredPlans.length > 0 && ` · ${filteredPlans.length} match${filteredPlans.length !== 1 ? "es" : ""}`}
+            {selectedWarehouse
+              ? `${filteredWarehousePlans.length} inbound plan${filteredWarehousePlans.length !== 1 ? "s" : ""} at this warehouse`
+              : `${filteredWarehouseGroups.length} warehouse${filteredWarehouseGroups.length !== 1 ? "s" : ""} with active inbound shipments`
+            }
+            {inboundSearch.trim() && ` · ${selectedWarehouse ? filteredWarehousePlans.length : filteredWarehouseGroups.length} match${((selectedWarehouse ? filteredWarehousePlans.length : filteredWarehouseGroups.length) !== 1) ? "es" : ""}`}
           </p>
         </div>
-        {/* <button onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-full text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-95 transition-all duration-200">
-          <Plus size={14} /> New Inbound Plan
-        </button> */}
       </div>
 
       {/* Loading */}
       {loading && (
-        <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm p-8 animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-neutral-800/60 rounded-xl" />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3].map((i) => <div key={i} className="h-36 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 animate-pulse" />)}
         </div>
       )}
 
@@ -1374,7 +1378,7 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
       )}
 
       {/* Empty search results */}
-      {!loading && plans.length > 0 && filteredPlans.length === 0 && (
+      {!loading && plans.length > 0 && ((selectedWarehouse && filteredWarehousePlans.length === 0) || (!selectedWarehouse && filteredWarehouseGroups.length === 0)) && (
         <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
           <Search size={28} className="mx-auto text-[#84cc16]/30 mb-3" />
           <p className="text-sm text-neutral-400 font-body">No inbound plans match your search.</p>
@@ -1382,11 +1386,55 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         </div>
       )}
 
-      {/* Plans List */}
-      {!loading && filteredPlans.length > 0 && (
+      {/* ═══ LEVEL 1: WAREHOUSE CARDS ═══ */}
+      {!loading && !selectedWarehouseId && plans.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {filteredWarehouseGroups.map((group, i) => {
+            const activeInbounds = group.plans.filter((p) => p.status === "in-transit").length;
+            const arrivedInbounds = group.plans.filter((p) => p.status === "arrived" || p.status === "completed").length;
+            return (
+              <motion.div key={group.warehouseId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: i * 0.05 }}
+                onClick={() => { setSelectedWarehouseId(group.warehouseId); setInboundSearch(""); }}
+                className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-all duration-200 cursor-pointer p-5">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-2xl bg-[#1a231d] flex items-center justify-center shrink-0">
+                      <Warehouse size={20} className="text-[#84cc16]" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-heading text-base font-semibold text-white truncate">{group.warehouseName}</h3>
+                      <p className="text-xs text-neutral-400 font-body mt-0.5">{group.plans.length} inbound plan{group.plans.length !== 1 ? "s" : ""}</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-neutral-500 shrink-0 mt-1" />
+                </div>
+                <div className="flex items-center gap-4 text-xs font-body">
+                  <span className="flex items-center gap-1.5 text-neutral-400">
+                    <Box size={12} className="text-[#84cc16]/70" />{group.plans.reduce((s, p) => s + p.totalCartons, 0)} total cartons
+                  </span>
+                  {activeInbounds > 0 && (
+                    <span className="flex items-center gap-1.5 text-amber-400">
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />{activeInbounds} in transit
+                    </span>
+                  )}
+                  {arrivedInbounds > 0 && (
+                    <span className="flex items-center gap-1.5 text-emerald-400">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />{arrivedInbounds} arrived
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══ LEVEL 2: WAREHOUSE PLANS LIST ═══ */}
+      {!loading && selectedWarehouse && (
         <div className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm overflow-hidden mb-6">
           <div className="divide-y divide-neutral-800/80">
-            {filteredPlans.map((plan, i) => {
+            {filteredWarehousePlans.map((plan, i) => {
               const stats = plan.cartonStats || [];
               const tn = stats.find((s) => s._id === "in-transit")?.count || 0;
               const ar = stats.find((s) => s._id === "arrived")?.count || 0;
@@ -1405,7 +1453,6 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                         <span className="flex items-center gap-1"><Box size={12} />{plan.totalCartons} cartons</span>
                         <span>·</span>
                         <span className="flex items-center gap-1"><CalendarIcon size={12} />Expected: {formatDate(plan.expectedDate)}</span>
-                        {plan.warehouse?.name && <><span>·</span><span className="flex items-center gap-1"><Warehouse size={12} />{plan.warehouse.name}</span></>}
                       </div>
                       {(tn > 0 || ar > 0 || st > 0) && (
                         <div className="flex items-center gap-3 mt-2 text-[11px] text-neutral-400 font-body">
@@ -1422,22 +1469,17 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
                       </button>
                     </div>
                   </div>
-
-                  {/* Dispatch / Create Order from this Inbound (locked until the shipment is ARRIVED) */}
+                  {/* Dispatch / Create Order from this Inbound */}
                   <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                     {plan.status === "arrived" || plan.status === "completed" ? (
-                      <button
-                        onClick={() => openDispatchOrder(plan)}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-xl text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200"
-                      >
+                      <button onClick={() => openDispatchOrder(plan)}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 rounded-xl text-xs font-body font-semibold hover:bg-[#222e26] hover:border-[#84cc16]/60 hover:shadow-lg hover:shadow-[#84cc16]/10 active:scale-[0.99] transition-all duration-200">
                         <Truck size={13} /> Dispatch / Create Order from this Inbound
                       </button>
                     ) : (
                       <div>
-                        <button
-                          disabled
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-neutral-500 border border-neutral-800 rounded-xl text-xs font-body font-semibold cursor-not-allowed opacity-60"
-                        >
+                        <button disabled
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a231d] text-neutral-500 border border-neutral-800 rounded-xl text-xs font-body font-semibold cursor-not-allowed opacity-60">
                           <Truck size={13} /> Dispatch / Create Order from this Inbound
                         </button>
                         <p className="mt-1.5 text-center text-[10px] font-medium text-amber-400 font-body">
@@ -1460,27 +1502,20 @@ function InboundsTab({ onTabChange }: { onTabChange: (tab: TabId) => void }) {
         )}
       </AnimatePresence>
 
-      {/* ═══ INBOUND DETAILS DRAWER (STEP 2) ═══ */}
+      {/* ═══ INBOUND DETAILS DRAWER ═══ */}
       <AnimatePresence>
         {drawerPlan && (
           <InboundDetailsDrawer plan={drawerPlan} onClose={() => setDrawerPlan(null)} />
         )}
       </AnimatePresence>
 
-      {/* ═══ CREATE ORDER MODAL (pre-linked to inbound stock) ═══ */}
+      {/* ═══ CREATE ORDER MODAL ═══ */}
       <AnimatePresence>
         {dispatchSource && (
           <CreateOrderModal
             sourcePlan={dispatchSource}
             onClose={() => setDispatchSource(null)}
-            onCreated={() => {
-              setDispatchSource(null);
-              // Refresh plans so remaining stock reflects the new dispatch
-              api.get("/inbound/my-plans").then((res) => {
-                const planData = res.data.data || [];
-                setPlans(Array.isArray(planData) ? planData : []);
-              }).catch(() => {});
-            }}
+            onCreated={() => { setDispatchSource(null); refreshPlans(); }}
           />
         )}
       </AnimatePresence>
@@ -1681,6 +1716,7 @@ interface OrderData {
   _id: string;
   orderId: string;
   warehouse?: { _id: string; name: string; location?: string };
+  inboundPlan?: { _id: string; batchName: string; status: string; expectedDate?: string; totalCartons?: number } | null;
   customerDetails: { name: string; phone: string; address: string; city: string };
   orderedItems: Array<{ itemName: string; sku?: string; quantity: number }>;
   status: string;
@@ -1716,6 +1752,12 @@ function OrdersTab() {
   const [filter, setFilter] = useState("all");
   const [deliveredTarget, setDeliveredTarget] = useState<OrderData | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [search, setSearch] = useState("");
+
+  // Hierarchical navigation state
+  const [viewLevel, setViewLevel] = useState<"warehouses" | "inbounds" | "orders">("warehouses");
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
+  const [selectedInboundId, setSelectedInboundId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!accessToken) return;
@@ -1739,6 +1781,44 @@ function OrdersTab() {
     fetchOrders();
   }, [fetchOrders]);
 
+  // Group orders by warehouse
+  const warehouseGroups = useMemo(() => {
+    const map = new Map<string, { warehouseId: string; warehouseName: string; location?: string; orders: OrderData[] }>();
+    for (const o of orders) {
+      const wid = o.warehouse?._id || "unknown";
+      const wname = o.warehouse?.name || "Unknown Warehouse";
+      const loc = o.warehouse?.location;
+      if (!map.has(wid)) map.set(wid, { warehouseId: wid, warehouseName: wname, location: loc, orders: [] });
+      map.get(wid)!.orders.push(o);
+    }
+    return Array.from(map.values());
+  }, [orders]);
+
+  const selectedWarehouse = warehouseGroups.find((w) => w.warehouseId === selectedWarehouseId) || null;
+
+  // Group inbound plans within selected warehouse
+  const inboundGroups = useMemo(() => {
+    if (!selectedWarehouse) return [];
+    const map = new Map<string, { planId: string; batchName: string; status: string; orders: OrderData[] }>();
+    const orphans: OrderData[] = [];
+    for (const o of selectedWarehouse.orders) {
+      if (o.inboundPlan?._id) {
+        const pid = o.inboundPlan._id;
+        if (!map.has(pid)) map.set(pid, { planId: pid, batchName: o.inboundPlan.batchName || "Unknown Batch", status: o.inboundPlan.status || "unknown", orders: [] });
+        map.get(pid)!.orders.push(o);
+      } else {
+        orphans.push(o);
+      }
+    }
+    const groups = Array.from(map.values());
+    if (orphans.length > 0) {
+      groups.push({ planId: "__unlinked__", batchName: "Other Orders", status: "unknown", orders: orphans });
+    }
+    return groups;
+  }, [selectedWarehouse]);
+
+  const selectedInbound = inboundGroups.find((g) => g.planId === selectedInboundId) || null;
+
   const statusFilters = [
     { id: "all", label: "All" },
     { id: "Pending Packing", label: "Pending Packing" },
@@ -1746,162 +1826,285 @@ function OrdersTab() {
     { id: "transit", label: "In Transit / Dispatched" },
     { id: "Delivered", label: "Delivered" },
   ];
-  const filteredOrders = orders.filter((o) => {
+
+  // Current orders at the active drill-down level
+  const currentOrders = (selectedInbound?.orders || selectedWarehouse?.orders || []).filter((o) => {
     if (filter === "all") return true;
     if (filter === "transit") return o.status === "Dispatched" || o.status === "In Transit";
     return o.status === filter;
   });
 
+  const searchLower = search.toLowerCase();
+  const filteredWarehouseGroups = warehouseGroups.filter((g) => {
+    if (!searchLower) return true;
+    return g.warehouseName.toLowerCase().includes(searchLower);
+  });
+  const filteredInboundGroups = inboundGroups.filter((g) => {
+    if (!searchLower) return true;
+    return g.batchName.toLowerCase().includes(searchLower);
+  });
+  const filteredOrders = currentOrders.filter((o) => {
+    if (!searchLower) return true;
+    return o.orderId.toLowerCase().includes(searchLower) || (o.customerDetails?.name || "").toLowerCase().includes(searchLower);
+  });
+
+  const goBack = () => {
+    if (viewLevel === "orders") {
+      setSelectedInboundId(null);
+      setViewLevel("inbounds");
+      setFilter("all");
+      setSearch("");
+    } else if (viewLevel === "inbounds") {
+      setSelectedWarehouseId(null);
+      setViewLevel("warehouses");
+      setFilter("all");
+      setSearch("");
+    }
+  };
+
   return (
     <div>
+      {/* Breadcrumb */}
+      {(viewLevel === "inbounds" || viewLevel === "orders") && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 mb-4 text-sm font-body">
+          <button onClick={goBack} className="text-[#84cc16] hover:underline">Warehouses</button>
+          <ChevronRight size={14} className="text-neutral-500" />
+          {viewLevel === "orders" && selectedWarehouse && (
+            <><span className="text-[#84cc16] hover:underline cursor-pointer" onClick={goBack}>{selectedWarehouse.warehouseName}</span><ChevronRight size={14} className="text-neutral-500" /></>
+          )}
+          <span className="text-white font-medium">
+            {viewLevel === "inbounds" && selectedWarehouse?.warehouseName}
+            {viewLevel === "orders" && selectedInbound?.batchName}
+          </span>
+        </motion.div>
+      )}
+
       {/* Header row */}
       <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
         <div>
-          <h2 className="font-heading text-lg font-semibold text-white">Dispatch Orders</h2>
-          <p className="text-sm text-neutral-400 font-body">Track fulfilment of orders from your stored inventory</p>
+          <h2 className="font-heading text-lg font-semibold text-white">
+            {viewLevel === "warehouses" && "Warehouses"}
+            {viewLevel === "inbounds" && `${selectedWarehouse?.warehouseName || "Warehouse"} Inbounds`}
+            {viewLevel === "orders" && `Orders - ${selectedInbound?.batchName || "All"}`}
+          </h2>
+          <p className="text-sm text-neutral-400 font-body">
+            {viewLevel === "warehouses" && "Select a warehouse to view its inbound shipments and orders"}
+            {viewLevel === "inbounds" && "Select an inbound batch to view its orders"}
+            {viewLevel === "orders" && "Track fulfilment of orders from this inbound batch"}
+          </p>
         </div>
       </div>
 
-      {/* Filter pills */}
-      <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
-        {statusFilters.map((f) => {
-          const isActive = filter === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}
-            >
-              {f.label}
-            </button>
-          );
-        })}
+      {/* Search Bar */}
+      <div className="relative mb-5">
+        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+          placeholder={viewLevel === "warehouses" ? "Search by warehouse name..." : viewLevel === "inbounds" ? "Search by batch name..." : "Search by Order ID or customer name..."}
+          className="w-full pl-10 pr-4 py-2.5 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-xl text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#84cc16] focus:ring-2 focus:ring-[#84cc16]/10 focus:bg-neutral-900 transition-all font-body shadow-sm shadow-black/20" />
       </div>
 
+      {/* Filter pills (inbound + order levels) */}
+      {viewLevel !== "warehouses" && (
+        <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
+          {statusFilters.map((f) => {
+            const isActive = filter === f.id;
+            return (
+              <button key={f.id} onClick={() => setFilter(f.id)}
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-body font-medium transition-all duration-200 ${isActive ? "bg-[#1a231d] text-[#84cc16] border border-[#84cc16]/40 font-semibold shadow-lg shadow-[#84cc16]/10" : "bg-white/5 border border-neutral-800 text-neutral-400 hover:text-white hover:border-[#84cc16]/40"}`}>
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {loading ? (
-        <div className="space-y-4">{[1, 2].map((i) => <div key={i} className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 p-6 animate-pulse"><div className="h-5 bg-neutral-800/60 rounded w-40 mb-4" /><div className="h-32 bg-neutral-800/60 rounded-2xl" /></div>)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3].map((i) => <div key={i} className="h-36 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 animate-pulse" />)}
+        </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-16 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-neutral-800/60 flex items-center justify-center mx-auto mb-4"><Truck size={28} className="text-[#84cc16]/40" /></div>
           <h3 className="font-heading text-lg font-semibold text-white mb-2">No dispatch orders yet</h3>
-          <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">
-            Select an active Inbound inventory from “Inbounds &amp; Cartons” to dispatch an order.
-          </p>
-        </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
-          <ClipboardList size={26} className="mx-auto text-[#84cc16]/30 mb-3" />
-          <p className="text-sm text-neutral-400 font-body">No orders with status “{statusFilters.find((f) => f.id === filter)?.label || filter}”.</p>
+          <p className="text-sm text-neutral-400 font-body max-w-sm mx-auto">Select an active Inbound inventory from "Inbounds &amp; Cartons" to dispatch an order.</p>
         </div>
       ) : (
-        <div className="space-y-5">
-          {filteredOrders.map((order, i) => {
-            const totalQty = order.orderedItems.reduce((s, it) => s + (it.quantity || 0), 0);
-            return (
-              <motion.div
-                key={order._id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: i * 0.04 }}
-                className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-colors duration-200 p-5 sm:p-6"
-              >
-                {/* Order header */}
-                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center shrink-0">
-                      <Truck size={18} className="text-[#84cc16]" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-white font-mono">{order.orderId}</span>
-                        {order.source === "AI_PDF_Extraction" && (
-                          <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-semibold uppercase tracking-wider font-body">AI PDF</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-neutral-400 font-body truncate mt-0.5">
-                        {order.warehouse?.name || "Warehouse"} · {formatDate(order.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                  {orderStatusPill(order.status)}
+        <>
+          {/* LEVEL 1: WAREHOUSE CARDS */}
+          {viewLevel === "warehouses" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {filteredWarehouseGroups.length === 0 ? (
+                <div className="col-span-full text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
+                  <Search size={28} className="mx-auto text-[#84cc16]/30 mb-3" />
+                  <p className="text-sm text-neutral-400 font-body">No warehouses match your search.</p>
+                  <button onClick={() => setSearch("")} className="mt-3 text-xs text-[#84cc16] font-body hover:underline">Clear search</button>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Left: customer + items */}
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
-                      <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-2 font-body">Customer</p>
-                      <p className="text-sm font-semibold text-white font-body">{order.customerDetails?.name || "—"}</p>
-                      <p className="text-xs text-neutral-400 font-body mt-1">
-                        {order.customerDetails?.phone} · {order.customerDetails?.city}
-                      </p>
-                      <p className="text-xs text-neutral-500 font-body mt-1 truncate">
-                        {order.customerDetails?.address}
-                      </p>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase font-body">Items ({totalQty})</p>
+              ) : (
+                filteredWarehouseGroups.map((group, i) => (
+                  <motion.div key={group.warehouseId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: i * 0.05 }}
+                    onClick={() => { setSelectedWarehouseId(group.warehouseId); setViewLevel("inbounds"); setSearch(""); }}
+                    className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-all duration-200 cursor-pointer p-5">
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 rounded-2xl bg-[#1a231d] flex items-center justify-center shrink-0">
+                          <Warehouse size={20} className="text-[#84cc16]" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-heading text-base font-semibold text-white truncate">{group.warehouseName}</h3>
+                          {group.location && <p className="text-xs text-neutral-400 font-body mt-0.5 flex items-center gap-1"><MapPin size={10} />{group.location}</p>}
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
-                        {order.orderedItems.map((it, idx) => (
-                          <div key={`${it.itemName}-${idx}`} className="flex items-center justify-between gap-2 text-xs font-body">
-                            <span className="text-white truncate">{it.itemName}</span>
-                            <span className="text-[#84cc16] font-bold numeric shrink-0">× {it.quantity}</span>
+                      <ChevronRight size={18} className="text-neutral-500 shrink-0 mt-1" />
+                    </div>
+                    <div className="flex items-center gap-4 text-xs font-body">
+                      <span className="flex items-center gap-1.5 text-neutral-400">
+                        <ClipboardList size={12} className="text-[#84cc16]/70" />{group.orders.length} order{group.orders.length !== 1 ? "s" : ""}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-[#84cc16]">
+                        <Package size={12} />{(() => {
+                          const planIds = new Set(group.orders.filter((o) => o.inboundPlan?._id).map((o) => o.inboundPlan!._id));
+                          return planIds.size > 0 ? `${planIds.size} inbound batch${planIds.size !== 1 ? "es" : ""}` : "Direct orders";
+                        })()}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* LEVEL 2: INBOUND BATCHES */}
+          {viewLevel === "inbounds" && selectedWarehouse && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {filteredInboundGroups.length === 0 ? (
+                <div className="col-span-full text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
+                  <Search size={28} className="mx-auto text-[#84cc16]/30 mb-3" />
+                  <p className="text-sm text-neutral-400 font-body">No inbound batches match your search.</p>
+                  <button onClick={() => setSearch("")} className="mt-3 text-xs text-[#84cc16] font-body hover:underline">Clear search</button>
+                </div>
+              ) : (
+                filteredInboundGroups.map((group, i) => (
+                  <motion.div key={group.planId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: i * 0.05 }}
+                    onClick={() => { setSelectedInboundId(group.planId); setViewLevel("orders"); setSearch(""); }}
+                    className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-all duration-200 cursor-pointer p-5">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center shrink-0">
+                          <Package size={18} className="text-[#84cc16]" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-heading text-sm font-semibold text-white truncate">{group.batchName}</h3>
+                          {group.status !== "unknown" && <p className="text-xs text-neutral-400 font-body capitalize">Status: {group.status.replace("-", " ")}</p>}
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="text-neutral-500 shrink-0 mt-1" />
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-body">
+                      <span className="flex items-center gap-1.5 text-neutral-400">
+                        <ClipboardList size={12} className="text-[#84cc16]/70" />{group.orders.length} order{group.orders.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* LEVEL 3: ORDERS LIST */}
+          {viewLevel === "orders" && selectedInbound && (
+            <>
+              {filteredOrders.length === 0 ? (
+                <div className="text-center py-12 bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80">
+                  <ClipboardList size={26} className="mx-auto text-[#84cc16]/30 mb-3" />
+                  <p className="text-sm text-neutral-400 font-body">No orders match the current filter.</p>
+                  <button onClick={() => { setFilter("all"); setSearch(""); }} className="mt-3 text-xs text-[#84cc16] font-body hover:underline">Clear filters</button>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {filteredOrders.map((order, i) => {
+                    const totalQty = order.orderedItems.reduce((s, it) => s + (it.quantity || 0), 0);
+                    return (
+                      <motion.div key={order._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: i * 0.04 }}
+                        className="bg-[#111614]/90 backdrop-blur-md rounded-3xl border border-neutral-800/80 shadow-sm hover:border-[#84cc16]/30 transition-colors duration-200 p-5 sm:p-6">
+                        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-neutral-800/60 flex items-center justify-center shrink-0">
+                              <Truck size={18} className="text-[#84cc16]" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-bold text-white font-mono">{order.orderId}</span>
+                                {order.source === "AI_PDF_Extraction" && (
+                                  <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-semibold uppercase tracking-wider font-body">AI PDF</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-neutral-400 font-body truncate mt-0.5">{formatDate(order.createdAt)}</p>
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Dispatch Details (in-app) */}
-                    {(order.status === "Dispatched" || order.status === "In Transit" || order.status === "Delivered") &&
-                      (order.courierDetails?.courierName || order.courierDetails?.trackingId || order.trackingId) && (
-                        <div className="p-4 rounded-2xl bg-[#1a231d]/60 border border-[#84cc16]/25">
-                          <p className="text-[10px] font-semibold tracking-wider text-[#84cc16] uppercase mb-3 font-body">Dispatch Details</p>
-                          <div className="space-y-2.5">
-                            <div className="flex items-center justify-between gap-2 text-xs font-body">
-                              <span className="text-neutral-400">Delivery via</span>
-                              <span className="text-white font-semibold">{order.courierDetails?.courierName || "—"}</span>
+                          {orderStatusPill(order.status)}
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                          <div className="space-y-4">
+                            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                              <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-2 font-body">Customer</p>
+                              <p className="text-sm font-semibold text-white font-body">{order.customerDetails?.name || "\u2014"}</p>
+                              <p className="text-xs text-neutral-400 font-body mt-1">{order.customerDetails?.phone} \u00b7 {order.customerDetails?.city}</p>
+                              <p className="text-xs text-neutral-500 font-body mt-1 truncate">{order.customerDetails?.address}</p>
                             </div>
-                            <div className="flex items-center justify-between gap-2 text-xs font-body">
-                              <span className="text-neutral-400">Tracking / Contact</span>
-                              <span className="font-mono text-[#84cc16] font-semibold">{order.courierDetails?.trackingId || order.trackingId || "—"}</span>
+                            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                              <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-2 font-body">Items ({totalQty})</p>
+                              <div className="space-y-1.5">
+                                {order.orderedItems.map((it, idx) => (
+                                  <div key={`${it.itemName}-${idx}`} className="flex items-center justify-between gap-2 text-xs font-body">
+                                    <span className="text-white truncate">{it.itemName}</span>
+                                    <span className="text-[#84cc16] font-bold numeric shrink-0">\u00d7 {it.quantity}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between gap-2 text-xs font-body">
-                              <span className="text-neutral-400">Dispatched Date &amp; Time</span>
-                              <span className="text-white font-medium">{order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : "—"}</span>
-                            </div>
+                            {(order.status === "Dispatched" || order.status === "In Transit" || order.status === "Delivered") &&
+                              (order.courierDetails?.courierName || order.courierDetails?.trackingId || order.trackingId) && (
+                                <div className="p-4 rounded-2xl bg-[#1a231d]/60 border border-[#84cc16]/25">
+                                  <p className="text-[10px] font-semibold tracking-wider text-[#84cc16] uppercase mb-3 font-body">Dispatch Details</p>
+                                  <div className="space-y-2.5">
+                                    <div className="flex items-center justify-between gap-2 text-xs font-body">
+                                      <span className="text-neutral-400">Delivery via</span>
+                                      <span className="text-white font-semibold">{order.courierDetails?.courierName || "\u2014"}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2 text-xs font-body">
+                                      <span className="text-neutral-400">Tracking</span>
+                                      <span className="font-mono text-[#84cc16] font-semibold">{order.courierDetails?.trackingId || order.trackingId || "\u2014"}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2 text-xs font-body">
+                                      <span className="text-neutral-400">Dispatched</span>
+                                      <span className="text-white font-medium">{order.dispatchTimestamp ? formatDateTime(order.dispatchTimestamp) : "\u2014"}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                          <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+                            <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-3 font-body">Tracking</p>
+                            <OrderTimeline status={order.status} trackingId={order.trackingId} dispatchTimestamp={order.dispatchTimestamp} courierDetails={order.courierDetails} timeline={order.timeline} />
+                            {(order.status === "Dispatched" || order.status === "In Transit") && (
+                              <button onClick={() => setDeliveredTarget(order)}
+                                className="mt-4 w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200">
+                                <CheckCircle size={14} />Mark as Delivered
+                              </button>
+                            )}
                           </div>
                         </div>
-                      )}
-                  </div>
-
-                  {/* Right: timeline */}
-                  <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
-                    <p className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase mb-3 font-body">Tracking</p>
-                    <OrderTimeline
-                      status={order.status}
-                      trackingId={order.trackingId}
-                      dispatchTimestamp={order.dispatchTimestamp}
-                      courierDetails={order.courierDetails}
-                      timeline={order.timeline}
-                    />
-
-                    {(order.status === "Dispatched" || order.status === "In Transit") && (
-                      <button
-                        onClick={() => setDeliveredTarget(order)}
-                        className="mt-4 w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-body font-semibold hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95 transition-all duration-200"
-                      >
-                        <CheckCircle size={14} />Mark as Delivered
-                      </button>
-                    )}
-                  </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              </motion.div>
-            );
-          })}
-        </div>
+              )}
+            </>
+          )}
+        </>
       )}
 
       {/* Toast */}
@@ -1913,20 +2116,14 @@ function OrdersTab() {
         </motion.div>
       )}</AnimatePresence>
 
-      {/* ═══ DELIVERY CONFIRMATION MODAL (self-contained) ═══ */}
       <AnimatePresence>
         {deliveredTarget && (
-          <DeliveryConfirmationModal
-            order={deliveredTarget}
-            onClose={() => setDeliveredTarget(null)}
-            onDelivered={handleDelivered}
-          />
+          <DeliveryConfirmationModal order={deliveredTarget} onClose={() => setDeliveredTarget(null)} onDelivered={handleDelivered} />
         )}
       </AnimatePresence>
     </div>
   );
 }
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // TAB: ACCOUNT / PROFILE
 // ═══════════════════════════════════════════════════════════════════════════════

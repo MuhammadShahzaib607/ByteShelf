@@ -435,6 +435,7 @@ export const getMerchantOrders = async (req, res) => {
   try {
     const orders = await Order.find({ merchant: req.user.id })
       .populate("warehouse", "name location")
+      .populate("inboundPlan", "batchName status expectedDate totalCartons")
       .sort({ createdAt: -1 });
     return sendRes(res, 200, true, "Orders fetched successfully", orders);
   } catch (error) {
