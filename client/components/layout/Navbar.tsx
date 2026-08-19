@@ -295,7 +295,15 @@ const Navbar: React.FC = () => {
             <div className="p-3 space-y-1">
               {isLoggedIn ? (
                 <>
-                  {user && (
+              {isCheckingAuth ? (
+                    <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-white/[0.04] border border-[#84cc16]/10">
+                      <div className="w-8 h-8 rounded-full bg-[#1a231d] border border-[#84cc16]/30 animate-pulse" />
+                      <div className="min-w-0 flex-1">
+                        <div className="h-3.5 w-20 rounded bg-white/10 animate-pulse" />
+                        <div className="h-2.5 w-14 rounded bg-white/5 animate-pulse mt-1.5" />
+                      </div>
+                    </div>
+                  ) : user && (
                     <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-xl bg-white/[0.04] border border-[#84cc16]/10">
                       <div className="w-8 h-8 rounded-full bg-[#1a231d] border border-[#84cc16]/30 flex items-center justify-center">
                         <span className="text-xs font-semibold text-[#84cc16] font-body">

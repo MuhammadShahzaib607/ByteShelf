@@ -50,20 +50,19 @@ export default function UserProfileDropdown({
   /** Initials text classes. */
   initialsClassName?: string;
 }) {
-  const { user } = useAppSelector((s) => s.auth);
+  const { user, isCheckingAuth } = useAppSelector((s) => s.auth);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const initials =
-    user?.name
-      ?.split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "U";
+  const initials = user?.name
+    ?.split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || (user?.email ? user.email.charAt(0).toUpperCase() : "");
   const isAdmin = !!(user?.isAdmin || user?.role === "admin");
   const isMerchant = user?.role === "merchant";
   const isOwner = user?.role === "warehouseOwner";
@@ -97,7 +96,7 @@ export default function UserProfileDropdown({
       localStorage.removeItem("byteshelf_access_token");
       localStorage.removeItem("auth_tokens");
     }
-    router.push("/login");
+    router.push("/");
   };
 
   // Context-aware primary item: inside a dashboard → "Home" (back to landing),
@@ -127,9 +126,13 @@ export default function UserProfileDropdown({
         aria-expanded={open}
         className={`items-center gap-2 px-3 py-1.5 rounded-full transition-all ${triggerClassName}`}
       >
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${avatarClassName}`}>
-          <span className={`text-[11px] font-semibold font-body ${initialsClassName}`}>{initials}</span>
-        </div>
+        {isCheckingAuth ? (
+          <div className={`w-7 h-7 rounded-full animate-pulse ${avatarClassName}`} />
+        ) : (
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center ${avatarClassName}`}>
+            <span className={`text-[11px] font-semibold font-body ${initialsClassName}`}>{initials}</span>
+          </div>
+        )}
         {showName && (
           <span className="text-sm font-medium text-white font-body hidden sm:block">{user?.name || "User"}</span>
         )}
@@ -151,11 +154,15 @@ export default function UserProfileDropdown({
             {/* Header — identity + role badge */}
             <div className="px-4 py-3.5 border-b border-[#1f291f] bg-[#111611]">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-black font-body">{initials}</span>
-                </div>
+                {isCheckingAuth ? (
+                  <div className="w-9 h-9 rounded-full bg-[#84cc16] animate-pulse shrink-0" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-[#84cc16] flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-black font-body">{initials}</span>
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white font-body truncate">{user?.name || "User"}</p>
+                  <p className="text-sm font-semibold text-white font-body truncate">{isCheckingAuth ? "" : (user?.name || "User")}</p>
                   <p className="text-[11px] text-slate-400 font-body truncate">{user?.email || "—"}</p>
                 </div>
               </div>
